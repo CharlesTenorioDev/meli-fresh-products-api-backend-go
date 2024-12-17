@@ -24,7 +24,6 @@ func (h *BuyerHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	all := h.s.GetAll()
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"message": "success",
 		"data":    all,
 	})
 }
@@ -33,7 +32,6 @@ func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"message": "failed",
 			"data":    "failed to parse id",
 		})
 		return
@@ -42,14 +40,12 @@ func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 	buyer, err := h.s.FindByID(id - 1)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"message": "failed",
 			"data":    err.Error(),
 		})
 		return
 	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"message": "success",
 		"data":    buyer,
 	})
 }
@@ -58,7 +54,6 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"message": "failed",
 			"data":    "failed to parse id",
 		})
 		return
@@ -68,7 +63,6 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&buyer)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"message": "failed",
 			"data":    "failed to parse body",
 		})
 		return
@@ -77,7 +71,6 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	ok := buyer.Parse()
 	if !ok {
 		response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
-			"message": "failed",
 			"data":    "failed to parse entity",
 		})
 		return
@@ -87,14 +80,12 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	err = h.s.Save(id, buyer)
 	if err != nil {
 		response.JSON(w, http.StatusConflict, map[string]any{
-			"message": "failed",
 			"data":    err.Error(),
 		})
 		return
 	}
 
 	response.JSON(w, http.StatusCreated, map[string]any{
-		"message": "success",
 		"data":    buyer,
 	})
 }
@@ -103,7 +94,6 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"message": "failed",
 			"data":    "failed to parse id",
 		})
 		return
@@ -113,7 +103,6 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	err = json.NewDecoder(r.Body).Decode(&buyer)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"message": "failed",
 			"data":    "failed to parse body",
 		})
 		return
@@ -122,14 +111,12 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	err = h.s.Update(id - 1, buyer)
 	if err != nil {
 		response.JSON(w, http.StatusNotFound, map[string]any{
-			"message": "failed",
 			"data":    err.Error(),
 		})
 		return
 	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"message": "success",
 		"data":    buyer,
 	})
 }
@@ -138,7 +125,6 @@ func (h *BuyerHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"message": "failed",
 			"data":    "failed to parse id",
 		})
 		return
@@ -147,7 +133,6 @@ func (h *BuyerHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	err = h.s.Delete(id - 1)
 	if err != nil {
 		response.JSON(w, http.StatusNotFound, map[string]any{
-			"message": "failed",
 			"data":    err.Error(),
 		})
 		return
