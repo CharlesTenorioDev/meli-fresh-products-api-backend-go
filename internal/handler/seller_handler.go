@@ -186,9 +186,15 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 		err = h.sv.Update(&actualSeller)
 		if err != nil {
 			response.JSON(w, http.StatusInternalServerError, nil)
+
+			if errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
+				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			}
+
 			if errors.Is(err, internal.ErrSellerNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 			}
+
 			return
 		}
 

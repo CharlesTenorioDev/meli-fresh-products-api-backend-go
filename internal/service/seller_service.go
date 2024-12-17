@@ -52,6 +52,14 @@ func (s *SellerServiceDefault) Save(seller *internal.Seller) (int, error) {
 }
 
 func (s *SellerServiceDefault) Update(seller *internal.Seller) error {
+	sellerCid, err := s.rp.FindByCID(seller.CID)
+	if err != nil && !errors.Is(err, internal.ErrSellerNotFound) {
+		return err
+	}
+	if sellerCid != nil && seller.ID != sellerCid.ID {
+		return internal.ErrSellerCIDAlreadyExists
+	}
+
 	return s.rp.Update(seller.ID, seller)
 }
 
