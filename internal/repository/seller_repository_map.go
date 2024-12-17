@@ -12,8 +12,8 @@ func NewSellerRepoMap(db map[int]internal.Seller) *SellerRepoMap {
 	return &SellerRepoMap{db: db}
 }
 
-func (s *SellerRepoMap) Save(seller *internal.Seller) (id int, err error) {
-	id = len(s.db) + 1
+func (s *SellerRepoMap) Save(seller *internal.Seller) (int, error) {
+	id := len(s.db) + 1
 
 	_, ok := s.db[id]
 
@@ -23,47 +23,56 @@ func (s *SellerRepoMap) Save(seller *internal.Seller) (id int, err error) {
 
 	seller.ID = id
 	s.db[id] = *seller
-	return
+	return id, nil
 }
 
-func (s *SellerRepoMap) Get(id int) (sl internal.Seller, err error) {
-	sl, ok := s.db[id]
+func (s *SellerRepoMap) FindByID(id int) (internal.Seller, error) {
+	seller, ok := s.db[id]
 	if !ok {
 		return internal.Seller{}, internal.ErrSellerNotFound
 	}
-	return
+	return seller, nil
 }
 
-func (s *SellerRepoMap) GetAll() (sls []internal.Seller, err error) {
-	var sellersList []internal.Seller
+func (s *SellerRepoMap) FindByCID(cid int) (internal.Seller, error) {
+	sellers := s.db
+	for _, seller := range sellers {
+		if seller.CID == cid {
+			return seller, nil
+		}
+	}
+	return internal.Seller{}, internal.ErrSellerNotFound
+}
+
+func (s *SellerRepoMap) FindAll() ([]internal.Seller, error) {
+	var sellers []internal.Seller
 
 	if len(s.db) == 0 {
 		return nil, internal.ErrSellerNotFound
 	}
 
 	for _, seller := range s.db {
-		sellersList = append(sellersList, seller)
+		sellers = append(sellers, seller)
 	}
-	sls = sellersList
 
-	return
+	return sellers, nil
 }
 
-func (s *SellerRepoMap) Update(id int, sl *internal.Seller) (err error) {
+func (s *SellerRepoMap) Update(id int, seller *internal.Seller) error {
 	_, ok := s.db[id]
 
 	if !ok {
 		return internal.ErrSellerNotFound
 	}
-	s.db[id] = *sl
-	return
+	s.db[id] = *seller
+	return nil
 }
 
-func (s *SellerRepoMap) Delete(id int) (err error) {
+func (s *SellerRepoMap) Delete(id int) error {
 	_, ok := s.db[id]
 	if !ok {
 		return internal.ErrSellerNotFound
 	}
 	delete(s.db, id)
-	return
+	return nil
 }

@@ -30,12 +30,16 @@ func (s *SellerServiceDefault) FindByID(id int) (internal.Seller, error) {
 	return seller, nil
 }
 
-func (s *SellerServiceDefault) Save(seller *internal.Seller) error {
-	return s.rp.Save(seller)
+func (s *SellerServiceDefault) Save(seller *internal.Seller) (int, error) {
+	id, err := s.rp.Save(seller)
+	if err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 
 func (s *SellerServiceDefault) Update(seller *internal.Seller) error {
-	return s.rp.Update(seller)
+	return s.rp.Update(seller.ID, seller)
 }
 
 func (s *SellerServiceDefault) Delete(id int) error {

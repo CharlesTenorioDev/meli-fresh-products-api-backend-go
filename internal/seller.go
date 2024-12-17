@@ -16,7 +16,28 @@ type Seller struct {
 	Telephone string
 }
 
+func (seller *Seller) Validate() error {
+	var err error
+	if seller.ID == 0 {
+		return errors.Join(err, errors.New("seller.ID is required"))
+	}
+	if seller.CID == 0 {
+		return errors.Join(err, errors.New("seller.CID is required"))
+	}
+	if seller.CompanyName == "" {
+		return errors.Join(err, errors.New("seller.CompanyName is required"))
+	}
+	if seller.Address == "" {
+		return errors.Join(err, errors.New("seller.Address is required"))
+	}
+	if seller.Telephone == "" {
+		return errors.Join(err, errors.New("seller.Telephone is required"))
+	}
+	return err
+}
+
 var (
+	ErrSellerInvalidFields = errors.New("seller invalid fields")
 	// ErrSellerNotFound is returned when the seller is not found
 	ErrSellerNotFound = errors.New("seller not found")
 	// ErrSellerConflict is returned when the seller already exists
@@ -29,10 +50,12 @@ type SellerRepository interface {
 	FindAll() ([]Seller, error)
 	// FindByID returns the seller with the given ID
 	FindByID(id int) (Seller, error)
+	// FindByCID returns the seller with the given CID
+	FindByCID(cid int) (Seller, error)
 	// Save saves the given seller
-	Save(seller *Seller) error
+	Save(seller *Seller) (int, error)
 	// Update updates the given seller
-	Update(seller *Seller) error
+	Update(id int, seller *Seller) error
 	// Delete deletes the seller with the given ID
 	Delete(id int) error
 }
@@ -44,7 +67,7 @@ type SellerService interface {
 	// FindByID returns the seller with the given ID
 	FindByID(id int) (Seller, error)
 	// Save saves the given seller
-	Save(seller *Seller) error
+	Save(seller *Seller) (int, error)
 	// Update updates the given seller
 	Update(seller *Seller) error
 	// Delete deletes the seller with the given ID
