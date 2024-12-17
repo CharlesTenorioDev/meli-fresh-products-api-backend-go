@@ -9,8 +9,18 @@ import (
 var (
 	BuyerNotFound = errors.New("buyer not found")
 	BuyerAlreadyExists = errors.New("buyer already exists")
+	CardNumberAlreadyInUse = errors.New("buyer with given card number already registered")
 	BuyerUnprocessableEntity = errors.New("couldn't parse buyer")
 )
+
+func cardNumberIdAlreadyInUse(cardNumber string, buyers map[int]internal.Buyer) bool {
+	for _, b := range buyers {
+		if b.CardNumberId == cardNumber {
+			return true
+		}
+	}
+	return false
+}
 
 type BuyerServiceDefault struct {
 	repo internal.BuyerRepository
@@ -52,6 +62,11 @@ func (s *BuyerServiceDefault) Save(buyer internal.Buyer) (err error) {
 		return
 	}
 
+	if cardNumberIdAlreadyInUse(buyer.CardNumberId, all) {
+		err = CardNumberAlreadyInUse
+		return
+	}
+
 	s.repo.Add(buyer)
 	return
 }
@@ -62,6 +77,11 @@ func (s* BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (er
 	_, ok := all[id]
 	if !ok {
 		err = BuyerNotFound
+		return
+	}
+
+	if cardNumberIdAlreadyInUse(*buyerPatch.CardNumberId, all) {
+		err = CardNumberAlreadyInUse
 		return
 	}
 

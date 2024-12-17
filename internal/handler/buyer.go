@@ -73,7 +73,7 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	buyer.ID = id
 	err = h.s.Save(buyer)
 	if err != nil {
-		if errors.Is(err, service.BuyerAlreadyExists) {
+		if (errors.Is(err, service.BuyerAlreadyExists) || errors.Is(err, service.CardNumberAlreadyInUse)){
 			response.JSON(w, http.StatusConflict, map[string]any{
 				"data":    err.Error(),
 			})
@@ -110,9 +110,15 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = h.s.Update(id - 1, buyer)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, map[string]any{
-			"data":    err.Error(),
-		})
+		if errors.Is(err, service.BuyerNotFound) {
+			response.JSON(w, http.StatusNotFound, map[string]any{
+				"data":    err.Error(),
+			})
+		} else {
+			response.JSON(w, http.StatusConflict, map[string]any{
+				"data":    err.Error(),
+			})
+		}
 		return
 	}
 
