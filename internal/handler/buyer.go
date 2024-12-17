@@ -71,7 +71,7 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	buyer.ID = id
-	err = h.s.Save(id, buyer)
+	err = h.s.Save(buyer)
 	if err != nil {
 		if errors.Is(err, service.BuyerAlreadyExists) {
 			response.JSON(w, http.StatusConflict, map[string]any{

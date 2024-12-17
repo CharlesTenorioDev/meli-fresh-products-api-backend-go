@@ -15,7 +15,7 @@ type BuyerPatch struct {
 
 type BuyerRepository interface {
 	GetAll() (db map[int]Buyer)
-	Add(id int, buyer Buyer)
+	Add(buyer Buyer)
 	Update(id int, buyer BuyerPatch)
 	Delete(id int)
 }
@@ -23,7 +23,7 @@ type BuyerRepository interface {
 type BuyerService interface {
 	GetAll() (map[int]Buyer)
 	FindByID(id int) (b Buyer, err error)
-	Save(id int, buyer Buyer) (err error)
+	Save(buyer Buyer) (err error)
 	Update(id int, buyerPatch BuyerPatch) (err error)
 	Delete(id int) (err error)
 }
