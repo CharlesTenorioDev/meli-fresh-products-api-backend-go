@@ -20,3 +20,9 @@ func (s *WarehouseDefault) FindAll() (warehouses []internal.Warehouse, err error
 	warehouses, err = s.rp.FindAll()
 	return
 }
+
+// FindByID returns a warehouse
+func (s *WarehouseDefault) FindByID(id int) (warehouse internal.Warehouse, err error) {
+	warehouse, err = s.rp.FindByID(id)
+	return
+}

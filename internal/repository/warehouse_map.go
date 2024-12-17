@@ -69,3 +69,24 @@ func (r *RepositoryWarehouseMap) FindAll() (w []internal.Warehouse, err error) {
 
 	return w, nil
 }
+
+// FindByID is a method that returns a vehicle by its ID
+func (r *RepositoryWarehouseMap) FindByID(id int) (w internal.Warehouse, err error) {
+	wh, ok := r.db[id]
+	if !ok {
+		err = fmt.Errorf("%w: %d", internal.ErrWarehouseRepositoryNotFound, id)
+		return
+	}
+
+	// returning a domain object
+	w = internal.Warehouse{
+		ID:                 id,
+		WarehouseCode:      wh.WarehouseCode,
+		Address:            wh.Address,
+		Telephone:          wh.Telephone,
+		MinimumCapacity:    wh.MinimumCapacity,
+		MinimumTemperature: wh.MinimumTemperature,
+	}
+
+	return
+}

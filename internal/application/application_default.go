@@ -51,4 +51,5 @@ func warehouseRoute(r chi.Router) {
 	warehouseHandler := handler.NewWarehouseDefault(warehouseService)
 
 	r.Get("/", warehouseHandler.GetAll())
+	r.Get("/{id}", warehouseHandler.GetByID())
 }

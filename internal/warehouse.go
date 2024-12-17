@@ -23,10 +23,14 @@ var (
 type WarehouseRepository interface {
 	// FindAll returns all the warehouses
 	FindAll() ([]Warehouse, error)
+	// FindByID returns the warehouse with the given ID
+	FindByID(id int) (Warehouse, error)
 }
 
 // WarehouseService is an interface that contains the methods that the warehouse service should support
 type WarehouseService interface {
 	// FindAll returns all the warehouses
 	FindAll() ([]Warehouse, error)
+	// FindByID returns the warehouse with the given ID
+	FindByID(id int) (Warehouse, error)
 }

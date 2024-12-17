@@ -1,9 +1,12 @@
 package handler
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/bootcamp-go/web/response"
+	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -55,6 +58,42 @@ func (h *WarehouseDefault) GetAll() http.HandlerFunc {
 
 		response.JSON(w, http.StatusOK, map[string]any{
 			"data": data,
+		})
+	}
+}
+
+// GetByID returns a warehouse by its ID
+func (h *WarehouseDefault) GetByID() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Invalid ID format")
+			return
+		}
+
+		warehouse, err := h.sv.FindByID(idInt)
+		if err != nil {
+			switch {
+			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
+				response.Error(w, http.StatusNotFound, "Warehouse not found")
+			default:
+				response.Error(w, http.StatusInternalServerError, "Internal error")
+			}
+			return
+		}
+
+		warehouseJson := WarehouseJSON{
+			ID:                 warehouse.ID,
+			WarehouseCode:      warehouse.WarehouseCode,
+			Address:            warehouse.Address,
+			Telephone:          warehouse.Telephone,
+			MinimumCapacity:    warehouse.MinimumCapacity,
+			MinimumTemperature: warehouse.MinimumTemperature,
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": warehouseJson,
 		})
 	}
 }
