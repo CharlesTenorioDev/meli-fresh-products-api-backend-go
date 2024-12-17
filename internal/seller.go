@@ -17,10 +17,10 @@ type Seller struct {
 }
 
 var (
-	// ErrSellerRepositoryNotFound is returned when the seller is not found
-	ErrSellerRepositoryNotFound = errors.New("repository: seller not found")
-	// ErrSellerRepositoryConflict is returned when the seller already exists
-	ErrSellerRepositoryConflict = errors.New("repository: seller already exists")
+	// ErrSellerNotFound is returned when the seller is not found
+	ErrSellerNotFound = errors.New("seller not found")
+	// ErrSellerConflict is returned when the seller already exists
+	ErrSellerConflict = errors.New("seller already exists")
 )
 
 // SellerRepository is an interface that contains the methods that the seller repository should support
