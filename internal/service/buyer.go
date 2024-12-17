@@ -48,3 +48,16 @@ func (s *BuyerServiceDefault) Save(id int, buyer internal.Buyer) (err error) {
 	s.repo.AddProduct(id, buyer)
 	return
 }
+
+
+func (s* BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (err error) {
+	all := s.repo.GetAll()
+	_, ok := all[id]
+	if !ok {
+		err = BuyerNotFound
+		return
+	}
+
+	s.repo.UpdateBuyer(id, buyerPatch)
+	return
+}

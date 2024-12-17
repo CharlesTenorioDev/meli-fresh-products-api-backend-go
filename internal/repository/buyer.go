@@ -45,3 +45,8 @@ func (r *BuyerMap) GetAll() (db map[int]internal.Buyer) {
 func (r *BuyerMap) AddProduct(id int, buyer internal.Buyer) {
 	r.db[id] = &buyer
 }
+
+func (r *BuyerMap) UpdateBuyer(id int, buyer internal.BuyerPatch) {
+	buyerToPatch := r.db[id]
+	buyer.Patch(buyerToPatch)
+}

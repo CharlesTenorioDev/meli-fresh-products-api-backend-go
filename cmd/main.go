@@ -21,6 +21,7 @@ func main() {
 			r.Get("/", hd.GetAll())
 			r.Get("/{id}", hd.GetByID())
 			r.Post("/{id}", hd.Create())
+			r.Patch("/{id}", hd.Update())
 		})
 	})
 	if err := http.ListenAndServe(":8080", cr); err != nil {

@@ -104,3 +104,40 @@ func (h *BuyerHandlerDefault) Create() http.HandlerFunc {
 		})
 	}
 }
+
+func (h *BuyerHandlerDefault) Update() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"message": "failed",
+				"data":    "failed to parse id",
+			})
+			return
+		}
+
+		var buyer internal.BuyerPatch
+		err = json.NewDecoder(r.Body).Decode(&buyer)
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"message": "failed",
+				"data":    "failed to parse body",
+			})
+			return
+		}
+
+		err = h.s.Update(id - 1, buyer)
+		if err != nil {
+			response.JSON(w, http.StatusNotFound, map[string]any{
+				"message": "failed",
+				"data":    err.Error(),
+			})
+			return
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "success",
+			"data":    buyer,
+		})
+	}
+}
