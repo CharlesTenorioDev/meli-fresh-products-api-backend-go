@@ -94,3 +94,11 @@ func NewConflictError(message string) *RestErr {
 		Code:    http.StatusConflict,
 	}
 }
+
+func NewUnprocessableEntityError(message string) *RestErr {
+	return &RestErr{
+		Message: message,
+		Err:     "unprocessable_entity",
+		Code:    http.StatusUnprocessableEntity,
+	}
+}
