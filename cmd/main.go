@@ -19,6 +19,7 @@ func main() {
 	cr.Route("/api/v1", func(r chi.Router) {
 		r.Route("/buyers", func(r chi.Router) {
 			r.Get("/", hd.GetAll())
+			r.Get("/{id}", hd.GetByID())
 		})
 	})
 	if err := http.ListenAndServe(":8080", cr); err != nil {

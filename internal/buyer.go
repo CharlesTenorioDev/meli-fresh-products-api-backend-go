@@ -13,4 +13,5 @@ type BuyerRepository interface {
 
 type BuyerService interface {
 	GetAll() (map[int]Buyer)
+	FindByID(id int) (b Buyer, err error)
 }
