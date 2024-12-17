@@ -110,3 +110,20 @@ func (r *RepositoryWarehouseMap) Save(warehouse *internal.Warehouse) (err error)
 
 	return nil
 }
+
+// Update is a method that updates a Warehouse
+func (r *RepositoryWarehouseMap) Update(warehouse *internal.Warehouse) (err error) {
+
+	wh := WarehouseAttributesMap{
+		WarehouseCode:      warehouse.WarehouseCode,
+		Address:            warehouse.Address,
+		Telephone:          warehouse.Telephone,
+		MinimumCapacity:    warehouse.MinimumCapacity,
+		MinimumTemperature: warehouse.MinimumTemperature,
+	}
+
+	// update the warehouse
+	r.db[warehouse.ID] = wh
+
+	return nil
+}

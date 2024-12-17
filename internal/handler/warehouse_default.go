@@ -29,6 +29,10 @@ type WarehouseCreateRequest struct {
 	MinimumTemperature float64 `json:"minimum_temperature"`
 }
 
+var (
+	InternalError = "Internal Server Error"
+)
+
 // NewWarehouseDefault Builder creates a new instance of the warehouse handler
 func NewWarehouseDefault(sv internal.WarehouseService) *WarehouseDefault {
 	return &WarehouseDefault{
@@ -87,7 +91,7 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
 				response.Error(w, http.StatusNotFound, "Warehouse not found")
 			default:
-				response.Error(w, http.StatusInternalServerError, "Internal error")
+				response.Error(w, http.StatusInternalServerError, InternalError)
 			}
 			return
 		}
@@ -135,7 +139,7 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
 				response.Error(w, http.StatusConflict, "Warehouse already exists")
 			default:
-				response.Error(w, http.StatusInternalServerError, "Internal error")
+				response.Error(w, http.StatusInternalServerError, InternalError)
 			}
 			return
 		}
@@ -153,5 +157,51 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 		response.JSON(w, http.StatusCreated, map[string]any{
 			"data": warehouseJson,
 		})
+	}
+}
+
+// Update updates a warehouse
+func (h *WarehouseDefault) Update() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Invalid ID format")
+			return
+		}
+
+		// decode the request into a WarehousePatchUpdate
+		var requestInput *internal.WarehousePatchUpdate
+		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
+			response.Error(w, http.StatusBadRequest, "Invalid data")
+			return
+		}
+
+		// Calling the service to update the warehouse
+		warehouse, err := h.sv.Update(idInt, requestInput)
+		if err != nil {
+			switch {
+			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
+				response.Error(w, http.StatusNotFound, "Warehouse not found")
+			default:
+				response.Error(w, http.StatusInternalServerError, InternalError)
+			}
+			return
+		}
+
+		// Returning the updated warehouse
+		warehouseJson := WarehouseJSON{
+			ID:                 warehouse.ID,
+			WarehouseCode:      warehouse.WarehouseCode,
+			Address:            warehouse.Address,
+			Telephone:          warehouse.Telephone,
+			MinimumCapacity:    warehouse.MinimumCapacity,
+			MinimumTemperature: warehouse.MinimumTemperature,
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": warehouseJson,
+		})
+
 	}
 }

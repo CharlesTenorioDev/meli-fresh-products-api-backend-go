@@ -12,6 +12,14 @@ type Warehouse struct {
 	MinimumTemperature float64
 }
 
+// WarehousePatchUpdate is a struct to use in a patch request
+type WarehousePatchUpdate struct {
+	Address            *string  `json:"address"`
+	Telephone          *string  `json:"telephone"`
+	MinimumCapacity    *int     `json:"minimum_capacity"`
+	MinimumTemperature *float64 `json:"minimum_temperature"`
+}
+
 var (
 	// ErrWarehouseRepositoryNotFound is returned when the warehouse is not found
 	ErrWarehouseRepositoryNotFound = errors.New("repository: warehouse not found")
@@ -27,6 +35,8 @@ type WarehouseRepository interface {
 	FindByID(id int) (Warehouse, error)
 	// Save saves the given warehouse
 	Save(warehouse *Warehouse) error
+	// Update updates the given warehouse
+	Update(warehouse *Warehouse) error
 }
 
 // WarehouseService is an interface that contains the methods that the warehouse service should support
@@ -37,4 +47,6 @@ type WarehouseService interface {
 	FindByID(id int) (Warehouse, error)
 	// Save saves the given warehouse
 	Save(warehouse *Warehouse) error
+	// Update updates the given warehouse
+	Update(id int, warehousePatch *WarehousePatchUpdate) (Warehouse, error)
 }
