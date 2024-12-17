@@ -61,3 +61,15 @@ func (s* BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (er
 	s.repo.UpdateBuyer(id, buyerPatch)
 	return
 }
+
+func (s* BuyerServiceDefault) Delete(id int) (err error) {
+	all := s.repo.GetAll()
+	_, ok := all[id]
+	if !ok {
+		err = BuyerNotFound
+		return
+	}
+
+	s.repo.Delete(id)
+	return
+}

@@ -141,3 +141,27 @@ func (h *BuyerHandlerDefault) Update() http.HandlerFunc {
 		})
 	}
 }
+
+func (h *BuyerHandlerDefault) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"message": "failed",
+				"data":    "failed to parse id",
+			})
+			return
+		}
+
+		err = h.s.Delete(id - 1)
+		if err != nil {
+			response.JSON(w, http.StatusNotFound, map[string]any{
+				"message": "failed",
+				"data":    err.Error(),
+			})
+			return
+		}
+
+		response.JSON(w, http.StatusNoContent, nil)
+	}
+}

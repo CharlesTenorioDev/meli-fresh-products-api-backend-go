@@ -15,8 +15,7 @@ type BuyerPatch struct {
 
 type BuyerRepository interface {
 	GetAll() (db map[int]Buyer)
-	AddProduct(id int, buyer Buyer)
-	UpdateBuyer(id int, buyer BuyerPatch)
+	Delete(id int)
 }
 
 type BuyerService interface {
@@ -24,6 +23,7 @@ type BuyerService interface {
 	FindByID(id int) (b Buyer, err error)
 	Save(id int, buyer Buyer) (err error)
 	Update(id int, buyerPatch BuyerPatch) (err error)
+	Delete(id int) (err error)
 }
 
 func (b *Buyer) Parse() (ok bool) {

@@ -50,3 +50,7 @@ func (r *BuyerMap) UpdateBuyer(id int, buyer internal.BuyerPatch) {
 	buyerToPatch := r.db[id]
 	buyer.Patch(buyerToPatch)
 }
+
+func (r *BuyerMap) Delete(id int) {
+	delete(r.db, id)
+}
