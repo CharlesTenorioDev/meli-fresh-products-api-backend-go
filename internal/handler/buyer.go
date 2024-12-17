@@ -2,12 +2,14 @@ package handler
 
 import (
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 )
 
 type BuyerHandlerDefault struct {
@@ -68,20 +70,18 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ok := buyer.Parse()
-	if !ok {
-		response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
-			"data":    "failed to parse entity",
-		})
-		return
-	}
-
 	buyer.ID = id
 	err = h.s.Save(id, buyer)
 	if err != nil {
-		response.JSON(w, http.StatusConflict, map[string]any{
-			"data":    err.Error(),
-		})
+		if errors.Is(err, service.BuyerAlreadyExists) {
+			response.JSON(w, http.StatusConflict, map[string]any{
+				"data":    err.Error(),
+			})
+		} else {
+			response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
+				"data":    err.Error(),
+			})
+		}
 		return
 	}
 

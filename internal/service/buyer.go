@@ -9,6 +9,7 @@ import (
 var (
 	BuyerNotFound = errors.New("buyer not found")
 	BuyerAlreadyExists = errors.New("buyer already exists")
+	BuyerUnprocessableEntity = errors.New("couldn't parse buyer")
 )
 
 type BuyerServiceDefault struct {
@@ -42,6 +43,12 @@ func (s *BuyerServiceDefault) Save(id int, buyer internal.Buyer) (err error) {
 	all := s.repo.GetAll()
 	if _, ok := all[id]; ok {
 		err = BuyerAlreadyExists
+		return
+	}
+
+	ok := buyer.Parse()
+	if !ok {
+		err = BuyerUnprocessableEntity
 		return
 	}
 
