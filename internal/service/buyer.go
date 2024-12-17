@@ -39,9 +39,9 @@ func (s *BuyerServiceDefault) FindByID(id int) (b internal.Buyer, err error) {
 }
 
 
-func (s *BuyerServiceDefault) Save(id int, buyer internal.Buyer) (err error) {
+func (s *BuyerServiceDefault) Save(buyer internal.Buyer) (err error) {
 	all := s.repo.GetAll()
-	if _, ok := all[id]; ok {
+	if _, ok := all[buyer.ID]; ok {
 		err = BuyerAlreadyExists
 		return
 	}
@@ -52,7 +52,7 @@ func (s *BuyerServiceDefault) Save(id int, buyer internal.Buyer) (err error) {
 		return
 	}
 
-	s.repo.Add(id, buyer)
+	s.repo.Add(buyer)
 	return
 }
 
