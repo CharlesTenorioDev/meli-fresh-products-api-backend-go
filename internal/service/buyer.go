@@ -45,7 +45,7 @@ func (s *BuyerServiceDefault) Save(id int, buyer internal.Buyer) (err error) {
 		return
 	}
 
-	s.repo.AddProduct(id, buyer)
+	s.repo.Add(id, buyer)
 	return
 }
 
@@ -58,7 +58,7 @@ func (s* BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (er
 		return
 	}
 
-	s.repo.UpdateBuyer(id, buyerPatch)
+	s.repo.Update(id, buyerPatch)
 	return
 }
 

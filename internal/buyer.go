@@ -15,6 +15,8 @@ type BuyerPatch struct {
 
 type BuyerRepository interface {
 	GetAll() (db map[int]Buyer)
+	Add(id int, buyer Buyer)
+	Update(id int, buyer BuyerPatch)
 	Delete(id int)
 }
 
