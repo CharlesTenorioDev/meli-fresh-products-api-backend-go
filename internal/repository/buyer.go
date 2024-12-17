@@ -9,12 +9,12 @@ import (
 )
 
 type BuyerMap struct {
-	db map[int]internal.Buyer
+	db map[int]*internal.Buyer
 }
 
 func NewBuyerMap() *BuyerMap {
 	var buyers []internal.Buyer
-	db := make(map[int]internal.Buyer)
+	db := make(map[int]*internal.Buyer)
 	file, err := os.Open("db/buyer.json")
 	if err != nil {
 		log.Fatal(err)
@@ -26,7 +26,7 @@ func NewBuyerMap() *BuyerMap {
 	}
 
 	for i, b := range buyers {
-		db[i] = b
+		db[i] = &b
 	}
 	return &BuyerMap{
 		db: db,
@@ -34,10 +34,14 @@ func NewBuyerMap() *BuyerMap {
 }
 
 func (r *BuyerMap) GetAll() (db map[int]internal.Buyer) {
-	db = r.db
+	db = make(map[int]internal.Buyer)
+
+	for i, b := range r.db {
+		db[i] = *b
+	}
 	return
 }
 
 func (r *BuyerMap) AddProduct(id int, buyer internal.Buyer) {
-	r.db[id] = buyer
+	r.db[id] = &buyer
 }
