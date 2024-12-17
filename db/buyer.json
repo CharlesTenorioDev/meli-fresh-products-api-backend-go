@@ -1,0 +1,32 @@
+[
+	{
+		"id": 1,
+		"card_number_id": "1234567812345678",
+		"first_name": "John",
+		"last_name": "Doe"
+	},
+	{
+		"id": 2,
+		"card_number_id": "2345678923456789",
+		"first_name": "Jane",
+		"last_name": "Smith"
+	},
+	{
+		"id": 3,
+		"card_number_id": "3456789034567890",
+		"first_name": "Alice",
+		"last_name": "Johnson"
+	},
+	{
+		"id": 4,
+		"card_number_id": "4567890145678901",
+		"first_name": "Bob",
+		"last_name": "Williams"
+	},
+	{
+		"id": 5,
+		"card_number_id": "5678901256789012",
+		"first_name": "Charlie",
+		"last_name": "Brown"
+	}
+]
