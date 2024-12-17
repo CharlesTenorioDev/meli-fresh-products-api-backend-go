@@ -1,19 +1,19 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"fmt"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/meli-fresh-products-api-backend-t1/internal/application"
 )
 
 func main() {
-	cr := chi.NewRouter()
+	cfg := &application.ConfigServerChi{
+		ServerAddress: ":8080",
+	}
+	server := application.NewServerChi(cfg)
 
-	cr.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("pong\n"))
-	})
-	if err := http.ListenAndServe(":8080", cr); err != nil {
-		log.Fatal(err)
+	if err := server.Run(); err != nil {
+		fmt.Println(err)
+		return
 	}
 }

@@ -1,32 +1,37 @@
 [
     {
-        "employee_id": "E1001",
+        "id": 1,
+        "card_number_id": "E1001",
         "first_name": "John",
         "last_name": "Doe",
-        "department_id": 1
+        "warehouse_id": 1
     },
     {
-        "employee_id": "E1002",
+        "id": 2,
+        "card_number_id": "E1002",
         "first_name": "Jane",
         "last_name": "Smith",
-        "department_id": 2
+        "warehouse_id": 2
     },
     {
-        "employee_id": "E1003",
+        "id": 3,
+        "card_number_id": "E1003",
         "first_name": "Michael",
         "last_name": "Johnson",
-        "department_id": 3
+        "warehouse_id": 3
     },
     {
-        "employee_id": "E1004",
+        "id": 4,
+        "card_number_id": "E1004",
         "first_name": "Emily",
         "last_name": "Davis",
-        "department_id": 4
+        "warehouse_id": 4
     },
     {
-        "employee_id": "E1005",
+        "id": 5,
+        "card_number_id": "E1005",
         "first_name": "David",
         "last_name": "Miller",
-        "department_id": 5
+        "warehouse_id": 5
     }
 ]
