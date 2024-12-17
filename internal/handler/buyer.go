@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -44,6 +45,53 @@ func (h *BuyerHandlerDefault) GetByID() http.HandlerFunc {
 		buyer, err := h.s.FindByID(id - 1)
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"message": "failed",
+				"data":    err.Error(),
+			})
+			return
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "success",
+			"data":    buyer,
+		})
+	}
+}
+
+func (h *BuyerHandlerDefault) Create() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id, err := strconv.Atoi(chi.URLParam(r, "id"))
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"message": "failed",
+				"data":    "failed to parse id",
+			})
+			return
+		}
+
+		var buyer internal.Buyer
+		err = json.NewDecoder(r.Body).Decode(&buyer)
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, map[string]any{
+				"message": "failed",
+				"data":    "failed to parse body",
+			})
+			return
+		}
+
+		ok := buyer.Parse()
+		if !ok {
+			response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
+				"message": "failed",
+				"data":    "failed to parse entity",
+			})
+			return
+		}
+
+		buyer.ID = id
+		err = h.s.Save(id, buyer)
+		if err != nil {
+			response.JSON(w, http.StatusConflict, map[string]any{
 				"message": "failed",
 				"data":    err.Error(),
 			})

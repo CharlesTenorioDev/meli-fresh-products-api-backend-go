@@ -37,3 +37,7 @@ func (r *BuyerMap) GetAll() (db map[int]internal.Buyer) {
 	db = r.db
 	return
 }
+
+func (r *BuyerMap) AddProduct(id int, buyer internal.Buyer) {
+	r.db[id] = buyer
+}

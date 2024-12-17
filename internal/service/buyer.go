@@ -8,6 +8,7 @@ import (
 
 var (
 	BuyerNotFound = errors.New("buyer not found")
+	BuyerAlreadyExists = errors.New("buyer already exists")
 )
 
 type BuyerServiceDefault struct {
@@ -33,5 +34,17 @@ func (s *BuyerServiceDefault) FindByID(id int) (b internal.Buyer, err error) {
 		err = BuyerNotFound
 	}
 
+	return
+}
+
+
+func (s *BuyerServiceDefault) Save(id int, buyer internal.Buyer) (err error) {
+	all := s.repo.GetAll()
+	if _, ok := all[id]; ok {
+		err = BuyerAlreadyExists
+		return
+	}
+
+	s.repo.AddProduct(id, buyer)
 	return
 }
