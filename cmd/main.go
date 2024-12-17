@@ -1,31 +1,19 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"fmt"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
-	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
-	"github.com/meli-fresh-products-api-backend-t1/internal/service"
+	"github.com/meli-fresh-products-api-backend-t1/internal/application"
 )
 
 func main() {
-	cr := chi.NewRouter()
-	repo := repository.NewBuyerMap()
-	svc := service.NewBuyerService(repo)
-	hd := handler.NewBuyerHandlerDefault(svc)
+	cfg := &application.ConfigServerChi{
+		ServerAddress: ":8080",
+	}
+	app := application.NewServerChi(cfg)
 
-	cr.Route("/api/v1", func(r chi.Router) {
-		r.Route("/buyers", func(r chi.Router) {
-			r.Get("/", hd.GetAll)
-			r.Get("/{id}", hd.GetByID)
-			r.Post("/{id}", hd.Create)
-			r.Patch("/{id}", hd.Update)
-			r.Delete("/{id}", hd.Delete)
-		})
-	})
-	if err := http.ListenAndServe(":8080", cr); err != nil {
-		log.Fatal(err)
+	if err := app.Run(); err != nil {
+		fmt.Println(err)
+		return
 	}
 }
