@@ -50,7 +50,10 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 			})
 		}
 
-		response.JSON(w, http.StatusOK, sellersJson)
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "success",
+			"data":    sellersJson,
+		})
 	}
 }
 
@@ -85,7 +88,10 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 			Telephone:   seller.Telephone,
 		}
 
-		response.JSON(w, http.StatusOK, sellerJson)
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "success",
+			"data":    sellerJson,
+		})
 	}
 }
 
@@ -129,8 +135,11 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 			return
 		}
 
-		response.JSON(w, http.StatusCreated, map[string]interface{}{
-			"seller_id": id,
+		response.JSON(w, http.StatusCreated, map[string]any{
+			"message": "success",
+			"data": map[string]any{
+				"seller_id": id,
+			},
 		})
 	}
 }
@@ -198,12 +207,15 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 			return
 		}
 
-		response.JSON(w, http.StatusOK, dto.SellersGetDto{
-			Id:          actualSeller.ID,
-			Cid:         actualSeller.CID,
-			CompanyName: actualSeller.CompanyName,
-			Address:     actualSeller.Address,
-			Telephone:   actualSeller.Telephone,
+		response.JSON(w, http.StatusOK, map[string]any{
+			"message": "success",
+			"data": dto.SellersGetDto{
+				Id:          actualSeller.ID,
+				Cid:         actualSeller.CID,
+				CompanyName: actualSeller.CompanyName,
+				Address:     actualSeller.Address,
+				Telephone:   actualSeller.Telephone,
+			},
 		})
 
 	}
@@ -230,6 +242,9 @@ func (h *SellerDefault) Delete() http.HandlerFunc {
 			return
 		}
 
-		response.JSON(w, http.StatusNoContent, nil)
+		response.JSON(w, http.StatusNoContent, map[string]any{
+			"message": "success",
+			"data":    nil,
+		})
 	}
 }
