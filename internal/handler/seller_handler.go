@@ -118,7 +118,7 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 		if err != nil {
 			response.JSON(w, http.StatusInternalServerError, nil)
 
-			if errors.Is(err, internal.ErrSellerConflict) {
+			if errors.Is(err, internal.ErrSellerConflict) || errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
 				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 			}
 

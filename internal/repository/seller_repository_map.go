@@ -34,14 +34,14 @@ func (s *SellerRepoMap) FindByID(id int) (internal.Seller, error) {
 	return seller, nil
 }
 
-func (s *SellerRepoMap) FindByCID(cid int) (internal.Seller, error) {
+func (s *SellerRepoMap) FindByCID(cid int) (*internal.Seller, error) {
 	sellers := s.db
 	for _, seller := range sellers {
 		if seller.CID == cid {
-			return seller, nil
+			return &seller, nil
 		}
 	}
-	return internal.Seller{}, internal.ErrSellerNotFound
+	return nil, internal.ErrSellerNotFound
 }
 
 func (s *SellerRepoMap) FindAll() ([]internal.Seller, error) {

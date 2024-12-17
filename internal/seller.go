@@ -18,9 +18,6 @@ type Seller struct {
 
 func (seller *Seller) Validate() error {
 	var err error
-	if seller.ID == 0 {
-		return errors.Join(err, errors.New("seller.ID is required"))
-	}
 	if seller.CID == 0 {
 		return errors.Join(err, errors.New("seller.CID is required"))
 	}
@@ -37,7 +34,8 @@ func (seller *Seller) Validate() error {
 }
 
 var (
-	ErrSellerInvalidFields = errors.New("seller invalid fields")
+	ErrSellerCIDAlreadyExists = errors.New("seller with this CID already exists")
+	ErrSellerInvalidFields    = errors.New("seller invalid fields")
 	// ErrSellerNotFound is returned when the seller is not found
 	ErrSellerNotFound = errors.New("seller not found")
 	// ErrSellerConflict is returned when the seller already exists
@@ -51,7 +49,7 @@ type SellerRepository interface {
 	// FindByID returns the seller with the given ID
 	FindByID(id int) (Seller, error)
 	// FindByCID returns the seller with the given CID
-	FindByCID(cid int) (Seller, error)
+	FindByCID(cid int) (*Seller, error)
 	// Save saves the given seller
 	Save(seller *Seller) (int, error)
 	// Update updates the given seller
