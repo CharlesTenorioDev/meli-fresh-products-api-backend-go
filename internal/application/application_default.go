@@ -42,35 +42,25 @@ type ServerChi struct {
 
 // Run is a method that runs the application
 func (a *ServerChi) Run() (err error) {
-	// dependencies
-	// - loader
-
-	// router
 	rt := chi.NewRouter()
-	// - middlewares
 	rt.Use(middleware.Logger)
-	rt.Use(middleware.Recoverer)
-	// - endpoints
-	sellerRoutes(rt)
 
-	// run server
+	rt.Route("/api/v1", func(r chi.Router) {
+		r.Route("/sellers", sellerRoutes)
+	})
+
 	err = http.ListenAndServe(a.serverAddress, rt)
 	return
 }
 
-func sellerRoutes(router *chi.Mux) {
-	// - repository
+func sellerRoutes(r chi.Router) {
 	rp := repository.NewSellerRepoMap(make(map[int]internal.Seller))
-	// - service
 	sv := service.NewSellerServiceDefault(rp)
-	// - handler
 	hd := handler.NewSellerDefault(sv)
 
-	router.Route("/api/v1/sellers", func(rt chi.Router) {
-		rt.Get("/", hd.GetAll())
-		rt.Get("/{id}", hd.GetByID())
-		rt.Post("/", hd.Save())
-		rt.Patch("/{id}", hd.Update())
-		rt.Delete("/{id}", hd.Delete())
-	})
+	r.Get("/", hd.GetAll())
+	r.Get("/{id}", hd.GetByID())
+	r.Post("/", hd.Save())
+	r.Patch("/{id}", hd.Update())
+	r.Delete("/{id}", hd.Delete())
 }
