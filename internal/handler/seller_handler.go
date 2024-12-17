@@ -89,8 +89,7 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"message": "success",
-			"data":    sellerJson,
+			"data": sellerJson,
 		})
 	}
 }
@@ -136,7 +135,6 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusCreated, map[string]any{
-			"message": "success",
 			"data": map[string]any{
 				"seller_id": id,
 			},
@@ -208,7 +206,6 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"message": "success",
 			"data": dto.SellersGetDto{
 				Id:          actualSeller.ID,
 				Cid:         actualSeller.CID,
@@ -243,8 +240,7 @@ func (h *SellerDefault) Delete() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusNoContent, map[string]any{
-			"message": "success",
-			"data":    nil,
+			"data": nil,
 		})
 	}
 }
