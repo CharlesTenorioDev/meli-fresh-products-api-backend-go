@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
@@ -13,6 +14,14 @@ import (
 // Structure to represent the warehouse in JSON format
 type WarehouseJSON struct {
 	ID                 int     `json:"id"`
+	WarehouseCode      string  `json:"warehouse_code"`
+	Address            string  `json:"address"`
+	Telephone          string  `json:"telephone"`
+	MinimumCapacity    int     `json:"minimum_capacity"`
+	MinimumTemperature float64 `json:"minimum_temperature"`
+}
+
+type WarehouseCreateRequest struct {
 	WarehouseCode      string  `json:"warehouse_code"`
 	Address            string  `json:"address"`
 	Telephone          string  `json:"telephone"`
@@ -93,6 +102,55 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
+			"data": warehouseJson,
+		})
+	}
+}
+
+// Create creates a new warehouse
+func (h *WarehouseDefault) Create() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var requestInput *WarehouseCreateRequest
+
+		// decode the request
+		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
+			response.Error(w, http.StatusBadRequest, "Invalid data")
+			return
+		}
+
+		// create the warehouse
+		warehouse := internal.Warehouse{
+			ID:                 0,
+			WarehouseCode:      requestInput.WarehouseCode,
+			Address:            requestInput.Address,
+			Telephone:          requestInput.Telephone,
+			MinimumCapacity:    requestInput.MinimumCapacity,
+			MinimumTemperature: requestInput.MinimumTemperature,
+		}
+
+		// save the warehouse
+		err := h.sv.Save(&warehouse)
+		if err != nil {
+			switch {
+			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
+				response.Error(w, http.StatusConflict, "Warehouse already exists")
+			default:
+				response.Error(w, http.StatusInternalServerError, "Internal error")
+			}
+			return
+		}
+
+		// return the warehouse
+		warehouseJson := WarehouseJSON{
+			ID:                 warehouse.ID,
+			WarehouseCode:      warehouse.WarehouseCode,
+			Address:            warehouse.Address,
+			Telephone:          warehouse.Telephone,
+			MinimumCapacity:    warehouse.MinimumCapacity,
+			MinimumTemperature: warehouse.MinimumTemperature,
+		}
+
+		response.JSON(w, http.StatusCreated, map[string]any{
 			"data": warehouseJson,
 		})
 	}

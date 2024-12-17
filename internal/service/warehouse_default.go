@@ -26,3 +26,21 @@ func (s *WarehouseDefault) FindByID(id int) (warehouse internal.Warehouse, err e
 	warehouse, err = s.rp.FindByID(id)
 	return
 }
+
+// Save creates a new warehouse
+func (s *WarehouseDefault) Save(warehouse *internal.Warehouse) (err error) {
+	allWarehouses, err := s.rp.FindAll()
+	if err != nil {
+		return err
+	}
+
+	// We`re gonna check if there is a warehouse with the same code
+	for _, w := range allWarehouses {
+		if w.WarehouseCode == warehouse.WarehouseCode {
+			return internal.ErrWarehouseRepositoryDuplicated
+		}
+	}
+
+	err = s.rp.Save(warehouse)
+	return
+}

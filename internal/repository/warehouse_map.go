@@ -52,7 +52,7 @@ func NewRepositoryWarehouse(filePath string) *RepositoryWarehouseMap {
 	return &RepositoryWarehouseMap{db: db, lastID: len(db)}
 }
 
-// FindAll is a method that returns all vehicles
+// FindAll is a method that returns all Warehouses
 func (r *RepositoryWarehouseMap) FindAll() (w []internal.Warehouse, err error) {
 	w = make([]internal.Warehouse, 0, len(r.db))
 
@@ -70,7 +70,7 @@ func (r *RepositoryWarehouseMap) FindAll() (w []internal.Warehouse, err error) {
 	return w, nil
 }
 
-// FindByID is a method that returns a vehicle by its ID
+// FindByID is a method that returns a Warehouses by its ID
 func (r *RepositoryWarehouseMap) FindByID(id int) (w internal.Warehouse, err error) {
 	wh, ok := r.db[id]
 	if !ok {
@@ -89,4 +89,24 @@ func (r *RepositoryWarehouseMap) FindByID(id int) (w internal.Warehouse, err err
 	}
 
 	return
+}
+
+// Save is a method that saves a Warehouse
+func (r *RepositoryWarehouseMap) Save(warehouse *internal.Warehouse) (err error) {
+	wh := WarehouseAttributesMap{
+		WarehouseCode:      warehouse.WarehouseCode,
+		Address:            warehouse.Address,
+		Telephone:          warehouse.Telephone,
+		MinimumCapacity:    warehouse.MinimumCapacity,
+		MinimumTemperature: warehouse.MinimumTemperature,
+	}
+
+	// increment the lastID
+	r.lastID++
+	// save the warehouse
+	r.db[r.lastID] = wh
+	// set the id of the warehouse
+	(*warehouse).ID = r.lastID
+
+	return nil
 }

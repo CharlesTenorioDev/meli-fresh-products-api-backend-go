@@ -25,6 +25,8 @@ type WarehouseRepository interface {
 	FindAll() ([]Warehouse, error)
 	// FindByID returns the warehouse with the given ID
 	FindByID(id int) (Warehouse, error)
+	// Save saves the given warehouse
+	Save(warehouse *Warehouse) error
 }
 
 // WarehouseService is an interface that contains the methods that the warehouse service should support
@@ -33,4 +35,6 @@ type WarehouseService interface {
 	FindAll() ([]Warehouse, error)
 	// FindByID returns the warehouse with the given ID
 	FindByID(id int) (Warehouse, error)
+	// Save saves the given warehouse
+	Save(warehouse *Warehouse) error
 }
