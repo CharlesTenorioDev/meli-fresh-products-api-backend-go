@@ -205,3 +205,28 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 
 	}
 }
+
+// Delete deletes a warehouse
+func (h *WarehouseDefault) Delete() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		idInt, err := strconv.Atoi(id)
+		if err != nil {
+			response.Error(w, http.StatusBadRequest, "Invalid ID format")
+			return
+		}
+
+		err = h.sv.Delete(idInt)
+		if err != nil {
+			switch {
+			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
+				response.Error(w, http.StatusNotFound, "Warehouse not found")
+			default:
+				response.Error(w, http.StatusInternalServerError, InternalError)
+			}
+			return
+		}
+
+		response.JSON(w, http.StatusNoContent, nil)
+	}
+}

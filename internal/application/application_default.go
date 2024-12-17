@@ -54,4 +54,5 @@ func warehouseRoute(r chi.Router) {
 	r.Get("/{id}", warehouseHandler.GetByID())
 	r.Post("/", warehouseHandler.Create())
 	r.Patch("/{id}", warehouseHandler.Update())
+	r.Delete("/{id}", warehouseHandler.Delete())
 }

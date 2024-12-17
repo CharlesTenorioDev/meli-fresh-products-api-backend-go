@@ -37,6 +37,8 @@ type WarehouseRepository interface {
 	Save(warehouse *Warehouse) error
 	// Update updates the given warehouse
 	Update(warehouse *Warehouse) error
+	// Delete deletes the warehouse with the given ID
+	Delete(id int) error
 }
 
 // WarehouseService is an interface that contains the methods that the warehouse service should support
@@ -49,4 +51,6 @@ type WarehouseService interface {
 	Save(warehouse *Warehouse) error
 	// Update updates the given warehouse
 	Update(id int, warehousePatch *WarehousePatchUpdate) (Warehouse, error)
+	// Delete deletes the warehouse with the given ID
+	Delete(id int) error
 }

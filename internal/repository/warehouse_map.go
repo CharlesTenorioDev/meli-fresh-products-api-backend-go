@@ -127,3 +127,10 @@ func (r *RepositoryWarehouseMap) Update(warehouse *internal.Warehouse) (err erro
 
 	return nil
 }
+
+// Delete is a method that deletes a Warehouse
+func (r *RepositoryWarehouseMap) Delete(id int) (err error) {
+	// Deleting the warehouse
+	delete(r.db, id)
+	return
+}

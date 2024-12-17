@@ -70,3 +70,14 @@ func (s *WarehouseDefault) Update(id int, warehousePatch *internal.WarehousePatc
 	err = s.rp.Update(&warehouse)
 	return
 }
+
+// Delete deletes a warehouse
+func (s *WarehouseDefault) Delete(id int) (err error) {
+	_, err = s.rp.FindByID(id)
+	if err != nil {
+		return
+	}
+
+	err = s.rp.Delete(id)
+	return
+}
