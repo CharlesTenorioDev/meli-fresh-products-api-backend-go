@@ -16,8 +16,10 @@ func main() {
 	svc := service.NewBuyerService(repo)
 	hd := handler.NewBuyerHandlerDefault(svc)
 
-	cr.Route("/buyer", func(r chi.Router) {
-		r.Get("/", hd.GetAll())
+	cr.Route("/api/v1", func(r chi.Router) {
+		r.Route("/buyers", func(r chi.Router) {
+			r.Get("/", hd.GetAll())
+		})
 	})
 	if err := http.ListenAndServe(":8080", cr); err != nil {
 		log.Fatal(err)
