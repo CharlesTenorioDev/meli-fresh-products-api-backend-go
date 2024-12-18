@@ -49,13 +49,8 @@ func (s *BuyerServiceDefault) FindByID(id int) (b internal.Buyer, err error) {
 }
 
 
-func (s *BuyerServiceDefault) Save(buyer internal.Buyer) (err error) {
+func (s *BuyerServiceDefault) Save(buyer *internal.Buyer) (err error) {
 	all := s.repo.GetAll()
-	if _, ok := all[buyer.ID]; ok {
-		err = BuyerAlreadyExists
-		return
-	}
-
 	ok := buyer.Parse()
 	if !ok {
 		err = BuyerUnprocessableEntity

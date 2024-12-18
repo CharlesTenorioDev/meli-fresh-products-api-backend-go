@@ -52,7 +52,7 @@ func buyerRouter(r chi.Router) {
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)
-	r.Post("/{id}", hd.Create)
+	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
 }
