@@ -46,7 +46,7 @@ func (a *ServerChi) Run() (err error) {
 }
 
 func warehouseRoute(r chi.Router) {
-	warehouseRepository := repository.NewRepositoryWarehouse("../db/warehouse.json")
+	warehouseRepository := repository.NewRepositoryWarehouse(nil, "../db/warehouse.json")
 	warehouseService := service.NewWarehouseDefault(warehouseRepository)
 	warehouseHandler := handler.NewWarehouseDefault(warehouseService)
 

@@ -22,7 +22,13 @@ type RepositoryWarehouseMap struct {
 }
 
 // RepositoryWarehouseMap Builder that reads a JSON file and returns a map of warehouses
-func NewRepositoryWarehouse(filePath string) *RepositoryWarehouseMap {
+func NewRepositoryWarehouse(db map[int]WarehouseAttributesMap, filePath string) *RepositoryWarehouseMap {
+	// If the db is not nil, return the map
+	if db != nil {
+		return &RepositoryWarehouseMap{db: db, lastID: len(db)}
+	}
+
+	// If the db is nil, read the JSON file and return the map
 	file, err := os.Open(filePath)
 	if err != nil {
 		fmt.Println(err)
@@ -39,7 +45,7 @@ func NewRepositoryWarehouse(filePath string) *RepositoryWarehouseMap {
 	}
 
 	// Serialization
-	db := make(map[int]WarehouseAttributesMap)
+	db = make(map[int]WarehouseAttributesMap)
 	for key, value := range fileData {
 		db[key+1] = WarehouseAttributesMap{
 			WarehouseCode:      value.WarehouseCode,
