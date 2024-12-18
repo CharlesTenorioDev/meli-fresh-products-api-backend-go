@@ -232,6 +232,16 @@ func (suite *BuyerTestSuite) TestDeleteBuyer() {
 	})
 }
 
+func (suite *BuyerTestSuite) TestDeleteBuyerThatDoesntExist() {
+	r := httptest.NewRequest(http.MethodDelete, Api+"/{id}", nil)
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "200")
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+	w := httptest.NewRecorder()
+	suite.hd.Delete(w, r)
+	require.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
+}
+
 func TestBuyerTestSuite(t *testing.T) {
 	suite.Run(t, new(BuyerTestSuite))
 }
