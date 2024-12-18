@@ -12,10 +12,10 @@ type BuyerMap struct {
 	db map[int]*internal.Buyer
 }
 
-func NewBuyerMap() *BuyerMap {
+func NewBuyerMap(dbPath string) *BuyerMap {
 	var buyers []internal.Buyer
 	db := make(map[int]*internal.Buyer)
-	file, err := os.Open("db/buyer.json")
+	file, err := os.Open(dbPath)
 	if err != nil {
 		log.Fatal(err)
 	}

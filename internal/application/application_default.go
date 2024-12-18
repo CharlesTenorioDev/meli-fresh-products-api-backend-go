@@ -46,7 +46,7 @@ func (a *ServerChi) Run() (err error) {
 }
 
 func buyerRouter(r chi.Router) {
-	repo := repository.NewBuyerMap()
+	repo := repository.NewBuyerMap("db/buyer.json")
 	svc := service.NewBuyerService(repo)
 	hd := handler.NewBuyerHandlerDefault(svc)
 
