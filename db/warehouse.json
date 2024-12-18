@@ -1,0 +1,72 @@
+[
+    {
+        "warehouse_code": "WH01",
+        "address": "200 Warehouse Rd",
+        "telephone": "234-567-8901",
+        "minimum_capacity": 100,
+        "minimum_temperature": 0
+    },
+    {
+        "warehouse_code": "WH02",
+        "address": "201 Warehouse Ln",
+        "telephone": "234-567-8902",
+        "minimum_capacity": 150,
+        "minimum_temperature": -5
+    },
+    {
+        "warehouse_code": "WH03",
+        "address": "202 Storage Blvd",
+        "telephone": "234-567-8903",
+        "minimum_capacity": 120,
+        "minimum_temperature": 2
+    },
+    {
+        "warehouse_code": "WH04",
+        "address": "203 Distribution Ave",
+        "telephone": "234-567-8904",
+        "minimum_capacity": 200,
+        "minimum_temperature": -2
+    },
+    {
+        "warehouse_code": "WH05",
+        "address": "204 Inventory St",
+        "telephone": "234-567-8905",
+        "minimum_capacity": 180,
+        "minimum_temperature": 0
+    },
+    {
+        "warehouse_code": "WH06",
+        "address": "205 Logistics Way",
+        "telephone": "234-567-8906",
+        "minimum_capacity": 160,
+        "minimum_temperature": -3
+    },
+    {
+        "warehouse_code": "WH07",
+        "address": "206 Depot Dr",
+        "telephone": "234-567-8907",
+        "minimum_capacity": 140,
+        "minimum_temperature": 1
+    },
+    {
+        "warehouse_code": "WH08",
+        "address": "207 Supply Ct",
+        "telephone": "234-567-8908",
+        "minimum_capacity": 170,
+        "minimum_temperature": -4
+    },
+    {
+        "warehouse_code": "WH09",
+        "address": "208 Goods Rd",
+        "telephone": "234-567-8909",
+        "minimum_capacity": 130,
+        "minimum_temperature": 3
+    },
+    {
+        "warehouse_code": "WH10",
+        "address": "209 Freight St",
+        "telephone": "234-567-8910",
+        "minimum_capacity": 190,
+        "minimum_temperature": -1
+    }
+]
