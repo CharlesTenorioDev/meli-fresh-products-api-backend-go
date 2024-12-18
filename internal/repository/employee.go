@@ -31,8 +31,12 @@ func NewEmployeeRepository() *EmployeeRepositoryDefault {
 	}
 
 	// save employees in db
-	for index, employee := range employees {
-		db[index] = &employee
+	for _, employee := range employees {
+		if employee.Id > 0 {
+			db[employee.Id] = &employee
+		} else {
+			log.Fatal(employee)
+		}
 	}
 	return &EmployeeRepositoryDefault{ // return repository with db employees updated
 		db: db,
@@ -67,4 +71,8 @@ func (r *EmployeeRepositoryDefault) Save(emp internal.Employee) {
 func (r *EmployeeRepositoryDefault) Update(id int, employee internal.EmployeePatch) {
 	empPatch := r.db[id]
 	employee.EmployeePatch(empPatch)
+}
+
+func (r *EmployeeRepositoryDefault) Delete(id int) {
+	delete(r.db, id)
 }

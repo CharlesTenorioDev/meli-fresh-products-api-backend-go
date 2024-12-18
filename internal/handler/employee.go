@@ -137,3 +137,22 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 		"data": employee,
 	})
 }
+
+func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
+
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, map[string]any{
+			"data": "invalid id format",
+		})
+		return
+	}
+	err = h.sv.Delete(id)
+	if err != nil {
+		response.JSON(w, http.StatusNotFound, map[string]any{
+			"data": err.Error(),
+		})
+		return
+	}
+	response.JSON(w, http.StatusNoContent, nil) //status 204
+}

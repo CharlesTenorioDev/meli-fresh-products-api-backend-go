@@ -98,3 +98,16 @@ func (s *EmployeeDefault) Update(id int, emp internal.EmployeePatch) (err error)
 	s.rp.Update(id, emp)
 	return
 }
+
+func (s *EmployeeDefault) Delete(id int) (err error) {
+	employee := s.rp.GetAll() // search for employee by id
+	_, ok := employee[id]
+	// if employee not found
+	if !ok {
+		err = EmployeeNotFound
+		return
+	}
+
+	s.rp.Delete(id)
+	return
+}
