@@ -46,11 +46,15 @@ func (a *ServerChi) Run() (err error) {
 	rt := chi.NewRouter()
 	rt.Use(middleware.Logger)
 
+	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
+
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/sellers", sellerRoutes)
 		r.Route("/warehouses", warehouseRoute)
 		r.Route("/sections", sectionsRoutes)
-		r.Route("/employees", employeeRouter)
+		r.Route("/employees", func(r chi.Router) {
+			employeeRouter(r, whRepository)
+		})
 		r.Route("/buyers", buyerRouter)
 	})
 
@@ -96,10 +100,11 @@ func sectionsRoutes(r chi.Router) {
 	r.Delete("/{id}", hd.Delete)
 }
 
-func employeeRouter(r chi.Router) {
-	repo := repository.NewEmployeeRepository()
-	svc := service.NewEmployeeServiceDefault(repo)
-	hd := handler.NewEmployeeDefault(svc)
+func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
+	rp := repository.NewEmployeeRepository()
+	rpWarehouse := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
+	sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+	hd := handler.NewEmployeeDefault(sv)
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)
