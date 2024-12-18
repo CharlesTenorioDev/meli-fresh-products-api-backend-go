@@ -41,8 +41,7 @@ func NewEmployeeRepository() *EmployeeRepositoryDefault {
 
 type EmployeeRepository interface {
 	GetAll() (db map[int]internal.Employee)
-	GetById(id int) (db internal.Employee)
-	Save(id int, employee internal.Employee)
+	Save(emp internal.Employee)
 	Update(id int, employee internal.EmployeePatch)
 	Delete(id int)
 }
@@ -50,13 +49,17 @@ type EmployeeRepository interface {
 func (r *EmployeeRepositoryDefault) GetAll() (db map[int]internal.Employee) {
 	db = make(map[int]internal.Employee)
 
-	for key, value := range r.db { // save employees in db
+	for key, value := range r.db { // get all employees in db
 		db[key] = *value
 	}
 	return
 }
 
-func (r *EmployeeRepositoryDefault) GetById(id int) (db internal.Employee) {
-	db = *r.db[id]
-	return
+func (r *EmployeeRepositoryDefault) Save(emp internal.Employee) {
+
+	if emp.Id == 0 {
+		emp.Id = len(r.db) + 1 //increment id
+	}
+
+	r.db[emp.Id] = &emp // add new employee in db
 }

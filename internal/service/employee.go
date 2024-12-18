@@ -7,6 +7,11 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 )
 
+var (
+	EmployeeInUse     = errors.New("employee already in use")
+	CardNumberIdInUse = errors.New("card number id already in use")
+)
+
 func NewEmployeeServiceDefault(rp repository.EmployeeRepository) *EmployeeDefault {
 	return &EmployeeDefault{
 		rp: rp,
@@ -21,7 +26,7 @@ type EmployeeDefault struct {
 type EmployeeService interface {
 	GetAll() map[int]internal.Employee
 	GetById(id int) (emp internal.Employee, err error)
-	Save(id int, employee internal.Employee) (err error)
+	Save(emp internal.Employee) (err error)
 	Update(id int, employees internal.EmployeePatch) (err error)
 	Delete(id int) (err error)
 }
@@ -38,4 +43,38 @@ func (s *EmployeeDefault) GetById(id int) (emp internal.Employee, err error) {
 		err = errors.New("employee not found")
 	}
 	return
+}
+
+func (s *EmployeeDefault) Save(emp internal.Employee) (err error) {
+	employees := s.rp.GetAll()
+	_, ok := employees[emp.Id]
+	if ok {
+		err = errors.New("employee already exists")
+		return
+	}
+
+	validate := emp.RequirementsFields()
+	if !validate {
+		err = errors.New("invalid entity data")
+		return
+	}
+
+	if cardNumberIdInUse(emp.CardNumberId, employees) {
+		err = errors.New("card number id already in use, please try again")
+		return
+	}
+
+	s.rp.Save(emp)
+	return
+
+}
+
+func cardNumberIdInUse(cardId string, employees map[int]internal.Employee) bool {
+
+	for _, employee := range employees {
+		if employee.CardNumberId == cardId {
+			return true
+		}
+	}
+	return false
 }
