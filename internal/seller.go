@@ -70,7 +70,7 @@ type SellerService interface {
 	// Save saves the given seller
 	Save(seller *Seller) error
 	// Update updates the given seller
-	Update(id int, updateSeller dto.SellersUpdateDto) (Seller, error)
+	Update(id int, updateSeller dto.SellersUpdateRequest) (Seller, error)
 	// Delete deletes the seller with the given ID
 	Delete(id int) error
 }

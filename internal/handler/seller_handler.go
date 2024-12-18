@@ -38,9 +38,9 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 			return
 		}
 
-		var sellersJson []dto.SellersGetDto
+		var sellersJson []dto.SellersGetResponse
 		for i := range all {
-			sellersJson = append(sellersJson, dto.SellersGetDto{
+			sellersJson = append(sellersJson, dto.SellersGetResponse{
 				Id:          all[i].ID,
 				Cid:         all[i].CID,
 				CompanyName: all[i].CompanyName,
@@ -49,8 +49,8 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 			})
 		}
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": sellersJson,
+		response.JSON(w, http.StatusOK, dto.DataResponse{
+			Data: sellersJson,
 		})
 	}
 }
@@ -77,7 +77,7 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 			return
 		}
 
-		var sellerJson = dto.SellersGetDto{
+		var sellerJson = dto.SellersGetResponse{
 			Id:          seller.ID,
 			Cid:         seller.CID,
 			CompanyName: seller.CompanyName,
@@ -85,8 +85,8 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 			Telephone:   seller.Telephone,
 		}
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": sellerJson,
+		response.JSON(w, http.StatusOK, dto.DataResponse{
+			Data: sellerJson,
 		})
 	}
 }
@@ -95,7 +95,7 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 func (h *SellerDefault) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var body dto.SellersPostDto
+		var body dto.SellersPostRequest
 		err := request.JSON(r, &body)
 		if err != nil {
 			response.JSON(w, http.StatusInternalServerError, nil)
@@ -132,9 +132,9 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 			return
 		}
 
-		response.JSON(w, http.StatusCreated, map[string]any{
-			"data": map[string]any{
-				"seller_id": sl.ID,
+		response.JSON(w, http.StatusCreated, dto.DataResponse{
+			Data: dto.SellerPostResponse{
+				Id: sl.ID,
 			},
 		})
 	}
@@ -152,18 +152,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 			return
 		}
 
-		actualSeller, err := h.sv.FindByID(id)
-		if err != nil {
-			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-				return
-			}
-
-			response.JSON(w, http.StatusInternalServerError, nil)
-			return
-		}
-
-		var body dto.SellersUpdateDto
+		var body dto.SellersUpdateRequest
 		err = request.JSON(r, &body)
 		if err != nil {
 			response.JSON(w, http.StatusInternalServerError, nil)
@@ -192,8 +181,8 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 			return
 		}
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": dto.SellersGetDto{
+		response.JSON(w, http.StatusOK, dto.DataResponse{
+			Data: dto.SellersGetResponse{
 				Id:          seller.ID,
 				Cid:         seller.CID,
 				CompanyName: seller.CompanyName,
