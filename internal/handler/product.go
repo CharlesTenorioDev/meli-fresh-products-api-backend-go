@@ -57,12 +57,31 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 
 func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var product internal.Product
-
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
 
+	existingProducts, err := h.s.GetAll() 
+	if err != nil {
+		http.Error(w, "Failed to retrieve products", http.StatusInternalServerError)
+		return
+	}
+
+	for _, p := range existingProducts {
+		if p.ProductCode == product.ProductCode {
+			http.Error(w, "Product code already exists", http.StatusConflict)
+			return
+		}
+	}
+	maxID := 0
+	for _, p := range existingProducts {
+		if p.Id > maxID {
+			maxID = p.Id
+		}
+	}
+
+	product.Id = maxID + 1
 	newProduct, err := h.s.Create(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
@@ -74,9 +93,10 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(response) 
 }
+
 
 func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
@@ -92,9 +112,20 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+	existingProducts, err := h.s.GetAll()
+	if err != nil {
+		http.Error(w, "Failed to retrieve products", http.StatusInternalServerError)
+		return
+	}
 
+	for _, p := range existingProducts {
+		if p.ProductCode == product.ProductCode && p.Id != id {
+			http.Error(w, "Product code already exists", http.StatusConflict)
+			return
+		}
+	}
 	product.Id = id 
-
+	
 	updatedProduct, err := h.s.Update(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
