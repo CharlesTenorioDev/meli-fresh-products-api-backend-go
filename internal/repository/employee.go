@@ -55,3 +55,8 @@ func (r *EmployeeRepositoryDefault) GetAll() (db map[int]internal.Employee) {
 	}
 	return
 }
+
+func (r *EmployeeRepositoryDefault) GetById(id int) (db internal.Employee) {
+	db = *r.db[id]
+	return
+}

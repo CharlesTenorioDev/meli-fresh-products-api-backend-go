@@ -58,10 +58,10 @@ func employeeRoutes(router *chi.Mux) {
 	hd := handler.NewEmployeeDefault(sv)
 
 	router.Route("/api/v1/employees", func(rt chi.Router) {
-		rt.Get("/", hd.GetAll())
-		rt.Get("/{id}", hd.GetByID())
-		rt.Post("/", hd.Save())
-		rt.Patch("/{id}", hd.Update())
-		rt.Delete("/{id}", hd.Delete())
+		rt.Get("/", hd.GetAll)
+		rt.Get("/{id}", hd.GetByID)
+		// rt.Post("/", hd.Save)
+		// rt.Patch("/{id}", hd.Update)
+		// rt.Delete("/{id}", hd.Delete)
 	})
 }
