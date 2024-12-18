@@ -54,4 +54,5 @@ func ProductRouter(r chi.Router) {
 	hd := handler.NewProducHandlerDefault(svc)
 
 	r.Get("/", hd.GetAll)
+	r.Get("/{id}", hd.GetByID)
 }

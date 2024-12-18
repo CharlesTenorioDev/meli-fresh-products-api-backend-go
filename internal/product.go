@@ -19,10 +19,11 @@ type Product struct {
 
 type ProductService interface {
 	GetAll() (v map[int]Product, err error)
-	
+	GetByID(id int)(p Product, err error)
 
 }
 
 type ProductRepository interface {
 	GetAll() (v map[int]Product, err error)
+	GetByID(id int)(p Product, err error)
 }
