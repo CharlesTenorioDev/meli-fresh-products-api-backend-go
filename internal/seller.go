@@ -1,6 +1,9 @@
 package internal
 
-import "errors"
+import (
+	"errors"
+	"github.com/meli-fresh-products-api-backend-t1/internal/dto"
+)
 
 // Seller is a struct that contains the seller's information
 type Seller struct {
@@ -67,7 +70,7 @@ type SellerService interface {
 	// Save saves the given seller
 	Save(seller *Seller) error
 	// Update updates the given seller
-	Update(seller *Seller) error
+	Update(id int, updateSeller dto.SellersUpdateDto) (Seller, error)
 	// Delete deletes the seller with the given ID
 	Delete(id int) error
 }

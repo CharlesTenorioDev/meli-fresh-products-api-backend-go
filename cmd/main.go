@@ -6,16 +6,11 @@ import (
 )
 
 func main() {
-	// env
-	// ...
 
-	// app
-	// - config
 	cfg := &application.ConfigServerChi{
 		ServerAddress: ":8080",
 	}
 	app := application.NewServerChi(cfg)
-	// - run
 	if err := app.Run(); err != nil {
 		fmt.Println(err)
 		return

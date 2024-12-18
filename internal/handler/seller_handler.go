@@ -170,29 +170,16 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 			return
 		}
 
-		if body.CompanyName != nil {
-			actualSeller.CompanyName = *body.CompanyName
-		}
-
-		if body.Address != nil {
-			actualSeller.Address = *body.Address
-		}
-
-		if body.Telephone != nil {
-			actualSeller.Telephone = *body.Telephone
-		}
-
-		err = actualSeller.Validate()
-		if err != nil {
-			restErr := rest_err.NewUnprocessableEntityError(err.Error())
-			response.JSON(w, restErr.Code, restErr)
-			return
-		}
-
-		err = h.sv.Update(&actualSeller)
+		seller, err := h.sv.Update(id, body)
 		if err != nil {
 			if errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
 				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+				return
+			}
+
+			if errors.Is(err, internal.ErrSellerInvalidFields) {
+				restErr := rest_err.NewBadRequestError(err.Error())
+				response.JSON(w, restErr.Code, restErr)
 				return
 			}
 
@@ -207,11 +194,11 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		response.JSON(w, http.StatusOK, map[string]any{
 			"data": dto.SellersGetDto{
-				Id:          actualSeller.ID,
-				Cid:         actualSeller.CID,
-				CompanyName: actualSeller.CompanyName,
-				Address:     actualSeller.Address,
-				Telephone:   actualSeller.Telephone,
+				Id:          seller.ID,
+				Cid:         seller.CID,
+				CompanyName: seller.CompanyName,
+				Address:     seller.Address,
+				Telephone:   seller.Telephone,
 			},
 		})
 
