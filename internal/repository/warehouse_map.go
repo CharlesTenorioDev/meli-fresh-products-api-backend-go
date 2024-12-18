@@ -67,6 +67,14 @@ func (r *RepositoryWarehouseMap) FindAll() (w []internal.Warehouse, err error) {
 		})
 	}
 
+	// Sorting all warehouses by ID
+	for i := 0; i < len(w); i++ {
+		for j := i + 1; j < len(w); j++ {
+			if w[i].ID > w[j].ID {
+				w[i], w[j] = w[j], w[i]
+			}
+		}
+	}
 	return w, nil
 }
 
