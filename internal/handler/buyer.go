@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
 type BuyerHandlerDefault struct {
@@ -33,17 +34,13 @@ func (h *BuyerHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"data":    "failed to parse id",
-		})
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse id"))
 		return
 	}
 
 	buyer, err := h.s.FindByID(id - 1)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"data":    err.Error(),
-		})
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -55,18 +52,14 @@ func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"data":    "failed to parse id",
-		})
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
 	}
 
 	var buyer internal.Buyer
 	err = json.NewDecoder(r.Body).Decode(&buyer)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"data":    "failed to parse body",
-		})
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -74,13 +67,9 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	err = h.s.Save(buyer)
 	if err != nil {
 		if (errors.Is(err, service.BuyerAlreadyExists) || errors.Is(err, service.CardNumberAlreadyInUse)){
-			response.JSON(w, http.StatusConflict, map[string]any{
-				"data":    err.Error(),
-			})
+			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		} else {
-			response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
-				"data":    err.Error(),
-			})
+			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		}
 		return
 	}
@@ -93,31 +82,23 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"data":    "failed to parse id",
-		})
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse id"))
 		return
 	}
 
 	var buyer internal.BuyerPatch
 	err = json.NewDecoder(r.Body).Decode(&buyer)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"data":    "failed to parse body",
-		})
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse body"))
 		return
 	}
 
 	err = h.s.Update(id - 1, buyer)
 	if err != nil {
 		if errors.Is(err, service.BuyerNotFound) {
-			response.JSON(w, http.StatusNotFound, map[string]any{
-				"data":    err.Error(),
-			})
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		} else {
-			response.JSON(w, http.StatusConflict, map[string]any{
-				"data":    err.Error(),
-			})
+			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		}
 		return
 	}
@@ -130,17 +111,13 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"data":    "failed to parse id",
-		})
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse id"))
 		return
 	}
 
 	err = h.s.Delete(id - 1)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, map[string]any{
-			"data":    err.Error(),
-		})
+		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		return
 	}
 
