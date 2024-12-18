@@ -1,4 +1,41 @@
 [
-{"id":1,"product_code":1001,"description":"Produto A","height":10,"width":5,"net_weight":1,"expiration_rate":"2024-12-31T00:00:00Z","recommended_freezing_temperature":-18,"freezing_rate":-20,"product_type_id":1,"seller_id":101},
-{"id":3,"product_code":1003,"description":"Produto C","height":20,"width":10,"net_weight":1.5,"expiration_rate":"2024-12-31T00:00:00Z","recommended_freezing_temperature":-18,"freezing_rate":-20,"product_type_id":3,"seller_id":103}
+    {
+        "id": 1,
+        "product_code": "PROD01",
+        "description": "Yogurt",
+        "height": 6.4,
+        "width": 4.5,
+        "net_weight": 3.4,
+        "expiration_rate": 1,
+        "recommended_freezing_temperature": 1.3,
+        "freezing_rate": 2,
+        "product_type_id": 2,
+        "seller_id": 2
+    },
+    {
+        "id": 2,
+        "product_code": "PROD02",
+        "description": "Cheese",
+        "height": 10.0,
+        "width": 5.0,
+        "net_weight": 1.0,
+        "expiration_rate": 7,
+        "recommended_freezing_temperature": -5.0,
+        "freezing_rate": -10.0,
+        "product_type_id": 1,
+        "seller_id": 1
+    },
+    {
+        "id": 3,
+        "product_code": "PROD03",
+        "description": "Milk",
+        "height": 15.0,
+        "width": 7.5,
+        "net_weight": 2.0,
+        "expiration_rate": 5,
+        "recommended_freezing_temperature": -2.0,
+        "freezing_rate": -8.0,
+        "product_type_id": 1,
+        "seller_id": 3
+    }
 ]

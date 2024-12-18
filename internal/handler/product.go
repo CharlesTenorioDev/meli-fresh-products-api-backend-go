@@ -24,9 +24,13 @@ func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	response := map[string]interface{}{
+		"data": products,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(products)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 
 }
 func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -42,9 +46,13 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	w.WriteHeader(http.StatusOK)
+	response := map[string]interface{}{
+		"data": product,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(product)
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
@@ -61,13 +69,17 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	response := map[string]interface{}{
+		"data": newProduct,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated) // 201 Created
-	json.NewEncoder(w).Encode(newProduct) // Retorna o produto criado
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response) 
 }
 
 func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
-	// Obtém o ID do produto a partir da URL
+
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 
@@ -77,27 +89,29 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var product internal.Product
-	// Decodifica o corpo da requisição JSON para um objeto Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
 
-	product.Id = id // Define o ID do produto a ser atualizado
+	product.Id = id 
 
-	// Chama o serviço para atualizar o produto
 	updatedProduct, err := h.s.Update(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	response := map[string]interface{}{
+		"data": updatedProduct,
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(updatedProduct) // Retorna o produto atualizado
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(response) 
 }
 func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
-	// Obtém o ID do produto a partir da URL
+
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 
@@ -106,7 +120,6 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Chama o serviço para deletar o produto
 	if err := h.s.Delete(id); err != nil {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return

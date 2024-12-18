@@ -15,7 +15,7 @@ func (s *ProductDefault) GetAll() (v map[int]internal.Product, err error) {
 	return
 }
 func (s *ProductDefault) GetByID(id int) (internal.Product, error) {
-	product, err := s.repo.GetByID(id)
+	product, err := s.repo.FindByID(id)
 	if err != nil {
 		return internal.Product{}, err
 	}

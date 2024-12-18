@@ -4,7 +4,7 @@ import "time"
 
 type Product struct {
 	Id                             int     `json:"id"`
-	ProductCode                    int     `json:"product_code"`
+	ProductCode                    string     `json:"product_code"`
 	Description                    string  `json:"description"`
 	Height                         float64 `json:"height"`
 	Width                          float64 `json:"width"`
@@ -28,7 +28,7 @@ type ProductService interface {
 
 type ProductRepository interface {
 	GetAll() ( map[int]Product,error)
-	GetByID(id int)(Product, error)
+	FindByID(id int)(Product, error)
 	Create(Product)(Product, error)
 	Update(Product)(Product, error)
 	Delete(id int)(error)
