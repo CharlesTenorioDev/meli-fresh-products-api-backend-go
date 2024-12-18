@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"log"
@@ -83,6 +84,37 @@ func (suite *BuyerTestSuite) TestGetBuyersById() {
 			require.Equal(suite.T(), suite.buyersFromFile[i], buyers.Data)
 		}
 	})
+}
+
+func (suite *BuyerTestSuite) TestCreateBuyer() {
+	// Insert the object
+	bc := internal.Buyer{
+		FirstName:    "Fabio",
+		LastName:     "Nacarelli",
+		CardNumberId: "80028922",
+	}
+	b, _ := json.Marshal(bc)
+	r := httptest.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
+	w := httptest.NewRecorder()
+	suite.hd.Create(w, r)
+	assert.Equal(suite.T(), http.StatusCreated, w.Result().StatusCode)
+
+	// Test if it was actually inserted
+	r = httptest.NewRequest(http.MethodGet, Api+"/5", nil)
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "5")
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+	w = httptest.NewRecorder()
+	suite.hd.GetByID(w, r)
+
+	var buyerCreated struct {
+		Data internal.Buyer `json:"data"`
+	}
+	json.NewDecoder(w.Body).Decode(&buyerCreated)
+	require.Equal(suite.T(), 5, buyerCreated.Data.ID)
+	require.Equal(suite.T(), bc.FirstName, buyerCreated.Data.FirstName)
+	require.Equal(suite.T(), bc.LastName, buyerCreated.Data.LastName)
+	require.Equal(suite.T(), bc.CardNumberId, buyerCreated.Data.CardNumberId)
 }
 
 func TestBuyerTestSuite(t *testing.T) {
