@@ -27,9 +27,9 @@ type ProductService interface {
 }
 
 type ProductRepository interface {
-	GetAll() ( map[int]Product,error)
+	FindAll() ( map[int]Product,error)
 	FindByID(id int)(Product, error)
-	Create(Product)(Product, error)
+	Save(Product)(Product, error)
 	Update(Product)(Product, error)
 	Delete(id int)(error)
 }

@@ -32,7 +32,7 @@ type ProductMap struct {
 	db map[int]*internal.Product
 }
 
-func (r *ProductMap)GetAll() (db map[int]internal.Product, err error){
+func (r *ProductMap)FindAll() (db map[int]internal.Product, err error){
 	db = make(map[int]internal.Product)
 	for index, p := range r.db{
 		db[index] = *p
@@ -47,13 +47,13 @@ func (r *ProductMap) FindByID(id int) (internal.Product, error) {
 	return *product, nil
 }
 
-func (r *ProductMap) Create(product internal.Product) (internal.Product, error) {
+func (r *ProductMap) Save(product internal.Product) (internal.Product, error) {
 	if _, exists := r.db[product.Id]; exists {
 		return internal.Product{}, errors.New("product with this ID already exists")
 	}
 
-	r.db[product.Id] = &product
-	return product, nil
+	r.db[product.Id] = &product 
+	return product, nil 
 }
 
 func (r *ProductMap) Update(product internal.Product) (internal.Product, error) {
@@ -61,7 +61,8 @@ func (r *ProductMap) Update(product internal.Product) (internal.Product, error) 
 		return internal.Product{}, errors.New("product not found")
 	}
 
-	r.db[product.Id] = &product
+	r.db[product.Id] = &product 
+
 	return product, nil 
 }
 
@@ -71,7 +72,7 @@ func (r *ProductMap) Delete(id int) error {
 	}
 
 	delete(r.db, id)
+
 	return nil
 }
-
 

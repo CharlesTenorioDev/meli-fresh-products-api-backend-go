@@ -11,7 +11,7 @@ type ProductDefault struct {
 }
 
 func (s *ProductDefault) GetAll() (v map[int]internal.Product, err error) {
-	v, err = s.repo.GetAll()
+	v, err = s.repo.FindAll()
 	return
 }
 func (s *ProductDefault) GetByID(id int) (internal.Product, error) {
@@ -23,7 +23,7 @@ func (s *ProductDefault) GetByID(id int) (internal.Product, error) {
 }
 
 func (s *ProductDefault) Create(product internal.Product) (internal.Product, error) {
-	product, err := s.repo.Create(product)
+	product, err := s.repo.Save(product)
 	if err != nil {
 		return internal.Product{}, err
 	}
