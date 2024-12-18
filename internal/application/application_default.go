@@ -49,6 +49,7 @@ func (a *ServerChi) Run() (err error) {
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/sellers", sellerRoutes)
 		r.Route("/warehouses", warehouseRoute)
+		r.Route("/sections", sectionsRoutes)
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
@@ -77,4 +78,18 @@ func warehouseRoute(r chi.Router) {
 	r.Post("/", warehouseHandler.Create())
 	r.Patch("/{id}", warehouseHandler.Update())
 	r.Delete("/{id}", warehouseHandler.Delete())
+}
+
+func sectionsRoutes(r chi.Router) {
+	rpS := repository.NewRepositorySection()
+	rpW := repository.NewRepositoryWarehouse(nil, "../db/warehouse.json")
+
+	sv := service.NewServiceSection(rpS, rpW)
+	hd := handler.NewHandlerSection(sv)
+
+	r.Get("/", hd.GetAll)
+	r.Get("/{id}", hd.GetByID)
+	r.Post("/", hd.Create)
+	r.Patch("/{id}", hd.Update)
+	r.Delete("/{id}", hd.Delete)
 }
