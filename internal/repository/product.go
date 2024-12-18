@@ -46,3 +46,39 @@ func (r *ProductMap) GetByID(id int) (internal.Product, error) {
 	}
 	return *product, nil
 }
+
+func (r *ProductMap) Create(product internal.Product) (internal.Product, error) {
+	if _, exists := r.db[product.Id]; exists {
+		return internal.Product{}, errors.New("product with this ID already exists")
+	}
+
+	r.db[product.Id] = &product 
+
+	var products []internal.Product
+	file, err := os.Open("db/product.json")
+	if err != nil {
+		return product, err
+	}
+	defer file.Close()
+
+	if err := json.NewDecoder(file).Decode(&products); err != nil {
+		return product, err
+	}
+
+	products = append(products, product)
+
+	file, err = os.Create("db/product.json") 
+	if err != nil {
+		return product, err
+	}
+	defer file.Close()
+
+	if err := json.NewEncoder(file).Encode(products); err != nil {
+		return product, err
+	}
+
+	return product, nil 
+}
+
+
+

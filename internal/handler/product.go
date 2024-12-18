@@ -46,3 +46,22 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(product)
 }
+
+func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
+	var product internal.Product
+
+	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	newProduct, err := h.s.Create(product)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusConflict)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated) // 201 Created
+	json.NewEncoder(w).Encode(newProduct) // Retorna o produto criado
+}
