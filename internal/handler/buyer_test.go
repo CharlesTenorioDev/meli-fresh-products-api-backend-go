@@ -126,6 +126,21 @@ func (suite *BuyerTestSuite) TestCreateBuyerWithMissingParameters() {
 	assert.Equal(suite.T(), http.StatusUnprocessableEntity, w.Result().StatusCode)
 }
 
+func (suite *BuyerTestSuite) TestGetIdThatDoesntExist() {
+	r := httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "200")
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+	w := httptest.NewRecorder()
+	suite.hd.GetByID(w, r)
+	var buyers struct {
+		Data internal.Buyer `json:"data"`
+	}
+	err := json.NewDecoder(w.Body).Decode(&buyers)
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
+}
+
 func TestBuyerTestSuite(t *testing.T) {
 	suite.Run(t, new(BuyerTestSuite))
 }
