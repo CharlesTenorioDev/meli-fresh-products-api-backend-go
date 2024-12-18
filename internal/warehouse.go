@@ -14,6 +14,7 @@ type Warehouse struct {
 
 // WarehousePatchUpdate is a struct to use in a patch request
 type WarehousePatchUpdate struct {
+	WarehouseCode      *string  `json:"warehouse_code"`
 	Address            *string  `json:"address"`
 	Telephone          *string  `json:"telephone"`
 	MinimumCapacity    *int     `json:"minimum_capacity"`

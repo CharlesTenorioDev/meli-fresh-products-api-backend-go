@@ -181,6 +181,8 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 		warehouse, err := h.sv.Update(idInt, requestInput)
 		if err != nil {
 			switch {
+			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
+				response.Error(w, http.StatusConflict, "Warehouse already exists")
 			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
 				response.Error(w, http.StatusNotFound, "Warehouse not found")
 			default:

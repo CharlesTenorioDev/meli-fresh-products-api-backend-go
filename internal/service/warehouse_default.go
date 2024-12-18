@@ -1,6 +1,10 @@
 package service
 
-import "github.com/meli-fresh-products-api-backend-t1/internal"
+import (
+	"fmt"
+
+	"github.com/meli-fresh-products-api-backend-t1/internal"
+)
 
 // NewWarehouseDefault creates a new instance of the warehouse service
 func NewWarehouseDefault(rp internal.WarehouseRepository) *WarehouseDefault {
@@ -13,6 +17,23 @@ func NewWarehouseDefault(rp internal.WarehouseRepository) *WarehouseDefault {
 type WarehouseDefault struct {
 	// rp is the repository used by the service
 	rp internal.WarehouseRepository
+}
+
+// Method to check if a warehouse code already exists
+func (s *WarehouseDefault) checkWarehouseCodeExists(warehouseCode string) (err error) {
+	allWarehouses, err := s.rp.FindAll()
+	if err != nil {
+		return
+	}
+
+	// We`re gonna check if there is a warehouse with the same code
+	for _, w := range allWarehouses {
+		if w.WarehouseCode == warehouseCode {
+			return internal.ErrWarehouseRepositoryDuplicated
+		}
+	}
+
+	return nil
 }
 
 // FindAll returns all warehouses
@@ -29,15 +50,14 @@ func (s *WarehouseDefault) FindByID(id int) (warehouse internal.Warehouse, err e
 
 // Save creates a new warehouse
 func (s *WarehouseDefault) Save(warehouse *internal.Warehouse) (err error) {
-	allWarehouses, err := s.rp.FindAll()
-	if err != nil {
-		return err
-	}
-
 	// We`re gonna check if there is a warehouse with the same code
-	for _, w := range allWarehouses {
-		if w.WarehouseCode == warehouse.WarehouseCode {
+	err = s.checkWarehouseCodeExists(warehouse.WarehouseCode)
+	if err != nil {
+		switch err {
+		case internal.ErrWarehouseRepositoryDuplicated:
 			return internal.ErrWarehouseRepositoryDuplicated
+		default:
+			return
 		}
 	}
 
@@ -49,10 +69,25 @@ func (s *WarehouseDefault) Save(warehouse *internal.Warehouse) (err error) {
 func (s *WarehouseDefault) Update(id int, warehousePatch *internal.WarehousePatchUpdate) (warehouse internal.Warehouse, err error) {
 	warehouse, err = s.rp.FindByID(id)
 	if err != nil {
-		return
+		return internal.Warehouse{}, internal.ErrWarehouseRepositoryNotFound
 	}
 
 	// Update the warehouse that we found
+	if warehousePatch.WarehouseCode != nil {
+		// We`re gonna check if there is a warehouse with the same code
+		err = s.checkWarehouseCodeExists(*warehousePatch.WarehouseCode)
+		if err != nil {
+			fmt.Println(err)
+			switch err {
+			case internal.ErrWarehouseRepositoryDuplicated:
+				return internal.Warehouse{}, internal.ErrWarehouseRepositoryDuplicated
+			default:
+				return internal.Warehouse{}, err
+			}
+		}
+
+		warehouse.WarehouseCode = *warehousePatch.WarehouseCode
+	}
 	if warehousePatch.Address != nil {
 		warehouse.Address = *warehousePatch.Address
 	}
