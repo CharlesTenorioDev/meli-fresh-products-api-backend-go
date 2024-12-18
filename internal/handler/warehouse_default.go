@@ -30,7 +30,9 @@ type WarehouseCreateRequest struct {
 }
 
 var (
-	InternalError = "Internal Server Error"
+	ErrInternalServer = "Internal Server Error"
+	ErrInvalidID      = "Invalid ID format"
+	ErrInvalidData    = "Invalid data"
 )
 
 // NewWarehouseDefault Builder creates a new instance of the warehouse handler
@@ -52,7 +54,7 @@ func (h *WarehouseDefault) GetAll() http.HandlerFunc {
 		// Find all warehouses
 		warehouses, err := h.sv.FindAll()
 		if err != nil {
-			response.Error(w, http.StatusInternalServerError, "Internal Server Error")
+			response.Error(w, http.StatusInternalServerError, ErrInternalServer)
 			return
 		}
 
@@ -81,7 +83,7 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
-			response.Error(w, http.StatusBadRequest, "Invalid ID format")
+			response.Error(w, http.StatusBadRequest, ErrInvalidID)
 			return
 		}
 
@@ -89,9 +91,9 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
-				response.Error(w, http.StatusNotFound, "Warehouse not found")
+				response.Error(w, http.StatusNotFound, err.Error())
 			default:
-				response.Error(w, http.StatusInternalServerError, InternalError)
+				response.Error(w, http.StatusInternalServerError, ErrInternalServer)
 			}
 			return
 		}
@@ -118,7 +120,7 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 
 		// decode the request
 		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
-			response.Error(w, http.StatusBadRequest, "Invalid data")
+			response.Error(w, http.StatusBadRequest, ErrInvalidData)
 			return
 		}
 
@@ -137,9 +139,9 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
-				response.Error(w, http.StatusConflict, "Warehouse already exists")
+				response.Error(w, http.StatusConflict, err.Error())
 			default:
-				response.Error(w, http.StatusInternalServerError, InternalError)
+				response.Error(w, http.StatusInternalServerError, ErrInternalServer)
 			}
 			return
 		}
@@ -166,14 +168,14 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
-			response.Error(w, http.StatusBadRequest, "Invalid ID format")
+			response.Error(w, http.StatusBadRequest, ErrInvalidID)
 			return
 		}
 
 		// decode the request into a WarehousePatchUpdate
 		var requestInput *internal.WarehousePatchUpdate
 		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
-			response.Error(w, http.StatusBadRequest, "Invalid data")
+			response.Error(w, http.StatusBadRequest, ErrInvalidData)
 			return
 		}
 
@@ -182,11 +184,11 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
-				response.Error(w, http.StatusConflict, "Warehouse already exists")
+				response.Error(w, http.StatusConflict, err.Error())
 			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
-				response.Error(w, http.StatusNotFound, "Warehouse not found")
+				response.Error(w, http.StatusNotFound, err.Error())
 			default:
-				response.Error(w, http.StatusInternalServerError, InternalError)
+				response.Error(w, http.StatusInternalServerError, ErrInternalServer)
 			}
 			return
 		}
@@ -214,7 +216,7 @@ func (h *WarehouseDefault) Delete() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
-			response.Error(w, http.StatusBadRequest, "Invalid ID format")
+			response.Error(w, http.StatusBadRequest, ErrInvalidID)
 			return
 		}
 
@@ -222,9 +224,9 @@ func (h *WarehouseDefault) Delete() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
-				response.Error(w, http.StatusNotFound, "Warehouse not found")
+				response.Error(w, http.StatusNotFound, err.Error())
 			default:
-				response.Error(w, http.StatusInternalServerError, InternalError)
+				response.Error(w, http.StatusInternalServerError, ErrInternalServer)
 			}
 			return
 		}

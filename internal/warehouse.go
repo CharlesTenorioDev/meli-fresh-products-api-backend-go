@@ -23,9 +23,9 @@ type WarehousePatchUpdate struct {
 
 var (
 	// ErrWarehouseRepositoryNotFound is returned when the warehouse is not found
-	ErrWarehouseRepositoryNotFound = errors.New("repository: warehouse not found")
+	ErrWarehouseRepositoryNotFound = errors.New("Warehouse not found")
 	// ErrWarehouseRepositoryDuplicated is returned when the warehouse already exists
-	ErrWarehouseRepositoryDuplicated = errors.New("repository: warehouse already exists")
+	ErrWarehouseRepositoryDuplicated = errors.New("Warehouse already exists")
 )
 
 // WarehouseRepository is an interface that contains the methods that the warehouse repository should support
