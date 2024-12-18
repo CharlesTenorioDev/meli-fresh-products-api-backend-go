@@ -141,6 +141,52 @@ func (suite *BuyerTestSuite) TestGetIdThatDoesntExist() {
 	require.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
 }
 
+func (suite *BuyerTestSuite) TestPatchBuyer() {
+	fname := "Doe"
+	lname := "John"
+	cardNumberId := "404"
+	suite.Run("apply changes", func() {
+		bp := internal.BuyerPatch{
+			FirstName: &fname,
+			LastName: &lname,
+			CardNumberId: &cardNumberId,
+		}
+		b, _ := json.Marshal(bp)
+		r := httptest.NewRequest(http.MethodPatch, Api+"/{id}", bytes.NewReader(b))
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "0")
+		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+		w := httptest.NewRecorder()
+		suite.hd.Update(w, r)
+		require.Equal(suite.T(), http.StatusOK, w.Result().StatusCode)
+
+		var updatedBuyer struct {
+			Data internal.Buyer `json:"data"`
+		}
+		json.NewDecoder(w.Body).Decode(&updatedBuyer)
+		require.Equal(suite.T(), fname, updatedBuyer.Data.FirstName)
+		require.Equal(suite.T(), lname, updatedBuyer.Data.LastName)
+		require.Equal(suite.T(), cardNumberId, updatedBuyer.Data.CardNumberId)
+	})
+	suite.Run("check if changes were applied", func() {
+		r := httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "0")
+		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+		w := httptest.NewRecorder()
+		suite.hd.GetByID(w, r)
+		var buyers struct {
+			Data internal.Buyer `json:"data"`
+		}
+		err := json.NewDecoder(w.Body).Decode(&buyers)
+		require.NoError(suite.T(), err)
+		require.Equal(suite.T(), http.StatusOK, w.Result().StatusCode)
+		require.Equal(suite.T(), fname, buyers.Data.FirstName)
+		require.Equal(suite.T(), lname, buyers.Data.LastName)
+		require.Equal(suite.T(), cardNumberId, buyers.Data.CardNumberId)
+	})
+}
+
 func TestBuyerTestSuite(t *testing.T) {
 	suite.Run(t, new(BuyerTestSuite))
 }
