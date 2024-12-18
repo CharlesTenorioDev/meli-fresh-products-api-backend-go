@@ -6,7 +6,14 @@ import (
 	"strconv"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	errorss "github.com/meli-fresh-products-api-backend-t1/internal/errors"
+)
+
+var (
+	SectionNotFound            = errors.New("section not found")
+	WarehouseNotFound          = errors.New("warehouse not found")
+	SectionAlreadyExists       = errors.New("section already exists")
+	SectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
+	SectionUnprocessableEntity = errors.New("couldn't parse section")
 )
 
 func NewServiceSection(rpSection internal.SectionRepository, rpWareHouse internal.WarehouseRepository) *SectionService {
@@ -33,7 +40,7 @@ func (s *SectionService) FindAll() ([]internal.Section, error) {
 func (s *SectionService) FindByID(id int) (internal.Section, error) {
 	section, err := s.rpS.FindByID(id)
 	if err != nil {
-		return internal.Section{}, err
+		return internal.Section{}, SectionNotFound
 	}
 
 	return section, nil
@@ -48,7 +55,7 @@ func validateRequiredFields(section internal.Section) error {
 		section.MaximumCapacity < 0 ||
 		section.WarehouseID <= 0 ||
 		section.ProductTypeID <= 0 {
-		return errorss.NewUnprocessableEntity("all fields must be valid and filled, unless otherwise stated")
+		return errors.New("all fields must be valid and filled, unless otherwise stated")
 	}
 
 	return nil
@@ -56,17 +63,17 @@ func validateRequiredFields(section internal.Section) error {
 
 func (s *SectionService) Save(section *internal.Section) error {
 	if err := validateRequiredFields(*section); err != nil {
-		return err
+		return SectionUnprocessableEntity
 	}
 
 	err := s.rpS.SectionNumberExists(*section)
 	if err != nil {
-		return errorss.NewConflictError(err.Error())
+		return SectionNumberAlreadyInUse
 	}
 
 	_, err = s.rpW.FindByID(section.WarehouseID)
 	if err != nil {
-		return errorss.NewNotFound("warehouse not found")
+		return WarehouseNotFound
 	}
 
 	err = s.rpS.Save(section)
@@ -74,13 +81,13 @@ func (s *SectionService) Save(section *internal.Section) error {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 func (s *SectionService) Update(id int, updates map[string]interface{}) (internal.Section, error) {
 	section, err := s.FindByID(id)
 	if err != nil {
-		return internal.Section{}, errors.New("section not found")
+		return internal.Section{}, SectionNotFound
 	}
 
 	processInt := func(key string, target *int) error {
@@ -126,7 +133,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 
 		err := s.rpS.SectionNumberExists(section)
 		if err != nil {
-			return internal.Section{}, errorss.NewConflictError(err.Error())
+			return internal.Section{}, SectionNumberAlreadyInUse
 		}
 	}
 
@@ -150,14 +157,14 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 		return internal.Section{}, err
 	}
 
-	if _, ok := updates["section_number"]; ok {
+	if _, ok := updates["warehouse_id"]; ok {
 		if err := processInt("warehouse_id", &section.WarehouseID); err != nil {
 			return internal.Section{}, err
 		}
 
 		_, err = s.rpW.FindByID(section.WarehouseID)
 		if err != nil {
-			return internal.Section{}, errorss.NewNotFound("warehouse not found")
+			return internal.Section{}, WarehouseNotFound
 		}
 	}
 
@@ -173,11 +180,16 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 	return section, nil
 }
 
-func (s *SectionService) Delete(id int) (err error) {
+func (s *SectionService) Delete(id int) error {
+	_, err := s.FindByID(id)
+	if err != nil {
+		return SectionNotFound
+	}
+
 	err = s.rpS.Delete(id)
 	if err != nil {
 		return err
 	}
 
-	return
+	return nil
 }
