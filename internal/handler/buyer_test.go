@@ -3,7 +3,6 @@ package handler
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -72,7 +71,7 @@ func (suite *BuyerTestSuite) TestGetBuyersById() {
 		for i := range 5 {
 			r := httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
 			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("id", strconv.Itoa(i+1))
+			rctx.URLParams.Add("id", strconv.Itoa(i))
 			r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
 			w := httptest.NewRecorder()
 			suite.hd.GetByID(w, r)
