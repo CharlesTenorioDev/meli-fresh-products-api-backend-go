@@ -21,6 +21,8 @@ type ProductService interface {
 	GetAll() (map[int]Product, error)
 	GetByID(id int)(Product, error)
 	Create(Product)(Product, error)
+	Update(Product)(Product, error)
+	Delete(id int)(error)
 
 }
 
@@ -28,4 +30,6 @@ type ProductRepository interface {
 	GetAll() ( map[int]Product,error)
 	GetByID(id int)(Product, error)
 	Create(Product)(Product, error)
+	Update(Product)(Product, error)
+	Delete(id int)(error)
 }

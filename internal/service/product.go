@@ -29,3 +29,17 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 	}
 	return product, nil
 }
+func (s *ProductDefault) Update(product internal.Product) (internal.Product, error) {
+	product, err := s.repo.Update(product)
+	if err != nil {
+		return internal.Product{}, err
+	}
+	return product, nil
+}
+func (s *ProductDefault) Delete(id int) (error) {
+	err := s.repo.Delete(id)
+	if err != nil {
+		return err
+	}
+	return nil
+}

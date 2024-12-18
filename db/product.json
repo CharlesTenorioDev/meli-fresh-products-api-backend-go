@@ -1,1 +1,4 @@
-[{"id":1,"product_code":1001,"description":"Produto A","height":10,"width":5,"net_weight":1,"expiration_rate":"2024-12-31T00:00:00Z","recommended_freezing_temperature":-18,"freezing_rate":-20,"product_type_id":1,"seller_id":101},{"id":2,"product_code":1002,"description":"Produto B","height":15,"width":7,"net_weight":2,"expiration_rate":"2025-01-15T00:00:00Z","recommended_freezing_temperature":-18,"freezing_rate":-20,"product_type_id":2,"seller_id":102},{"id":3,"product_code":1003,"description":"Produto C","height":20,"width":10,"net_weight":1.5,"expiration_rate":"2024-12-31T00:00:00Z","recommended_freezing_temperature":-18,"freezing_rate":-20,"product_type_id":3,"seller_id":103}]
+[
+{"id":1,"product_code":1001,"description":"Produto A","height":10,"width":5,"net_weight":1,"expiration_rate":"2024-12-31T00:00:00Z","recommended_freezing_temperature":-18,"freezing_rate":-20,"product_type_id":1,"seller_id":101},
+{"id":3,"product_code":1003,"description":"Produto C","height":20,"width":10,"net_weight":1.5,"expiration_rate":"2024-12-31T00:00:00Z","recommended_freezing_temperature":-18,"freezing_rate":-20,"product_type_id":3,"seller_id":103}
+]

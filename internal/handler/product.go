@@ -65,3 +65,52 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusCreated) // 201 Created
 	json.NewEncoder(w).Encode(newProduct) // Retorna o produto criado
 }
+
+func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
+	// Obtém o ID do produto a partir da URL
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	var product internal.Product
+	// Decodifica o corpo da requisição JSON para um objeto Product
+	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
+		http.Error(w, "Invalid input", http.StatusBadRequest)
+		return
+	}
+
+	product.Id = id // Define o ID do produto a ser atualizado
+
+	// Chama o serviço para atualizar o produto
+	updatedProduct, err := h.s.Update(product)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(updatedProduct) // Retorna o produto atualizado
+}
+func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
+	// Obtém o ID do produto a partir da URL
+	idStr := chi.URLParam(r, "id")
+	id, err := strconv.Atoi(idStr)
+
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	// Chama o serviço para deletar o produto
+	if err := h.s.Delete(id); err != nil {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent) 
+}
