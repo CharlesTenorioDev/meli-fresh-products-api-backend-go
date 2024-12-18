@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"encoding/json"
 	"errors"
 	"net/http"
 	"strconv"
 
+	"github.com/bootcamp-go/web/request"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -119,7 +119,8 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 		var requestInput *WarehouseCreateRequest
 
 		// decode the request
-		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
+
+		if err := request.JSON(r, &requestInput); err != nil {
 			response.Error(w, http.StatusBadRequest, ErrInvalidData)
 			return
 		}
@@ -174,7 +175,7 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 
 		// decode the request into a WarehousePatchUpdate
 		var requestInput *internal.WarehousePatchUpdate
-		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
+		if err := request.JSON(r, &requestInput); err != nil {
 			response.Error(w, http.StatusBadRequest, ErrInvalidData)
 			return
 		}
