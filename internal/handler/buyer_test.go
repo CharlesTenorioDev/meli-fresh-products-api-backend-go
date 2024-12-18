@@ -206,6 +206,32 @@ func (suite *BuyerTestSuite) TestPatchInvalidId() {
 	require.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
 }
 
+func (suite *BuyerTestSuite) TestDeleteBuyer() {
+	suite.Run("delete a buyer", func() {
+		r := httptest.NewRequest(http.MethodDelete, Api+"/{id}", nil)
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "4")
+		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+		w := httptest.NewRecorder()
+		suite.hd.Delete(w, r)
+		require.Equal(suite.T(), http.StatusNoContent, w.Result().StatusCode)
+	})
+	suite.Run("check if the buyer was actually deleted", func() {
+		r := httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "4")
+		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+		w := httptest.NewRecorder()
+		suite.hd.GetByID(w, r)
+		var buyers struct {
+			Data internal.Buyer `json:"data"`
+		}
+		err := json.NewDecoder(w.Body).Decode(&buyers)
+		require.NoError(suite.T(), err)
+		require.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
+	})
+}
+
 func TestBuyerTestSuite(t *testing.T) {
 	suite.Run(t, new(BuyerTestSuite))
 }
