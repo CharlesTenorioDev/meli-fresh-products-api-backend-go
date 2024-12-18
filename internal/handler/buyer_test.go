@@ -187,6 +187,25 @@ func (suite *BuyerTestSuite) TestPatchBuyer() {
 	})
 }
 
+func (suite *BuyerTestSuite) TestPatchInvalidId() {
+	fname := "Doe"
+	lname := "John"
+	cardNumberId := "404"
+	bp := internal.BuyerPatch{
+		FirstName: &fname,
+		LastName: &lname,
+		CardNumberId: &cardNumberId,
+	}
+	b, _ := json.Marshal(bp)
+	r := httptest.NewRequest(http.MethodPatch, Api+"/{id}", bytes.NewReader(b))
+	rctx := chi.NewRouteContext()
+	rctx.URLParams.Add("id", "200")
+	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
+	w := httptest.NewRecorder()
+	suite.hd.Update(w, r)
+	require.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
+}
+
 func TestBuyerTestSuite(t *testing.T) {
 	suite.Run(t, new(BuyerTestSuite))
 }
