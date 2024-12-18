@@ -150,8 +150,15 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 		return internal.Section{}, err
 	}
 
-	if err := processInt("warehouse_id", &section.WarehouseID); err != nil {
-		return internal.Section{}, err
+	if _, ok := updates["section_number"]; ok {
+		if err := processInt("warehouse_id", &section.WarehouseID); err != nil {
+			return internal.Section{}, err
+		}
+
+		_, err = s.rpW.FindByID(section.WarehouseID)
+		if err != nil {
+			return internal.Section{}, errorss.NewNotFound("warehouse not found")
+		}
 	}
 
 	if err := processInt("product_type_id", &section.ProductTypeID); err != nil {
