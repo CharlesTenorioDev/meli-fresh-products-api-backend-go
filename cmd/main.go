@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/meli-fresh-products-api-backend-t1/internal/application"
 )
 

@@ -1,13 +1,14 @@
 package application
 
 import (
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
-	"net/http"
 )
 
 // ConfigServerChi is a struct that represents the configuration for ServerChi
@@ -47,6 +48,7 @@ func (a *ServerChi) Run() (err error) {
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/sellers", sellerRoutes)
+		r.Route("/warehouses", warehouseRoute)
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
@@ -63,4 +65,16 @@ func sellerRoutes(r chi.Router) {
 	r.Post("/", hd.Save())
 	r.Patch("/{id}", hd.Update())
 	r.Delete("/{id}", hd.Delete())
+}
+
+func warehouseRoute(r chi.Router) {
+	warehouseRepository := repository.NewRepositoryWarehouse(nil, "../db/warehouse.json")
+	warehouseService := service.NewWarehouseDefault(warehouseRepository)
+	warehouseHandler := handler.NewWarehouseDefault(warehouseService)
+
+	r.Get("/", warehouseHandler.GetAll())
+	r.Get("/{id}", warehouseHandler.GetByID())
+	r.Post("/", warehouseHandler.Create())
+	r.Patch("/{id}", warehouseHandler.Update())
+	r.Delete("/{id}", warehouseHandler.Delete())
 }

@@ -2,14 +2,15 @@ package handler
 
 import (
 	"errors"
+	"net/http"
+	"strconv"
+
 	"github.com/bootcamp-go/web/request"
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/dto"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
-	"net/http"
-	"strconv"
 )
 
 // NewSellerDefault creates a new instance of the seller handler
@@ -149,17 +150,6 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, nil)
-			return
-		}
-
-		actualSeller, err := h.sv.FindByID(id)
-		if err != nil {
-			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-				return
-			}
-
-			response.JSON(w, http.StatusInternalServerError, nil)
 			return
 		}
 
