@@ -117,6 +117,15 @@ func (suite *BuyerTestSuite) TestCreateBuyer() {
 	require.Equal(suite.T(), bc.CardNumberId, buyerCreated.Data.CardNumberId)
 }
 
+func (suite *BuyerTestSuite) TestCreateBuyerWithMissingParameters() {
+	bc := internal.Buyer{}
+	b, _ := json.Marshal(bc)
+	r := httptest.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
+	w := httptest.NewRecorder()
+	suite.hd.Create(w, r)
+	assert.Equal(suite.T(), http.StatusUnprocessableEntity, w.Result().StatusCode)
+}
+
 func TestBuyerTestSuite(t *testing.T) {
 	suite.Run(t, new(BuyerTestSuite))
 }
