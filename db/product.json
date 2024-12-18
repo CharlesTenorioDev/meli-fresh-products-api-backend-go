@@ -1,0 +1,28 @@
+[
+    {
+        "id": 1,
+        "product_code": 1001,
+        "description": "Produto A",
+        "height": 10.0,
+        "width": 5.0,
+        "net_weight": 1.0,
+        "expiration_rate": "2024-12-31T00:00:00Z",
+        "recommended_freezing_temperature": -18.0,
+        "freezing_rate": -20.0,
+        "product_type_id": 1,
+        "seller_id": 101
+    },
+    {
+        "id": 2,
+        "product_code": 1002,
+        "description": "Produto B",
+        "height": 15.0,
+        "width": 7.0,
+        "net_weight": 2.0,
+        "expiration_rate": "2025-01-15T00:00:00Z",
+        "recommended_freezing_temperature": -18.0,
+        "freezing_rate": -20.0,
+        "product_type_id": 2,
+        "seller_id": 102
+    }
+]
