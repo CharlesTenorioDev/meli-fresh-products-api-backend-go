@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	localFileJson = "../db/section.json"
+	localFileJson = "db/section.json"
 )
 
 type SectionJson struct {

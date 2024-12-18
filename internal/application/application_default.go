@@ -50,6 +50,7 @@ func (a *ServerChi) Run() (err error) {
 		r.Route("/sellers", sellerRoutes)
 		r.Route("/warehouses", warehouseRoute)
 		r.Route("/sections", sectionsRoutes)
+		r.Route("/employees", employeeRouter)
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
@@ -69,7 +70,7 @@ func sellerRoutes(r chi.Router) {
 }
 
 func warehouseRoute(r chi.Router) {
-	warehouseRepository := repository.NewRepositoryWarehouse(nil, "../db/warehouse.json")
+	warehouseRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
 	warehouseService := service.NewWarehouseDefault(warehouseRepository)
 	warehouseHandler := handler.NewWarehouseDefault(warehouseService)
 
@@ -82,7 +83,7 @@ func warehouseRoute(r chi.Router) {
 
 func sectionsRoutes(r chi.Router) {
 	rpS := repository.NewRepositorySection()
-	rpW := repository.NewRepositoryWarehouse(nil, "../db/warehouse.json")
+	rpW := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
 
 	sv := service.NewServiceSection(rpS, rpW)
 	hd := handler.NewHandlerSection(sv)
@@ -90,6 +91,18 @@ func sectionsRoutes(r chi.Router) {
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)
 	r.Post("/", hd.Create)
+	r.Patch("/{id}", hd.Update)
+	r.Delete("/{id}", hd.Delete)
+}
+
+func employeeRouter(r chi.Router) {
+	repo := repository.NewEmployeeRepository()
+	svc := service.NewEmployeeServiceDefault(repo)
+	hd := handler.NewEmployeeDefault(svc)
+
+	r.Get("/", hd.GetAll)
+	r.Get("/{id}", hd.GetByID)
+	r.Post("/", hd.Save)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
 }
