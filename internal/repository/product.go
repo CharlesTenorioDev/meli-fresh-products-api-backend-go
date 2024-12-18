@@ -9,7 +9,7 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
-func NewProductMap() *ProductMap{
+func NewProductMap() *ProductMap {
 	var products []internal.Product
 	db := make(map[int]*internal.Product)
 	file, err := os.Open("db/product.json")
@@ -17,16 +17,19 @@ func NewProductMap() *ProductMap{
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer file.Close() 
 
 	err = json.NewDecoder(file).Decode(&products)
 	if err != nil {
 		log.Fatal(err)
 	}
-	for index, p := range products{
-		db[index] = &p
+
+	for _, p := range products {
+		db[p.Id] = &p 
 	}
 	return &ProductMap{db: db}
 }
+
 
 type ProductMap struct {
 	db map[int]*internal.Product

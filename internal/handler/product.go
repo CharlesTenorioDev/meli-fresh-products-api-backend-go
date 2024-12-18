@@ -79,7 +79,6 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
-
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
 
@@ -90,7 +89,7 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 	var product internal.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+		http.Error(w, "Invalid input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -110,6 +109,7 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(response) 
 }
+
 func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 
 	idStr := chi.URLParam(r, "id")
