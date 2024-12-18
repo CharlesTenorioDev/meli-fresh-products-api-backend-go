@@ -30,12 +30,11 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		all, err := h.sv.FindAll()
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
-
 			if errors.Is(err, internal.ErrSellerNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("sellers not found"))
+				return
 			}
-
+			response.JSON(w, http.StatusInternalServerError, nil)
 			return
 		}
 
@@ -51,8 +50,7 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"message": "success",
-			"data":    sellersJson,
+			"data": sellersJson,
 		})
 	}
 }
@@ -71,12 +69,11 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 
 		seller, err := h.sv.FindByID(id)
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
-
 			if errors.Is(err, internal.ErrSellerNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				return
 			}
-
+			response.JSON(w, http.StatusInternalServerError, nil)
 			return
 		}
 
@@ -119,24 +116,25 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 			return
 		}
 
-		id, err := h.sv.Save(sl)
+		err = h.sv.Save(sl)
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
-
 			if errors.Is(err, internal.ErrSellerConflict) || errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
 				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+				return
 			}
 
 			if errors.Is(err, internal.ErrSellerNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				return
 			}
 
+			response.JSON(w, http.StatusInternalServerError, nil)
 			return
 		}
 
 		response.JSON(w, http.StatusCreated, map[string]any{
 			"data": map[string]any{
-				"seller_id": id,
+				"seller_id": sl.ID,
 			},
 		})
 	}
@@ -156,12 +154,12 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		actualSeller, err := h.sv.FindByID(id)
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
-
 			if errors.Is(err, internal.ErrSellerNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				return
 			}
 
+			response.JSON(w, http.StatusInternalServerError, nil)
 			return
 		}
 
@@ -169,6 +167,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 		err = request.JSON(r, &body)
 		if err != nil {
 			response.JSON(w, http.StatusInternalServerError, nil)
+			return
 		}
 
 		if body.CompanyName != nil {
@@ -192,16 +191,17 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		err = h.sv.Update(&actualSeller)
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
-
 			if errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
 				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+				return
 			}
 
 			if errors.Is(err, internal.ErrSellerNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				return
 			}
 
+			response.JSON(w, http.StatusInternalServerError, nil)
 			return
 		}
 
@@ -232,15 +232,14 @@ func (h *SellerDefault) Delete() http.HandlerFunc {
 
 		err = h.sv.Delete(id)
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
 			if errors.Is(err, internal.ErrSellerNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				return
 			}
+			response.JSON(w, http.StatusInternalServerError, nil)
 			return
 		}
 
-		response.JSON(w, http.StatusNoContent, map[string]any{
-			"data": nil,
-		})
+		response.JSON(w, http.StatusNoContent, nil)
 	}
 }

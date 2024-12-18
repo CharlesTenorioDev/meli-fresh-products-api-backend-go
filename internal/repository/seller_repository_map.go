@@ -5,25 +5,27 @@ import (
 )
 
 type SellerRepoMap struct {
-	db map[int]internal.Seller
+	db     map[int]internal.Seller
+	lastId int
 }
 
 func NewSellerRepoMap(db map[int]internal.Seller) *SellerRepoMap {
 	return &SellerRepoMap{db: db}
 }
 
-func (s *SellerRepoMap) Save(seller *internal.Seller) (int, error) {
-	id := len(s.db) + 1
+func (s *SellerRepoMap) Save(seller *internal.Seller) error {
+	id := s.lastId + 1
 
 	_, ok := s.db[id]
 
 	if ok {
-		return 0, internal.ErrSellerConflict
+		return internal.ErrSellerConflict
 	}
 
 	seller.ID = id
 	s.db[id] = *seller
-	return id, nil
+	s.lastId = id
+	return nil
 }
 
 func (s *SellerRepoMap) FindByID(id int) (internal.Seller, error) {

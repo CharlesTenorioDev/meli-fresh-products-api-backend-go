@@ -51,7 +51,7 @@ type SellerRepository interface {
 	// FindByCID returns the seller with the given CID
 	FindByCID(cid int) (*Seller, error)
 	// Save saves the given seller
-	Save(seller *Seller) (int, error)
+	Save(seller *Seller) error
 	// Update updates the given seller
 	Update(id int, seller *Seller) error
 	// Delete deletes the seller with the given ID
@@ -65,7 +65,7 @@ type SellerService interface {
 	// FindByID returns the seller with the given ID
 	FindByID(id int) (Seller, error)
 	// Save saves the given seller
-	Save(seller *Seller) (int, error)
+	Save(seller *Seller) error
 	// Update updates the given seller
 	Update(seller *Seller) error
 	// Delete deletes the seller with the given ID

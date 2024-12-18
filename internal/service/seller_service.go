@@ -33,22 +33,22 @@ func (s *SellerServiceDefault) FindByID(id int) (internal.Seller, error) {
 	return seller, nil
 }
 
-func (s *SellerServiceDefault) Save(seller *internal.Seller) (int, error) {
+func (s *SellerServiceDefault) Save(seller *internal.Seller) error {
 
 	sellerCid, err := s.rp.FindByCID(seller.CID)
 	if err != nil && !errors.Is(err, internal.ErrSellerNotFound) {
-		return 0, err
+		return err
 	}
 
 	if sellerCid != nil {
-		return 0, internal.ErrSellerCIDAlreadyExists
+		return internal.ErrSellerCIDAlreadyExists
 	}
 
-	id, err := s.rp.Save(seller)
+	err = s.rp.Save(seller)
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return id, nil
+	return nil
 }
 
 func (s *SellerServiceDefault) Update(seller *internal.Seller) error {
