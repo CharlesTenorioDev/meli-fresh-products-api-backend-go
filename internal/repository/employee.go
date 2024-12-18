@@ -63,3 +63,8 @@ func (r *EmployeeRepositoryDefault) Save(emp internal.Employee) {
 
 	r.db[emp.Id] = &emp // add new employee in db
 }
+
+func (r *EmployeeRepositoryDefault) Update(id int, employee internal.EmployeePatch) {
+	empPatch := r.db[id]
+	employee.EmployeePatch(empPatch)
+}

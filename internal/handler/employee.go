@@ -96,3 +96,44 @@ func (h *EmployeeHandlerDefault) Save(w http.ResponseWriter, r *http.Request) {
 	})
 
 }
+
+func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
+
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, map[string]any{
+			"data": "invalid id format", //status 400
+		})
+		return
+	}
+
+	var employee internal.EmployeePatch
+	err = json.NewDecoder(r.Body).Decode(&employee)
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, map[string]any{
+			"data": "invalid body format",
+		})
+		return
+	}
+
+	err = h.sv.Update(id, employee)
+
+	if err != nil {
+		if errors.Is(err, service.EmployeeNotFound) {
+			response.JSON(w, http.StatusNotFound, map[string]any{
+				"data": err.Error(),
+			})
+
+		} else {
+			response.JSON(w, http.StatusConflict, map[string]any{
+				"data": err.Error(),
+			})
+		}
+		return
+	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"data": employee,
+	})
+}

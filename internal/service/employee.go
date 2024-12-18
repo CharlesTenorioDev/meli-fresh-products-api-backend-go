@@ -10,6 +10,7 @@ import (
 var (
 	EmployeeInUse     = errors.New("employee already in use")
 	CardNumberIdInUse = errors.New("card number id already in use")
+	EmployeeNotFound  = errors.New("employee not found")
 )
 
 func NewEmployeeServiceDefault(rp repository.EmployeeRepository) *EmployeeDefault {
@@ -40,7 +41,7 @@ func (s *EmployeeDefault) GetById(id int) (emp internal.Employee, err error) {
 	emp, ok := employee[id]
 
 	if !ok {
-		err = errors.New("employee not found")
+		err = EmployeeNotFound
 	}
 	return
 }
@@ -77,4 +78,23 @@ func cardNumberIdInUse(cardId string, employees map[int]internal.Employee) bool 
 		}
 	}
 	return false
+}
+
+func (s *EmployeeDefault) Update(id int, emp internal.EmployeePatch) (err error) {
+
+	data := s.rp.GetAll()
+	_, ok := data[id] // search employee by id
+	if !ok {
+		err = EmployeeNotFound
+		return
+	}
+
+	// check if card number id is already in use
+	if cardNumberIdInUse(*emp.CardNumberId, data) {
+		err = CardNumberIdInUse
+		return
+	}
+
+	s.rp.Update(id, emp)
+	return
 }

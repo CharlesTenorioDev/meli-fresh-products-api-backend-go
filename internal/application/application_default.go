@@ -61,7 +61,7 @@ func employeeRoutes(router *chi.Mux) {
 		rt.Get("/", hd.GetAll)
 		rt.Get("/{id}", hd.GetByID)
 		rt.Post("/", hd.Save)
-		// rt.Patch("/{id}", hd.Update)
+		rt.Patch("/{id}", hd.Update)
 		// rt.Delete("/{id}", hd.Delete)
 	})
 }

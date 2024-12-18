@@ -12,7 +12,6 @@ type EmployeePatch struct {
 	CardNumberId *string `json:"card_number_id,omitempty"`
 	FirstName    *string `json:"first_name,omitempty"`
 	LastName     *string `json:"last_name,omitempty"`
-	WarehouseId  *int    `json:"warehouse_id,omitempty"`
 }
 
 func (emp *Employee) RequirementsFields() (ok bool) {
@@ -22,4 +21,20 @@ func (emp *Employee) RequirementsFields() (ok bool) {
 		ok = false
 	}
 	return
+}
+
+// function to update employee data in repository
+func (emp EmployeePatch) EmployeePatch(empUpdate *Employee) {
+
+	if emp.CardNumberId != nil {
+		empUpdate.CardNumberId = *emp.CardNumberId
+	}
+
+	if emp.FirstName != nil {
+		empUpdate.FirstName = *emp.FirstName
+	}
+
+	if emp.LastName != nil {
+		empUpdate.LastName = *emp.LastName
+	}
 }
