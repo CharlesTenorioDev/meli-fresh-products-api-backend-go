@@ -57,16 +57,9 @@ func (h *EmployeeHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request)
 
 func (h *EmployeeHandlerDefault) Save(w http.ResponseWriter, r *http.Request) {
 
-	employeeId, err := strconv.Atoi(chi.URLParam(r, "id"))
-	if err != nil {
-		response.JSON(w, http.StatusBadRequest, map[string]any{
-			"data": "invalid id format", //status 400
-		})
-		return
-	}
-
 	var employee internal.Employee
-	err = json.NewDecoder(r.Body).Decode(&employee)
+
+	err := json.NewDecoder(r.Body).Decode(&employee)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
 			"data": "invalid body format", //status 400
@@ -74,8 +67,7 @@ func (h *EmployeeHandlerDefault) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	employee.Id = employeeId
-	err = h.sv.Save(employee)
+	err = h.sv.Save(employee) // save employee in service
 
 	// checks if card number Id field is already in use, because it's a unique field
 	if err != nil {
@@ -101,14 +93,14 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 
-	if err != nil {
+	if err != nil || id <= 0 {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
 			"data": "invalid id format", //status 400
 		})
 		return
 	}
 
-	var employee internal.EmployeePatch
+	var employee internal.Employee
 	err = json.NewDecoder(r.Body).Decode(&employee)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
@@ -117,7 +109,8 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = h.sv.Update(id, employee)
+	employee.Id = id
+	err = h.sv.Update(employee)
 
 	if err != nil {
 		if errors.Is(err, service.EmployeeNotFound) {
@@ -133,8 +126,16 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	updatedEmployee, err := h.sv.GetById(employee.Id)
+	if err != nil {
+		response.JSON(w, http.StatusInternalServerError, map[string]any{
+			"data": "error retrieving updated employee",
+		})
+		return
+	}
+
 	response.JSON(w, http.StatusOK, map[string]any{
-		"data": employee,
+		"data": updatedEmployee,
 	})
 }
 

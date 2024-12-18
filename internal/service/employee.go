@@ -28,7 +28,7 @@ type EmployeeService interface {
 	GetAll() map[int]internal.Employee
 	GetById(id int) (emp internal.Employee, err error)
 	Save(emp internal.Employee) (err error)
-	Update(id int, employees internal.EmployeePatch) (err error)
+	Update(employees internal.Employee) (err error)
 	Delete(id int) (err error)
 }
 
@@ -48,8 +48,8 @@ func (s *EmployeeDefault) GetById(id int) (emp internal.Employee, err error) {
 
 func (s *EmployeeDefault) Save(emp internal.Employee) (err error) {
 	employees := s.rp.GetAll()
-	_, ok := employees[emp.Id]
-	if ok {
+
+	if _, exists := employees[emp.Id]; exists && emp.Id != 0 {
 		err = errors.New("employee already exists")
 		return
 	}
@@ -65,8 +65,10 @@ func (s *EmployeeDefault) Save(emp internal.Employee) (err error) {
 		return
 	}
 
-	s.rp.Save(emp)
-	return
+	savedId := s.rp.Save(emp)
+	emp.Id = savedId
+
+	return nil
 
 }
 
@@ -80,22 +82,22 @@ func cardNumberIdInUse(cardId string, employees map[int]internal.Employee) bool 
 	return false
 }
 
-func (s *EmployeeDefault) Update(id int, emp internal.EmployeePatch) (err error) {
+func (s *EmployeeDefault) Update(emp internal.Employee) (err error) {
 
 	data := s.rp.GetAll()
-	_, ok := data[id] // search employee by id
+	existingEmployee, ok := data[emp.Id]
 	if !ok {
 		err = EmployeeNotFound
 		return
 	}
 
 	// check if card number id is already in use
-	if cardNumberIdInUse(*emp.CardNumberId, data) {
+	if cardNumberIdInUse(emp.CardNumberId, data) && existingEmployee.CardNumberId != emp.CardNumberId {
 		err = CardNumberIdInUse
 		return
 	}
 
-	s.rp.Update(id, emp)
+	s.rp.Update(emp.Id, emp)
 	return
 }
 
