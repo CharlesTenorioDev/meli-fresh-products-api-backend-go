@@ -2,27 +2,30 @@ package internal
 
 import "errors"
 
-// Warehouse is a struct that contains the warehouse's information
+// Warehouse is a struct that represents a warehouse
 type Warehouse struct {
-	// ID is the unique identifier of the warehouse
-	ID int
-	// WarehouseCode is the unique code of the warehouse
-	WarehouseCode string
-	// Address is the address of the warehouse
-	Address string
-	// Telephone is the telephone number of the warehouse
-	Telephone string
-	// MinimumCapacity is the minimum capacity of the warehouse
-	MinimumCapacity int
-	// MinimumTemperature is the minimum temperature that can be maintained in the warehouse
+	ID                 int
+	WarehouseCode      string
+	Address            string
+	Telephone          string
+	MinimumCapacity    int
 	MinimumTemperature float64
+}
+
+// WarehousePatchUpdate is a struct to use in a patch request
+type WarehousePatchUpdate struct {
+	WarehouseCode      *string  `json:"warehouse_code"`
+	Address            *string  `json:"address"`
+	Telephone          *string  `json:"telephone"`
+	MinimumCapacity    *int     `json:"minimum_capacity"`
+	MinimumTemperature *float64 `json:"minimum_temperature"`
 }
 
 var (
 	// ErrWarehouseRepositoryNotFound is returned when the warehouse is not found
-	ErrWarehouseRepositoryNotFound = errors.New("repository: warehouse not found")
+	ErrWarehouseRepositoryNotFound = errors.New("Warehouse not found")
 	// ErrWarehouseRepositoryDuplicated is returned when the warehouse already exists
-	ErrWarehouseRepositoryDuplicated = errors.New("repository: warehouse already exists")
+	ErrWarehouseRepositoryDuplicated = errors.New("Warehouse already exists")
 )
 
 // WarehouseRepository is an interface that contains the methods that the warehouse repository should support
@@ -48,7 +51,7 @@ type WarehouseService interface {
 	// Save saves the given warehouse
 	Save(warehouse *Warehouse) error
 	// Update updates the given warehouse
-	Update(warehouse *Warehouse) error
+	Update(id int, warehousePatch *WarehousePatchUpdate) (Warehouse, error)
 	// Delete deletes the warehouse with the given ID
 	Delete(id int) error
 }
