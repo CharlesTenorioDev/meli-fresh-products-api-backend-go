@@ -38,7 +38,7 @@ func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	buyer, err := h.s.FindByID(id - 1)
+	buyer, err := h.s.FindByID(id)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
@@ -50,21 +50,14 @@ func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
-	id, err := strconv.Atoi(chi.URLParam(r, "id"))
-	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
-		return
-	}
-
 	var buyer internal.Buyer
-	err = json.NewDecoder(r.Body).Decode(&buyer)
+	err := json.NewDecoder(r.Body).Decode(&buyer)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
 	}
 
-	buyer.ID = id
-	err = h.s.Save(buyer)
+	err = h.s.Save(&buyer)
 	if err != nil {
 		if (errors.Is(err, service.BuyerAlreadyExists) || errors.Is(err, service.CardNumberAlreadyInUse)){
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
@@ -93,7 +86,7 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.s.Update(id - 1, buyer)
+	err = h.s.Update(id, buyer)
 	if err != nil {
 		if errors.Is(err, service.BuyerNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
@@ -115,7 +108,7 @@ func (h *BuyerHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.s.Delete(id - 1)
+	err = h.s.Delete(id)
 	if err != nil {
 		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		return
