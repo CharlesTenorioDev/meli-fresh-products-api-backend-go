@@ -67,7 +67,7 @@ func (h *EmployeeHandlerDefault) Save(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = h.sv.Save(employee) // save employee in service
+	err = h.sv.Save(&employee) // save employee in service
 
 	// checks if card number Id field is already in use, because it's a unique field
 	if err != nil {

@@ -16,18 +16,21 @@ var (
 func NewEmployeeServiceDefault(rp repository.EmployeeRepository) *EmployeeDefault {
 	return &EmployeeDefault{
 		rp: rp,
+		// warehouseSvc WarehouseService
+
 	}
 
 }
 
 type EmployeeDefault struct {
 	rp repository.EmployeeRepository
+	// warehouseSvc WarehouseService
 }
 
 type EmployeeService interface {
 	GetAll() map[int]internal.Employee
 	GetById(id int) (emp internal.Employee, err error)
-	Save(emp internal.Employee) (err error)
+	Save(emp *internal.Employee) (err error)
 	Update(employees internal.Employee) (err error)
 	Delete(id int) (err error)
 }
@@ -46,7 +49,7 @@ func (s *EmployeeDefault) GetById(id int) (emp internal.Employee, err error) {
 	return
 }
 
-func (s *EmployeeDefault) Save(emp internal.Employee) (err error) {
+func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 	employees := s.rp.GetAll()
 
 	if _, exists := employees[emp.Id]; exists && emp.Id != 0 {

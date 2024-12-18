@@ -35,33 +35,24 @@ type ServerChi struct {
 }
 
 func (a *ServerChi) Run() (err error) {
-
-	// router
 	rt := chi.NewRouter()
-	// - middlewares
 	rt.Use(middleware.Logger)
-	rt.Use(middleware.Recoverer)
-	// - endpoints
-	employeeRoutes(rt)
+	rt.Route("/api/v1", func(r chi.Router) {
+		r.Route("/employees", employeeRouter)
+	})
 
-	// run server
 	err = http.ListenAndServe(a.serverAddress, rt)
 	return
 }
 
-func employeeRoutes(router *chi.Mux) {
-	// - repository
-	rp := repository.NewEmployeeRepository()
-	// - service
-	sv := service.NewEmployeeServiceDefault(rp)
-	// - handler
-	hd := handler.NewEmployeeDefault(sv)
+func employeeRouter(r chi.Router) {
+	repo := repository.NewEmployeeRepository()
+	svc := service.NewEmployeeServiceDefault(repo)
+	hd := handler.NewEmployeeDefault(svc)
 
-	router.Route("/api/v1/employees", func(rt chi.Router) {
-		rt.Get("/", hd.GetAll)
-		rt.Get("/{id}", hd.GetByID)
-		rt.Post("/", hd.Save)
-		rt.Patch("/{id}", hd.Update)
-		rt.Delete("/{id}", hd.Delete)
-	})
+	r.Get("/", hd.GetAll)
+	r.Get("/{id}", hd.GetByID)
+	r.Post("/", hd.Save)
+	r.Patch("/{id}", hd.Update)
+	r.Delete("/{id}", hd.Delete)
 }
