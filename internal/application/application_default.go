@@ -109,7 +109,7 @@ func employeeRouter(r chi.Router) {
 }
 
 func buyerRouter(r chi.Router) {
-	repo := repository.NewBuyerMap()
+	repo := repository.NewBuyerMap("db/buyer.json")
 	svc := service.NewBuyerService(repo)
 	hd := handler.NewBuyerHandlerDefault(svc)
 
