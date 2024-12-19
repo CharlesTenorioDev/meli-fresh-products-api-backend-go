@@ -31,6 +31,9 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 	if err != nil {
 		return product, err
 	}
+	if err := ValidateProduct(product); err != nil {
+		return product, err
+	}
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
 		return product, errors.New("product code already exists")
 	}
@@ -46,6 +49,9 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	existingProducts, err :=  s.repo.FindAll()
 	if err != nil {
 		return product, err
+	}
+	if err := ValidateProduct(product); err != nil {
+		return product, err 
 	}
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
 		return product, errors.New("product code already exists")
@@ -80,4 +86,19 @@ func IsProductCodeExists(existingProducts map[int]internal.Product, productCode 
 		}
 	}
 	return false
+}
+func ValidateProduct(product internal.Product) error {
+	if product.ProductCode == "" || 
+	product.Description == "" ||
+	product.Height <= 0 || 
+	product.Width <= 0 || 
+	product.NetWeight <= 0 || 
+	product.ExpirationRate.IsZero()|| 
+	product.RecommendedFreezingTemperature < -273.15||
+	product.FreezingRate < -273.15 ||
+	product.ProductTypeId <= 0 ||
+	product.SellerId <= 0 {
+		return errors.New("all fields must be valid and filled")
+	}
+	return nil
 }
