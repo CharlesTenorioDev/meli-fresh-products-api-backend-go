@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -119,8 +121,8 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 		var requestInput *WarehouseCreateRequest
 
 		// decode the request
-
-		if err := request.JSON(r, &requestInput); err != nil {
+		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
+			fmt.Println(err)
 			response.Error(w, http.StatusBadRequest, ErrInvalidData)
 			return
 		}
