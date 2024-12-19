@@ -65,7 +65,7 @@ func (a *ServerChi) Run() (err error) {
 }
 
 func sellerRoutes(r chi.Router) {
-	rp := repository.NewSellerRepoMap(make(map[int]internal.Seller))
+	rp := repository.NewSellerRepoMap()
 	sv := service.NewSellerServiceDefault(rp)
 	hd := handler.NewSellerDefault(sv)
 
