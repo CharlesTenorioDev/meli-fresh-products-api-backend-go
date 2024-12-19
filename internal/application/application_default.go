@@ -58,6 +58,7 @@ func (a *ServerChi) Run() (err error) {
 		r.Route("/warehouses", func(r chi.Router) {
 			warehouseRoute(r, whRepository)
 		})
+		r.Route("/products", productRouter)
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
@@ -121,4 +122,16 @@ func buyerRouter(r chi.Router) {
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+}
+
+func productRouter(r chi.Router) {
+	repo := repository.NewProductMap()
+	svc := service.NewProductService(repo)
+	hd := handler.NewProducHandlerDefault(svc)
+
+	r.Get("/", hd.GetAll)
+	r.Get("/{id}", hd.GetByID)
+	r.Post("/", hd.Create)
+	r.Patch("/{id}",hd.Update)
+	r.Delete("/{id}", hd.Delete) 
 }
