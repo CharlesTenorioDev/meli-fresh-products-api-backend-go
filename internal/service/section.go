@@ -18,10 +18,10 @@ var (
 	SectionUnprocessableEntity = errors.New("couldn't parse section")
 )
 
-func NewServiceSection(rpSection internal.SectionRepository /*rpProduct internal.ProductTypeRepository,*/, rpProductType internal.ProductTypeRepository, rpWareHouse internal.WarehouseRepository) *SectionService {
+func NewServiceSection(rpSection internal.SectionRepository, rpProductType internal.ProductTypeRepository, rpProduct internal.ProductRepository, rpWareHouse internal.WarehouseRepository) *SectionService {
 	return &SectionService{
 		rpS: rpSection,
-		//rpP: rpProduct,
+		rpP: rpProduct,
 		rpT: rpProductType,
 		rpW: rpWareHouse,
 	}
@@ -29,7 +29,7 @@ func NewServiceSection(rpSection internal.SectionRepository /*rpProduct internal
 
 type SectionService struct {
 	rpS internal.SectionRepository
-	//rpP internal.ProductRepository
+	rpP internal.ProductRepository
 	rpT internal.ProductTypeRepository
 	rpW internal.WarehouseRepository
 }
@@ -88,12 +88,12 @@ func (s *SectionService) Save(section *internal.Section) error {
 		return ProductTypeNotFound
 	}
 
-	/*for _, productBatch := range section.ProductBatches {
+	for _, productBatch := range section.ProductBatches {
 		_, err = s.rpP.FindByID(productBatch.ProductID)
 		if err != nil {
-			return ProductTypeNotFound
+			return ProductNotFound
 		}
-	}*/
+	}
 
 	err = s.rpS.Save(section)
 	if err != nil {
@@ -211,10 +211,10 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 						return internal.Section{}, fmt.Errorf("product_id is required and must be a number")
 					}
 
-					/*_, err = s.rpP.FindByID(batch.ProductID)
+					_, err = s.rpP.FindByID(batch.ProductID)
 					if err != nil {
 						return internal.Section{}, ProductTypeNotFound
-					}*/
+					}
 
 					if quantity, ok := batchMap["quantity"].(float64); ok {
 						batch.Quantity = int(quantity)
