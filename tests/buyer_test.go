@@ -35,6 +35,7 @@ func (s *BuyerRouterSuite) SetupTest() {
 		r.Get("/", s.hd.GetAll)
 		r.Get("/{id}", s.hd.GetByID)
 		r.Post("/", s.hd.Create)
+		r.Patch("/{id}", s.hd.Update)
 	})
 }
 
@@ -210,6 +211,9 @@ func (s *BuyerRouterSuite) TestCreateBuyer() {
 			require.Equal(s.T(), buyer.LastName, resBuyer.Data.LastName)
 			require.Equal(s.T(), buyer.CardNumberId, resBuyer.Data.CardNumberId)
 		})
+		if !ok {
+			s.T().FailNow()
+		}
 	})
 	if !ok {
 		s.T().FailNow()
@@ -271,6 +275,77 @@ func (s *BuyerRouterSuite) TestCreateUnprocessableEntity() {
 	if !ok {
 		s.T().FailNow()
 	}
+}
+
+func (s *BuyerRouterSuite) TestPatchBuyer() {
+	fname := "Not"
+	lname := "Found"
+	cardNumberId := "404"
+	buyer := internal.BuyerPatch{
+		FirstName:    &fname,
+		LastName:     &lname,
+		CardNumberId: &cardNumberId,
+	}
+	ok := s.Run("the user is modified successfully", func() {
+		b, _ := json.Marshal(buyer)
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest(http.MethodPatch, Api+"/0", bytes.NewReader(b))
+		require.NoError(s.T(), err)
+		s.rt.ServeHTTP(w, r)
+		ok := s.Run("the endpoint replied with status ok", func() {
+			require.Equal(s.T(), http.StatusOK, w.Result().StatusCode)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+
+		var resBuyer struct {
+			Data internal.BuyerPatch `json:"data"`
+		}
+		err = json.NewDecoder(w.Body).Decode(&resBuyer)
+		require.NoError(s.T(), err)
+		ok = s.Run("the response fields are as expected", func() {
+			require.Equal(s.T(), *buyer.FirstName, *resBuyer.Data.FirstName)
+			require.Equal(s.T(), *buyer.LastName, *resBuyer.Data.LastName)
+			require.Equal(s.T(), *buyer.CardNumberId, *resBuyer.Data.CardNumberId)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("the user was actually modified", func() {
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest(http.MethodGet, Api+"/0", nil)
+		require.NoError(s.T(), err)
+		s.rt.ServeHTTP(w, r)
+		ok := s.Run("the user exists", func() {
+			require.Equal(s.T(), http.StatusOK, w.Result().StatusCode)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+
+		var resBuyer struct {
+			Data internal.BuyerPatch
+		}
+		err = json.NewDecoder(w.Body).Decode(&resBuyer)
+		ok = s.Run("the entries match", func() {
+			require.Equal(s.T(), *buyer.FirstName, *resBuyer.Data.FirstName)
+			require.Equal(s.T(), *buyer.LastName, *resBuyer.Data.LastName)
+			require.Equal(s.T(), *buyer.CardNumberId, *resBuyer.Data.CardNumberId)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+
 }
 
 func TestBuyerRouterSuite(t *testing.T) {
