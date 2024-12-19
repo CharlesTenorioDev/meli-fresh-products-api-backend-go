@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -121,7 +120,6 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 
 		// decode the request
 		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
-			fmt.Println(err)
 			response.Error(w, http.StatusBadRequest, ErrInvalidData)
 			return
 		}
