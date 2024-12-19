@@ -1,5 +1,9 @@
 package internal
 
+import "errors"
+
+var ErrEmployeeNotFound = errors.New("employee not found")
+
 type Employee struct {
 	Id           int    `json:"id"`
 	CardNumberId string `json:"card_number_id"`

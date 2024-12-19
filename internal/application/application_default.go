@@ -46,21 +46,35 @@ func (a *ServerChi) Run() (err error) {
 	rt := chi.NewRouter()
 	rt.Use(middleware.Logger)
 
+	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
+	slRepository := repository.NewSellerRepoMap()
+	pdRepository := repository.NewProductMap()
+
 	rt.Route("/api/v1", func(r chi.Router) {
-		r.Route("/sellers", sellerRoutes)
-		r.Route("/warehouses", warehouseRoute)
-		r.Route("/sections", sectionsRoutes)
-		r.Route("/employees", employeeRouter)
+		r.Route("/employees", func(r chi.Router) {
+			employeeRouter(r, whRepository)
+		})
 		r.Route("/buyers", buyerRouter)
+		r.Route("/sections", func(r chi.Router) {
+			sectionsRoutes(r, whRepository, pdRepository)
+		})
+		r.Route("/warehouses", func(r chi.Router) {
+			warehouseRoute(r, whRepository)
+		})
+		r.Route("/sellers", func(r chi.Router) {
+			sellerRoutes(r, slRepository)
+		})
+		r.Route("/products", func(r chi.Router) {
+			productRoutes(r, pdRepository, slRepository)
+		})
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
 	return
 }
 
-func sellerRoutes(r chi.Router) {
-	rp := repository.NewSellerRepoMap(make(map[int]internal.Seller))
-	sv := service.NewSellerServiceDefault(rp)
+func sellerRoutes(r chi.Router, slRepository internal.SellerRepository) {
+	sv := service.NewSellerServiceDefault(slRepository)
 	hd := handler.NewSellerDefault(sv)
 
 	r.Get("/", hd.GetAll())
@@ -70,9 +84,8 @@ func sellerRoutes(r chi.Router) {
 	r.Delete("/{id}", hd.Delete())
 }
 
-func warehouseRoute(r chi.Router) {
-	warehouseRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
-	warehouseService := service.NewWarehouseDefault(warehouseRepository)
+func warehouseRoute(r chi.Router, whRepository internal.WarehouseRepository) {
+	warehouseService := service.NewWarehouseDefault(whRepository)
 	warehouseHandler := handler.NewWarehouseDefault(warehouseService)
 
 	r.Get("/", warehouseHandler.GetAll())
@@ -82,11 +95,10 @@ func warehouseRoute(r chi.Router) {
 	r.Delete("/{id}", warehouseHandler.Delete())
 }
 
-func sectionsRoutes(r chi.Router) {
+func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository, ptRepository internal.ProductRepository) {
 	rpS := repository.NewRepositorySection()
-	rpW := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
-
-	sv := service.NewServiceSection(rpS, rpW)
+	rpT := repository.NewRepositoryProductType()
+	sv := service.NewServiceSection(rpS, rpT, ptRepository, whRepository)
 	hd := handler.NewHandlerSection(sv)
 
 	r.Get("/", hd.GetAll)
@@ -96,22 +108,34 @@ func sectionsRoutes(r chi.Router) {
 	r.Delete("/{id}", hd.Delete)
 }
 
-func employeeRouter(r chi.Router) {
-	repo := repository.NewEmployeeRepository()
-	svc := service.NewEmployeeServiceDefault(repo)
-	hd := handler.NewEmployeeDefault(svc)
+func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
+	rp := repository.NewEmployeeRepository()
+	sv := service.NewEmployeeServiceDefault(rp, whRepository)
+	hd := handler.NewEmployeeDefault(sv)
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)
-	r.Post("/", hd.Save)
+	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
 }
 
 func buyerRouter(r chi.Router) {
-	repo := repository.NewBuyerMap()
+	repo := repository.NewBuyerMap("db/buyer.json")
 	svc := service.NewBuyerService(repo)
 	hd := handler.NewBuyerHandlerDefault(svc)
+
+	r.Get("/", hd.GetAll)
+	r.Get("/{id}", hd.GetByID)
+	r.Post("/", hd.Create)
+	r.Patch("/{id}", hd.Update)
+	r.Delete("/{id}", hd.Delete)
+}
+
+func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository internal.SellerRepository) {
+	rpT := repository.NewRepositoryProductType()
+	svc := service.NewProductService(ptRepo, slRepository, rpT)
+	hd := handler.NewProducHandlerDefault(svc)
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)

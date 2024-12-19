@@ -11,20 +11,26 @@ import (
 var (
 	SectionNotFound            = errors.New("section not found")
 	WarehouseNotFound          = errors.New("warehouse not found")
+	ProductTypeNotFound        = errors.New("product_type not found")
+	ProductNotFound            = errors.New("product not found")
 	SectionAlreadyExists       = errors.New("section already exists")
 	SectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
 	SectionUnprocessableEntity = errors.New("couldn't parse section")
 )
 
-func NewServiceSection(rpSection internal.SectionRepository, rpWareHouse internal.WarehouseRepository) *SectionService {
+func NewServiceSection(rpSection internal.SectionRepository, rpProductType internal.ProductTypeRepository, rpProduct internal.ProductRepository, rpWareHouse internal.WarehouseRepository) *SectionService {
 	return &SectionService{
 		rpS: rpSection,
+		rpP: rpProduct,
+		rpT: rpProductType,
 		rpW: rpWareHouse,
 	}
 }
 
 type SectionService struct {
 	rpS internal.SectionRepository
+	rpP internal.ProductRepository
+	rpT internal.ProductTypeRepository
 	rpW internal.WarehouseRepository
 }
 
@@ -54,7 +60,8 @@ func validateRequiredFields(section internal.Section) error {
 		section.MinimumCapacity < 0 ||
 		section.MaximumCapacity < 0 ||
 		section.WarehouseID <= 0 ||
-		section.ProductTypeID <= 0 {
+		section.ProductTypeID <= 0 ||
+		len(section.ProductBatches) == 0 {
 		return errors.New("all fields must be valid and filled, unless otherwise stated")
 	}
 
@@ -74,6 +81,18 @@ func (s *SectionService) Save(section *internal.Section) error {
 	_, err = s.rpW.FindByID(section.WarehouseID)
 	if err != nil {
 		return WarehouseNotFound
+	}
+
+	_, err = s.rpT.FindByID(section.ProductTypeID)
+	if err != nil {
+		return ProductTypeNotFound
+	}
+
+	for _, productBatch := range section.ProductBatches {
+		_, err = s.rpP.FindByID(productBatch.ProductID)
+		if err != nil {
+			return ProductNotFound
+		}
 	}
 
 	err = s.rpS.Save(section)
@@ -168,8 +187,54 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 		}
 	}
 
-	if err := processInt("product_type_id", &section.ProductTypeID); err != nil {
-		return internal.Section{}, err
+	if _, ok := updates["product_type_id"]; ok {
+		if err := processInt("product_type_id", &section.ProductTypeID); err != nil {
+			return internal.Section{}, err
+		}
+
+		_, err = s.rpT.FindByID(section.ProductTypeID)
+		if err != nil {
+			return internal.Section{}, ProductTypeNotFound
+		}
+	}
+
+	if productBatches, ok := updates["product_batches"]; ok {
+		if batches, ok := productBatches.([]interface{}); ok {
+			var batchs []internal.ProductBatch
+			for _, batchItem := range batches {
+				var batch internal.ProductBatch
+
+				if batchMap, ok := batchItem.(map[string]interface{}); ok {
+					if productId, ok := batchMap["product_id"].(float64); ok {
+						batch.ProductID = int(productId)
+					} else {
+						return internal.Section{}, fmt.Errorf("product_id is required and must be a number")
+					}
+
+					_, err = s.rpP.FindByID(batch.ProductID)
+					if err != nil {
+						return internal.Section{}, ProductNotFound
+					}
+
+					if quantity, ok := batchMap["quantity"].(float64); ok {
+						batch.Quantity = int(quantity)
+					} else {
+						return internal.Section{}, fmt.Errorf("quantity is required and must be a number")
+					}
+
+					batchs = append(batchs, batch)
+				} else {
+					return internal.Section{}, fmt.Errorf("each item in product_batches must be an object")
+				}
+			}
+
+			if len(batchs) > 0 {
+				section.ProductBatches = batchs
+			}
+
+		} else {
+			return internal.Section{}, fmt.Errorf("product_batches must be a list of objects")
+		}
 	}
 
 	err = s.rpS.Update(&section)

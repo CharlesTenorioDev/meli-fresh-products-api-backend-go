@@ -1,0 +1,72 @@
+[
+  {
+    "id": 1,
+    "cid": 12343,
+    "company_name": "Blue Store",
+    "address": "rua silverstone",
+    "telephone": "11 95713-3198"
+  },
+  {
+    "id": 2,
+    "cid": 43567,
+    "company_name": "Green Market",
+    "address": "avenida central",
+    "telephone": "11 98765-4321"
+  },
+  {
+    "id": 3,
+    "cid": 87654,
+    "company_name": "Red Tech",
+    "address": "rua das flores",
+    "telephone": "11 91234-5678"
+  },
+  {
+    "id": 4,
+    "cid": 98765,
+    "company_name": "Yellow Foods",
+    "address": "praça da matriz",
+    "telephone": "11 97654-3210"
+  },
+  {
+    "id": 5,
+    "cid": 54321,
+    "company_name": "Orange Store",
+    "address": "rua do comércio",
+    "telephone": "11 98765-4321"
+  },
+  {
+    "id": 6,
+    "cid": 10987,
+    "company_name": "Purple Store",
+    "address": "avenida paulista",
+    "telephone": "11 91234-5678"
+  },
+  {
+    "id": 7,
+    "cid": 23456,
+    "company_name": "Pink Market",
+    "address": "rua da liberdade",
+    "telephone": "11 97654-3210"
+  },
+  {
+    "id": 8,
+    "cid": 76543,
+    "company_name": "Brown Tech",
+    "address": "praça da república",
+    "telephone": "11 98765-4321"
+  },
+  {
+    "id": 9,
+    "cid": 34567,
+    "company_name": "Gray Foods",
+    "address": "rua da consolação",
+    "telephone": "11 91234-5678"
+  },
+  {
+    "id": 10,
+    "cid": 65432,
+    "company_name": "Black Store",
+    "address": "avenida brasil",
+    "telephone": "11 97654-3210"
+  }
+]

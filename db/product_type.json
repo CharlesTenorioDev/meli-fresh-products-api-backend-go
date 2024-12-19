@@ -1,0 +1,52 @@
+[
+    {
+        "id": 1,
+        "name": "Fruits",
+        "description": "Various kinds of fresh fruits."
+    },
+    {
+        "id": 2,
+        "name": "Vegetables",
+        "description": "A variety of fresh vegetables."
+    },
+    {
+        "id": 3,
+        "name": "Meat",
+        "description": "Different types of meat including beef, chicken, and pork."
+    },
+    {
+        "id": 4,
+        "name": "Fish",
+        "description": "Fresh and frozen fish and seafood."
+    },
+    {
+        "id": 5,
+        "name": "Dairy",
+        "description": "Milk, cheese, yogurt, and other dairy products."
+    },
+    {
+        "id": 6,
+        "name": "Bakery",
+        "description": "Bread, pastries, cakes, and baked goods."
+    },
+    {
+        "id": 7,
+        "name": "Grains",
+        "description": "Rice, pasta, and other grain products."
+    },
+    {
+        "id": 8,
+        "name": "Beverages",
+        "description": "Drinks including water, juice, soda, and alcohol."
+    },
+    {
+        "id": 9,
+        "name": "Snacks",
+        "description": "Chips, cookies, and other snack items."
+    },
+    {
+        "id": 10,
+        "name": "Frozen Foods",
+        "description": "Pre-packaged frozen meals and ingredients."
+    }
+]
