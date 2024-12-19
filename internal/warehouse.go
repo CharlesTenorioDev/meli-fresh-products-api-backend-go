@@ -28,6 +28,26 @@ var (
 	ErrWarehouseRepositoryDuplicated = errors.New("Warehouse already exists")
 )
 
+func (w *Warehouse) Validate() error {
+	if w.WarehouseCode == "" {
+		return errors.New("warehouse code is required")
+	}
+	if w.Address == "" {
+		return errors.New("address is required")
+	}
+	if w.Telephone == "" {
+		return errors.New("telephone is required")
+	}
+	if w.MinimumCapacity == 0 {
+		return errors.New("minimum capacity is required")
+	}
+	if w.MinimumTemperature == 0 {
+		return errors.New("minimum temperature is required")
+	}
+
+	return nil
+}
+
 // WarehouseRepository is an interface that contains the methods that the warehouse repository should support
 type WarehouseRepository interface {
 	// FindAll returns all the warehouses

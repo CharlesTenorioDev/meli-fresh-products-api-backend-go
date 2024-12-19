@@ -136,6 +136,12 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			MinimumTemperature: requestInput.MinimumTemperature,
 		}
 
+		// validating the warehouse
+		if err := warehouse.Validate(); err != nil {
+			response.Error(w, http.StatusUnprocessableEntity, err.Error())
+			return
+		}
+
 		// save the warehouse
 		err := h.sv.Save(&warehouse)
 		if err != nil {
