@@ -213,7 +213,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 
 					_, err = s.rpP.FindByID(batch.ProductID)
 					if err != nil {
-						return internal.Section{}, ProductTypeNotFound
+						return internal.Section{}, ProductNotFound
 					}
 
 					if quantity, ok := batchMap["quantity"].(float64); ok {
