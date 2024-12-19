@@ -36,6 +36,7 @@ func (s *BuyerRouterSuite) SetupTest() {
 		r.Get("/{id}", s.hd.GetByID)
 		r.Post("/", s.hd.Create)
 		r.Patch("/{id}", s.hd.Update)
+		r.Delete("/{id}", s.hd.Delete)
 	})
 }
 
@@ -382,6 +383,30 @@ func (s *BuyerRouterSuite) TestPatchBuyerThatDoesntExist() {
 	require.NoError(s.T(), err)
 	s.rt.ServeHTTP(w, r)
 	require.Equal(s.T(), http.StatusNotFound, w.Result().StatusCode)
+}
+
+func (s *BuyerRouterSuite) TestDeleteBuyer() {
+	w := httptest.NewRecorder()
+	r, err := http.NewRequest(http.MethodDelete, Api+"/0", nil)
+	require.NoError(s.T(), err)
+	s.rt.ServeHTTP(w, r)
+	ok := s.Run("the endpoint replies with no content", func() {
+		require.Equal(s.T(), http.StatusNoContent, w.Result().StatusCode)
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("the user is actually deleted", func() {
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest(http.MethodGet, Api+"/0", nil)
+		require.NoError(s.T(), err)
+		s.rt.ServeHTTP(w, r)
+		require.Equal(s.T(), http.StatusNotFound, w.Result().StatusCode)
+	})
+	if !ok {
+		s.T().FailNow()
+	}
 }
 
 func TestBuyerRouterSuite(t *testing.T) {
