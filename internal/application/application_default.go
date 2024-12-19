@@ -50,12 +50,16 @@ func (a *ServerChi) Run() (err error) {
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/sellers", sellerRoutes)
-		r.Route("/warehouses", warehouseRoute)
-		r.Route("/sections", sectionsRoutes)
 		r.Route("/employees", func(r chi.Router) {
 			employeeRouter(r, whRepository)
 		})
 		r.Route("/buyers", buyerRouter)
+		r.Route("/sections", func(r chi.Router) {
+			sectionsRoutes(r, whRepository)
+		})
+		r.Route("/warehouses", func(r chi.Router) {
+			warehouseRoute(r, whRepository)
+		})
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
@@ -74,9 +78,8 @@ func sellerRoutes(r chi.Router) {
 	r.Delete("/{id}", hd.Delete())
 }
 
-func warehouseRoute(r chi.Router) {
-	warehouseRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
-	warehouseService := service.NewWarehouseDefault(warehouseRepository)
+func warehouseRoute(r chi.Router, whRepository internal.WarehouseRepository) {
+	warehouseService := service.NewWarehouseDefault(whRepository)
 	warehouseHandler := handler.NewWarehouseDefault(warehouseService)
 
 	r.Get("/", warehouseHandler.GetAll())
@@ -86,11 +89,9 @@ func warehouseRoute(r chi.Router) {
 	r.Delete("/{id}", warehouseHandler.Delete())
 }
 
-func sectionsRoutes(r chi.Router) {
-	rpS := repository.NewRepositorySection()
-	rpW := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
-
-	sv := service.NewServiceSection(rpS, rpW)
+func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository) {
+	rp := repository.NewRepositorySection()
+	sv := service.NewServiceSection(rp, whRepository)
 	hd := handler.NewHandlerSection(sv)
 
 	r.Get("/", hd.GetAll)
@@ -102,8 +103,7 @@ func sectionsRoutes(r chi.Router) {
 
 func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
 	rp := repository.NewEmployeeRepository()
-	rpWarehouse := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
-	sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+	sv := service.NewEmployeeServiceDefault(rp, whRepository)
 	hd := handler.NewEmployeeDefault(sv)
 
 	r.Get("/", hd.GetAll)
