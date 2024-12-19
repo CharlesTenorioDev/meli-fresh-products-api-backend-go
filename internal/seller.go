@@ -2,21 +2,27 @@ package internal
 
 import (
 	"errors"
-	"github.com/meli-fresh-products-api-backend-t1/internal/dto"
 )
 
 // Seller is a struct that contains the seller's information
 type Seller struct {
 	// ID is the unique identifier of the seller
-	ID int
+	ID int `json:"id"`
 	// CID is the unique identifier of the company
-	CID int
+	CID int `json:"cid"`
 	// CompanyName is the name of the company
-	CompanyName string
+	CompanyName string `json:"company_name"`
 	// Address is the address of the company
-	Address string
+	Address string `json:"address"`
 	// Telephone is the telephone number of the company
-	Telephone string
+	Telephone string `json:"telephone"`
+}
+
+type SellerPatch struct {
+	CID         *int
+	CompanyName *string
+	Address     *string
+	Telephone   *string
 }
 
 func (seller *Seller) Validate() error {
@@ -70,7 +76,7 @@ type SellerService interface {
 	// Save saves the given seller
 	Save(seller *Seller) error
 	// Update updates the given seller
-	Update(id int, updateSeller dto.SellersUpdateDto) (Seller, error)
+	Update(id int, updateSeller SellerPatch) (Seller, error)
 	// Delete deletes the seller with the given ID
 	Delete(id int) error
 }

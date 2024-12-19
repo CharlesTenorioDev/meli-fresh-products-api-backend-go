@@ -8,23 +8,24 @@ import (
 )
 
 var (
-	EmployeeInUse     = errors.New("employee already in use")
-	CardNumberIdInUse = errors.New("card number id already in use")
-	EmployeeNotFound  = errors.New("employee not found")
+	EmployeeInUse       = errors.New("employee already in use")
+	CardNumberIdInUse   = errors.New("card number id already in use")
+	EmployeeNotFound    = errors.New("employee not found")
+	UnprocessableEntity = errors.New("couldn't parse employee")
+	ConflictInEmployee  = errors.New("conflict in employee")
 )
 
-func NewEmployeeServiceDefault(rp repository.EmployeeRepository) *EmployeeDefault {
+func NewEmployeeServiceDefault(rp repository.EmployeeRepository, rpWarehouse internal.WarehouseRepository) *EmployeeDefault {
 	return &EmployeeDefault{
-		rp: rp,
-		// warehouseSvc WarehouseService
-
+		rp:  rp,
+		rpW: rpWarehouse,
 	}
 
 }
 
 type EmployeeDefault struct {
-	rp repository.EmployeeRepository
-	// warehouseSvc WarehouseService
+	rp  repository.EmployeeRepository
+	rpW internal.WarehouseRepository
 }
 
 type EmployeeService interface {
@@ -63,8 +64,13 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 		return
 	}
 
+	_, err = s.rpW.FindByID(emp.WarehouseId)
+	if err != nil {
+		return UnprocessableEntity
+	}
+
 	if cardNumberIdInUse(emp.CardNumberId, employees) {
-		err = errors.New("card number id already in use, please try again")
+		err = CardNumberIdInUse
 		return
 	}
 
@@ -98,6 +104,17 @@ func (s *EmployeeDefault) Update(emp internal.Employee) (err error) {
 	if cardNumberIdInUse(emp.CardNumberId, data) && existingEmployee.CardNumberId != emp.CardNumberId {
 		err = CardNumberIdInUse
 		return
+	}
+
+	validate := emp.RequirementsFields()
+	if !validate {
+		err = errors.New("invalid entity data")
+		return
+	}
+
+	_, err = s.rpW.FindByID(emp.WarehouseId)
+	if err != nil {
+		return ConflictInEmployee
 	}
 
 	s.rp.Update(emp.Id, emp)

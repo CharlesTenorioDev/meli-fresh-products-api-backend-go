@@ -4,26 +4,16 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+
+	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
 const (
 	localFileJson = "db/section.json"
 )
 
-type SectionJson struct {
-	ID                 int     `json:"id"`
-	SectionNumber      int     `json:"section_number"`
-	CurrentTemperature float64 `json:"current_temperature"`
-	MinimumTemperature float64 `json:"minimum_temperature"`
-	CurrentCapacity    int     `json:"current_capacity"`
-	MinimumCapacity    int     `json:"minimum_capacity"`
-	MaximumCapacity    int     `json:"maximum_capacity"`
-	WarehouseID        int     `json:"warehouse_id"`
-	ProductTypeID      int     `json:"product_type_id"`
-}
-
-func ReadAllSectionsToFile() ([]*SectionJson, error) {
-	var sectionList []*SectionJson
+func ReadAllSectionsToFile() ([]*internal.Section, error) {
+	var sectionList []*internal.Section
 
 	file, err := os.Open(localFileJson)
 	if err != nil {
@@ -34,7 +24,7 @@ func ReadAllSectionsToFile() ([]*SectionJson, error) {
 			}
 			defer file.Close()
 
-			initialData := []SectionJson{}
+			initialData := []internal.Section{}
 			writer := json.NewEncoder(file)
 			if err := writer.Encode(initialData); err != nil {
 				return nil, err

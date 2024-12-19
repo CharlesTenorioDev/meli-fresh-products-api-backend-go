@@ -3,7 +3,6 @@ package service
 import (
 	"errors"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/dto"
 )
 
 type SellerServiceDefault struct {
@@ -52,7 +51,7 @@ func (s *SellerServiceDefault) Save(seller *internal.Seller) error {
 	return nil
 }
 
-func (s *SellerServiceDefault) Update(id int, updatedSeller dto.SellersUpdateDto) (internal.Seller, error) {
+func (s *SellerServiceDefault) Update(id int, updatedSeller internal.SellerPatch) (internal.Seller, error) {
 	actualSeller, err := s.FindByID(id)
 	if err != nil {
 		return internal.Seller{}, err

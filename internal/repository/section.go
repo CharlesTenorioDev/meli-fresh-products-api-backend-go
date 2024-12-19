@@ -30,6 +30,7 @@ func NewRepositorySection() *SectionDB {
 			MaximumCapacity:    value.MaximumCapacity,
 			WarehouseID:        value.WarehouseID,
 			ProductTypeID:      value.ProductTypeID,
+			ProductBatches:     value.ProductBatches,
 		}
 
 		bdSections[value.ID] = &section
