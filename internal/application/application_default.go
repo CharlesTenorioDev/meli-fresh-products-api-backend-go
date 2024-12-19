@@ -108,7 +108,7 @@ func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)
-	r.Post("/", hd.Save)
+	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
 }
