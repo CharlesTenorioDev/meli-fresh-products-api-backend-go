@@ -53,7 +53,7 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var product internal.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
+		http.Error(w, "Invalid input", http.StatusNotFound)
 		return
 	}
 	newProduct, err := h.s.Create(product)
