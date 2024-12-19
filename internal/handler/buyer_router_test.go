@@ -17,8 +17,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const Api = "/api/v1/buyers"
-
 type BuyerRouterSuite struct {
 	hd *BuyerHandlerDefault
 	rt chi.Router
