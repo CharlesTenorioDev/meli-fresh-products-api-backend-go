@@ -373,7 +373,15 @@ func (s *BuyerRouterSuite) TestPatchBuyer() {
 	if !ok {
 		s.T().FailNow()
 	}
+}
 
+func (s *BuyerRouterSuite) TestPatchBuyerThatDoesntExist() {
+	b, _ := json.Marshal(internal.BuyerPatch{})
+	w := httptest.NewRecorder()
+	r, err := http.NewRequest(http.MethodPatch, Api+"/20", bytes.NewReader(b))
+	require.NoError(s.T(), err)
+	s.rt.ServeHTTP(w, r)
+	require.Equal(s.T(), http.StatusNotFound, w.Result().StatusCode)
 }
 
 func TestBuyerRouterSuite(t *testing.T) {
