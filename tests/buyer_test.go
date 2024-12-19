@@ -43,18 +43,37 @@ func (s *BuyerRouterSuite) TestGetAllBuyers() {
 	}
 	s.rt.ServeHTTP(w, r)
 	json.NewDecoder(w.Body).Decode(&buyers)
-	s.Run("the router replied with status ok", func() {
+
+	ok := s.Run("the router replied with status ok", func() {
 		require.Equal(s.T(), http.StatusOK, w.Result().StatusCode)
 	})
-	s.Run("there are 5 entries registered", func() {
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("there are 5 entries registered", func() {
 		require.Equal(s.T(), 5, len(buyers.Data))
 	})
-	s.Run("the first entry makes sense", func() {
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("the first entry makes sense", func() {
 		require.Equal(s.T(), buyers.Data["0"].ID, 0)
 		require.Equal(s.T(), buyers.Data["0"].FirstName, "John")
 		require.Equal(s.T(), buyers.Data["0"].LastName, "Doe")
 		require.Equal(s.T(), buyers.Data["0"].CardNumberId, "1234567812345678")
 	})
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("the endpoint replied with content-type application/json", func() {
+		require.Equal(s.T(), w.HeaderMap["Content-Type"], []string{"application/json"})
+	})
+	if !ok {
+		s.T().FailNow()
+	}
 }
 
 func TestBuyerRouterSuite(t *testing.T) {
