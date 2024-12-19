@@ -147,8 +147,8 @@ func (suite *BuyerTestSuite) TestPatchBuyer() {
 	cardNumberId := "404"
 	suite.Run("apply changes", func() {
 		bp := internal.BuyerPatch{
-			FirstName: &fname,
-			LastName: &lname,
+			FirstName:    &fname,
+			LastName:     &lname,
 			CardNumberId: &cardNumberId,
 		}
 		b, _ := json.Marshal(bp)
@@ -192,8 +192,8 @@ func (suite *BuyerTestSuite) TestPatchInvalidId() {
 	lname := "John"
 	cardNumberId := "404"
 	bp := internal.BuyerPatch{
-		FirstName: &fname,
-		LastName: &lname,
+		FirstName:    &fname,
+		LastName:     &lname,
 		CardNumberId: &cardNumberId,
 	}
 	b, _ := json.Marshal(bp)
