@@ -1,4 +1,4 @@
-package tests
+package handler
 
 import (
 	"bytes"
@@ -10,7 +10,6 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
@@ -21,15 +20,15 @@ import (
 const Api = "/api/v1/buyers"
 
 type BuyerRouterSuite struct {
-	hd *handler.BuyerHandlerDefault
+	hd *BuyerHandlerDefault
 	rt chi.Router
 	suite.Suite
 }
 
 func (s *BuyerRouterSuite) SetupTest() {
-	repo := repository.NewBuyerMap("../db/buyer.json")
+	repo := repository.NewBuyerMap("../../db/buyer.json")
 	svc := service.NewBuyerService(repo)
-	s.hd = handler.NewBuyerHandlerDefault(svc)
+	s.hd = NewBuyerHandlerDefault(svc)
 	s.rt = chi.NewRouter()
 	s.rt.Route("/api/v1/buyers", func(r chi.Router) {
 		r.Get("/", s.hd.GetAll)
