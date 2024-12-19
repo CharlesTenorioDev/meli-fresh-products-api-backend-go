@@ -217,10 +217,10 @@ func (suite *EmployeeTestSuite) TestDeleteEmployeeNotFound() {
 
 	suite.handler.Delete(w, r)
 
-	// Verifica o código de status HTTP retornado.
+	// Verify the status code.
 	assert.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
 
-	// Verifica o corpo da resposta.
+	// Verify the message in the response body.
 	var response struct {
 		Error string `json:"data"`
 	}
