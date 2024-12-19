@@ -48,6 +48,7 @@ func (a *ServerChi) Run() (err error) {
 
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
 	slRepository := repository.NewSellerRepoMap()
+	pdRepository := repository.NewProductMap()
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
@@ -55,7 +56,7 @@ func (a *ServerChi) Run() (err error) {
 		})
 		r.Route("/buyers", buyerRouter)
 		r.Route("/sections", func(r chi.Router) {
-			sectionsRoutes(r, whRepository)
+			sectionsRoutes(r, whRepository, pdRepository)
 		})
 		r.Route("/warehouses", func(r chi.Router) {
 			warehouseRoute(r, whRepository)
@@ -64,7 +65,7 @@ func (a *ServerChi) Run() (err error) {
 			sellerRoutes(r, slRepository)
 		})
 		r.Route("/products", func(r chi.Router) {
-			productRoutes(r, slRepository)
+			productRoutes(r, pdRepository, slRepository)
 		})
 	})
 
@@ -94,10 +95,10 @@ func warehouseRoute(r chi.Router, whRepository internal.WarehouseRepository) {
 	r.Delete("/{id}", warehouseHandler.Delete())
 }
 
-func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository) {
+func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository, ptRepository internal.ProductRepository) {
 	rpS := repository.NewRepositorySection()
 	rpT := repository.NewRepositoryProductType()
-	sv := service.NewServiceSection(rpS, rpT, whRepository)
+	sv := service.NewServiceSection(rpS, rpT, ptRepository, whRepository)
 	hd := handler.NewHandlerSection(sv)
 
 	r.Get("/", hd.GetAll)
@@ -131,14 +132,14 @@ func buyerRouter(r chi.Router) {
 	r.Delete("/{id}", hd.Delete)
 }
 
-func productRoutes(r chi.Router, slRepository internal.SellerRepository) {
-	repo := repository.NewProductMap()
-	svc := service.NewProductService(repo, slRepository)
+func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository internal.SellerRepository) {
+	rpT := repository.NewRepositoryProductType()
+	svc := service.NewProductService(ptRepo, slRepository, rpT)
 	hd := handler.NewProducHandlerDefault(svc)
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)
 	r.Post("/", hd.Create)
-	r.Patch("/{id}",hd.Update)
-	r.Delete("/{id}", hd.Delete) 
+	r.Patch("/{id}", hd.Update)
+	r.Delete("/{id}", hd.Delete)
 }
