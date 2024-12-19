@@ -25,15 +25,13 @@ func NewSellerRepoMap() *SellerRepoMap {
 		log.Fatal(err)
 	}
 
-	var lastId int
 	for i, s := range sellers {
 		db[i+1] = s
-		lastId++
 	}
 
 	return &SellerRepoMap{
 		db:     db,
-		lastId: lastId,
+		lastId: len(sellers),
 	}
 }
 
