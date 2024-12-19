@@ -12,6 +12,7 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -143,6 +144,37 @@ func (s *BuyerRouterSuite) TestGetSpecificBuyers() {
 		if !ok {
 			s.T().FailNow()
 		}
+	}
+}
+
+func (s *BuyerRouterSuite) TestGetInvalidBuyer() {
+	r, err := http.NewRequest(http.MethodGet, Api+"/10", nil)
+	w := httptest.NewRecorder()
+	require.NoError(s.T(), err)
+
+	var restErr rest_err.RestErr
+	s.rt.ServeHTTP(w, r)
+	err = json.NewDecoder(w.Body).Decode(&restErr)
+	ok := s.Run("had no problems while decoding the response", func() {
+		require.NoError(s.T(), err)
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("the endpoint replied with status not found", func() {
+		require.Equal(s.T(), http.StatusNotFound, w.Result().StatusCode)
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("the rest err returned is a 'not found'", func() {
+		expectedError := *rest_err.NewNotFoundError("buyer not found")
+		require.Equal(s.T(), expectedError, restErr)
+	})
+	if !ok {
+		s.T().FailNow()
 	}
 }
 
