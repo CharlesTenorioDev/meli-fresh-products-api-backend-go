@@ -9,7 +9,8 @@ import (
 )
 
 type BuyerMap struct {
-	db map[int]*internal.Buyer
+	db     map[int]*internal.Buyer
+	lastId int
 }
 
 func NewBuyerMap(dbPath string) *BuyerMap {
@@ -29,7 +30,8 @@ func NewBuyerMap(dbPath string) *BuyerMap {
 		db[i] = &b
 	}
 	return &BuyerMap{
-		db: db,
+		db:     db,
+		lastId: len(buyers),
 	}
 }
 
@@ -43,9 +45,10 @@ func (r *BuyerMap) GetAll() (db map[int]internal.Buyer) {
 }
 
 func (r *BuyerMap) Add(buyer *internal.Buyer) {
-	id := len(r.db)
+	id := r.lastId
 	buyer.ID = id
 	r.db[id] = buyer
+	r.lastId++
 }
 
 func (r *BuyerMap) Update(id int, buyer internal.BuyerPatch) {
