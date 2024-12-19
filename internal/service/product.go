@@ -1,6 +1,10 @@
 package service
 
-import "github.com/meli-fresh-products-api-backend-t1/internal"
+import (
+	"errors"
+
+	"github.com/meli-fresh-products-api-backend-t1/internal"
+)
 
 func NewProductService(rp internal.ProductRepository) *ProductDefault {
 	return &ProductDefault{repo: rp}
@@ -23,18 +27,34 @@ func (s *ProductDefault) GetByID(id int) (internal.Product, error) {
 }
 
 func (s *ProductDefault) Create(product internal.Product) (internal.Product, error) {
-	product, err := s.repo.Save(product)
+	existingProducts, err :=  s.repo.FindAll()
+	if err != nil {
+		return product, err
+	}
+	if IsProductCodeExists(existingProducts, product.ProductCode) {
+		return product, errors.New("product code already exists")
+	}
+	
+	product.Id = GenerateNewID(existingProducts)
+	product, err = s.repo.Save(product)
 	if err != nil {
 		return internal.Product{}, err
 	}
 	return product, nil
 }
 func (s *ProductDefault) Update(product internal.Product) (internal.Product, error) {
-	product, err := s.repo.Update(product)
+	existingProducts, err :=  s.repo.FindAll()
+	if err != nil {
+		return product, err
+	}
+	if IsProductCodeExists(existingProducts, product.ProductCode) {
+		return product, errors.New("product code already exists")
+	}
+	productupdate, err := s.repo.Update(product)
 	if err != nil {
 		return internal.Product{}, err
 	}
-	return product, nil
+	return productupdate, nil
 }
 func (s *ProductDefault) Delete(id int) (error) {
 	err := s.repo.Delete(id)
@@ -42,4 +62,22 @@ func (s *ProductDefault) Delete(id int) (error) {
 		return err
 	}
 	return nil
+}
+
+func GenerateNewID(existingProducts map[int]internal.Product) int {
+	maxID := 0
+	for _, p := range existingProducts {
+		if p.Id > maxID {
+			maxID = p.Id
+		}
+	}
+	return maxID + 1
+}
+func IsProductCodeExists(existingProducts map[int]internal.Product, productCode string) bool {
+	for _, p := range existingProducts {
+		if p.ProductCode == productCode {
+			return true
+		}
+	}
+	return false
 }

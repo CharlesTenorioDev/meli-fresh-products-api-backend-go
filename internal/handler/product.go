@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-
+	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
@@ -23,15 +23,14 @@ func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get products", http.StatusInternalServerError)
 		return
 	}
-
-	response := map[string]interface{}{
-		"data": products,
+	var productList []internal.Product
+	for _, product := range products {
+		productList = append(productList, product)
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
-
+	response.JSON(w, http.StatusOK, map[string]any{
+		"data": productList,
+	})
 }
 func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
@@ -46,13 +45,9 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-	response := map[string]interface{}{
+	response.JSON(w, http.StatusOK, map[string]any{
 		"data": product,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response)
+	})
 }
 
 func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
@@ -61,40 +56,14 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input", http.StatusBadRequest)
 		return
 	}
-
-	existingProducts, err := h.s.GetAll() 
-	if err != nil {
-		http.Error(w, "Failed to retrieve products", http.StatusInternalServerError)
-		return
-	}
-
-	for _, p := range existingProducts {
-		if p.ProductCode == product.ProductCode {
-			http.Error(w, "Product code already exists", http.StatusConflict)
-			return
-		}
-	}
-	maxID := 0
-	for _, p := range existingProducts {
-		if p.Id > maxID {
-			maxID = p.Id
-		}
-	}
-
-	product.Id = maxID + 1
 	newProduct, err := h.s.Create(product)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusConflict)
 		return
 	}
-
-	response := map[string]interface{}{
+	response.JSON(w, http.StatusOK, map[string]any{
 		"data": newProduct,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(response) 
+	})
 }
 
 
@@ -112,18 +81,7 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid input: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	existingProducts, err := h.s.GetAll()
-	if err != nil {
-		http.Error(w, "Failed to retrieve products", http.StatusInternalServerError)
-		return
-	}
 
-	for _, p := range existingProducts {
-		if p.ProductCode == product.ProductCode && p.Id != id {
-			http.Error(w, "Product code already exists", http.StatusConflict)
-			return
-		}
-	}
 	product.Id = id 
 	
 	updatedProduct, err := h.s.Update(product)
@@ -131,14 +89,9 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
-
-	response := map[string]interface{}{
+	response.JSON(w, http.StatusOK, map[string]any{
 		"data": updatedProduct,
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(response) 
+	})
 }
 
 func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {

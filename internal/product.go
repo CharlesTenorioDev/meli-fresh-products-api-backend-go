@@ -4,7 +4,7 @@ import "time"
 
 type Product struct {
 	Id                             int     `json:"id"`
-	ProductCode                    string     `json:"product_code"`
+	ProductCode                    string  `json:"product_code"`
 	Description                    string  `json:"description"`
 	Height                         float64 `json:"height"`
 	Width                          float64 `json:"width"`
@@ -33,3 +33,4 @@ type ProductRepository interface {
 	Update(Product)(Product, error)
 	Delete(id int)(error)
 }
+
