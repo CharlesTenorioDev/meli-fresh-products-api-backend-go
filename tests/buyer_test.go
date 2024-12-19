@@ -1,6 +1,7 @@
 package tests
 
 import (
+	"bytes"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -33,6 +34,7 @@ func (s *BuyerRouterSuite) SetupTest() {
 	s.rt.Route("/api/v1/buyers", func(r chi.Router) {
 		r.Get("/", s.hd.GetAll)
 		r.Get("/{id}", s.hd.GetByID)
+		r.Post("/", s.hd.Create)
 	})
 }
 
@@ -172,6 +174,71 @@ func (s *BuyerRouterSuite) TestGetInvalidBuyer() {
 	ok = s.Run("the rest err returned is a 'not found'", func() {
 		expectedError := *rest_err.NewNotFoundError("buyer not found")
 		require.Equal(s.T(), expectedError, restErr)
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+}
+
+func (s *BuyerRouterSuite) TestCreateBuyer() {
+	buyer := internal.Buyer{
+		FirstName:    "Fabio",
+		LastName:     "Nacarelli",
+		CardNumberId: "40028922",
+	}
+	ok := s.Run("the user is created successfully", func() {
+		b, _ := json.Marshal(buyer)
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
+		require.NoError(s.T(), err)
+		s.rt.ServeHTTP(w, r)
+		ok := s.Run("the endpoint replied with status created", func() {
+			require.Equal(s.T(), http.StatusCreated, w.Result().StatusCode)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+
+		var resBuyer struct {
+			Data internal.Buyer `json:"data"`
+		}
+		err = json.NewDecoder(w.Body).Decode(&resBuyer)
+		require.NoError(s.T(), err)
+		ok = s.Run("the response fields are as expected", func() {
+			require.Equal(s.T(), 5, resBuyer.Data.ID)
+			require.Equal(s.T(), buyer.FirstName, resBuyer.Data.FirstName)
+			require.Equal(s.T(), buyer.LastName, resBuyer.Data.LastName)
+			require.Equal(s.T(), buyer.CardNumberId, resBuyer.Data.CardNumberId)
+		})
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("the user was actually created", func() {
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest(http.MethodGet, Api+"/5", nil)
+		require.NoError(s.T(), err)
+		s.rt.ServeHTTP(w, r)
+		ok := s.Run("the user exists", func() {
+			require.Equal(s.T(), http.StatusOK, w.Result().StatusCode)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+
+		var resBuyer struct {
+			Data internal.Buyer
+		}
+		err = json.NewDecoder(w.Body).Decode(&resBuyer)
+		ok = s.Run("the entries match", func() {
+			require.Equal(s.T(), buyer.FirstName, resBuyer.Data.FirstName)
+			require.Equal(s.T(), buyer.LastName, resBuyer.Data.LastName)
+			require.Equal(s.T(), buyer.CardNumberId, resBuyer.Data.CardNumberId)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
 	})
 	if !ok {
 		s.T().FailNow()
