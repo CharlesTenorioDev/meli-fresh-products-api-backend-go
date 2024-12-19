@@ -247,6 +247,34 @@ func (s *BuyerRouterSuite) TestCreateBuyer() {
 	if !ok {
 		s.T().FailNow()
 	}
+
+	ok = s.Run("create with the same card number id conflicts", func() {
+		b, _ := json.Marshal(buyer)
+		w := httptest.NewRecorder()
+		r, err := http.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
+		require.NoError(s.T(), err)
+		s.rt.ServeHTTP(w, r)
+		ok := s.Run("the endpoint replied with status created", func() {
+			require.Equal(s.T(), http.StatusConflict, w.Result().StatusCode)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+
+		ok = s.Run("the rest err is as expected", func() {
+			expectedRestErr := *rest_err.NewConflictError("buyer with given card number already registered")
+			var restErr rest_err.RestErr
+			err = json.NewDecoder(w.Body).Decode(&restErr)
+			require.NoError(s.T(), err)
+			require.Equal(s.T(), expectedRestErr, restErr)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+	})
+	if !ok {
+		s.T().FailNow()
+	}
 }
 
 func (s *BuyerRouterSuite) TestCreateUnprocessableEntity() {
