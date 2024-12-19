@@ -27,7 +27,7 @@ func (h *BuyerHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	all := h.s.GetAll()
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"data":    all,
+		"data": all,
 	})
 }
 
@@ -40,12 +40,12 @@ func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	buyer, err := h.s.FindByID(id)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		return
 	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"data":    buyer,
+		"data": buyer,
 	})
 }
 
@@ -59,7 +59,7 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = h.s.Save(&buyer)
 	if err != nil {
-		if (errors.Is(err, service.BuyerAlreadyExists) || errors.Is(err, service.CardNumberAlreadyInUse)){
+		if errors.Is(err, service.BuyerAlreadyExists) || errors.Is(err, service.CardNumberAlreadyInUse) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
@@ -68,7 +68,7 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, http.StatusCreated, map[string]any{
-		"data":    buyer,
+		"data": buyer,
 	})
 }
 
@@ -97,7 +97,7 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"data":    buyer,
+		"data": buyer,
 	})
 }
 
