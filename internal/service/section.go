@@ -11,20 +11,23 @@ import (
 var (
 	SectionNotFound            = errors.New("section not found")
 	WarehouseNotFound          = errors.New("warehouse not found")
+	ProductTypeNotFound        = errors.New("product_type not found")
 	SectionAlreadyExists       = errors.New("section already exists")
 	SectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
 	SectionUnprocessableEntity = errors.New("couldn't parse section")
 )
 
-func NewServiceSection(rpSection internal.SectionRepository, rpWareHouse internal.WarehouseRepository) *SectionService {
+func NewServiceSection(rpSection internal.SectionRepository, rpProductType internal.ProductTypeRepository, rpWareHouse internal.WarehouseRepository) *SectionService {
 	return &SectionService{
 		rpS: rpSection,
+		rpT: rpProductType,
 		rpW: rpWareHouse,
 	}
 }
 
 type SectionService struct {
 	rpS internal.SectionRepository
+	rpT internal.ProductTypeRepository
 	rpW internal.WarehouseRepository
 }
 
@@ -74,6 +77,11 @@ func (s *SectionService) Save(section *internal.Section) error {
 	_, err = s.rpW.FindByID(section.WarehouseID)
 	if err != nil {
 		return WarehouseNotFound
+	}
+
+	_, err = s.rpT.FindByID(section.ProductTypeID)
+	if err != nil {
+		return ProductTypeNotFound
 	}
 
 	err = s.rpS.Save(section)
@@ -168,8 +176,15 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 		}
 	}
 
-	if err := processInt("product_type_id", &section.ProductTypeID); err != nil {
-		return internal.Section{}, err
+	if _, ok := updates["product_type_id"]; ok {
+		if err := processInt("product_type_id", &section.ProductTypeID); err != nil {
+			return internal.Section{}, err
+		}
+
+		_, err = s.rpT.FindByID(section.ProductTypeID)
+		if err != nil {
+			return internal.Section{}, ProductTypeNotFound
+		}
 	}
 
 	err = s.rpS.Update(&section)

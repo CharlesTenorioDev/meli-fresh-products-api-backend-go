@@ -160,7 +160,14 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 			return
 		}
 
-		seller, err := h.sv.Update(id, body)
+		slPatch := internal.SellerPatch{
+			CID:         body.CID,
+			CompanyName: body.CompanyName,
+			Address:     body.Address,
+			Telephone:   body.Telephone,
+		}
+
+		seller, err := h.sv.Update(id, slPatch)
 		if err != nil {
 			if errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
 				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))

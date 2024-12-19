@@ -47,7 +47,7 @@ func (a *ServerChi) Run() (err error) {
 	rt.Use(middleware.Logger)
 
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
-	slRepository := repository.NewSellerRepoMap(make(map[int]internal.Seller))
+	slRepository := repository.NewSellerRepoMap()
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", employeeRouter)
@@ -93,8 +93,9 @@ func warehouseRoute(r chi.Router, whRepository internal.WarehouseRepository) {
 }
 
 func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository) {
-	rp := repository.NewRepositorySection()
-	sv := service.NewServiceSection(rp, whRepository)
+	rpS := repository.NewRepositorySection()
+	rpT := repository.NewRepositoryProductType()
+	sv := service.NewServiceSection(rpS, rpT, whRepository)
 	hd := handler.NewHandlerSection(sv)
 
 	r.Get("/", hd.GetAll)
