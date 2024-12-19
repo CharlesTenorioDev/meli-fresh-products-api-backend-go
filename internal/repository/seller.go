@@ -1,7 +1,10 @@
 package repository
 
 import (
+	"encoding/json"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"log"
+	"os"
 )
 
 type SellerRepoMap struct {
@@ -9,8 +12,29 @@ type SellerRepoMap struct {
 	lastId int
 }
 
-func NewSellerRepoMap(db map[int]internal.Seller) *SellerRepoMap {
-	return &SellerRepoMap{db: db}
+func NewSellerRepoMap() *SellerRepoMap {
+	var sellers []internal.Seller
+	db := make(map[int]internal.Seller)
+	file, err := os.Open("db/sellers.json")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = json.NewDecoder(file).Decode(&sellers)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var lastId int
+	for i, s := range sellers {
+		db[i+1] = s
+		lastId++
+	}
+
+	return &SellerRepoMap{
+		db:     db,
+		lastId: lastId,
+	}
 }
 
 func (s *SellerRepoMap) Save(seller *internal.Seller) error {
