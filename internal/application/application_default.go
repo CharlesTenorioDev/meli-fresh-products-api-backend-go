@@ -131,7 +131,8 @@ func buyerRouter(r chi.Router) {
 
 func productRoutes(r chi.Router, slRepository internal.SellerRepository) {
 	repo := repository.NewProductMap()
-	svc := service.NewProductService(repo, slRepository)
+	rpT := repository.NewRepositoryProductType()
+	svc := service.NewProductService(repo, slRepository, rpT)
 	hd := handler.NewProducHandlerDefault(svc)
 
 	r.Get("/", hd.GetAll)

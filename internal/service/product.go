@@ -6,16 +6,18 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
-func NewProductService(prRepo internal.ProductRepository, slRepo internal.SellerRepository) *ProductDefault {
+func NewProductService(prRepo internal.ProductRepository, slRepo internal.SellerRepository, ptRepo internal.ProductTypeRepository) *ProductDefault {
 	return &ProductDefault{
 		productRepo: prRepo, 
 		sellerRepo: slRepo, 
+		productTypeRepo: ptRepo,
 
 	}
 }
 type ProductDefault struct {
 	productRepo internal.ProductRepository
 	sellerRepo internal.SellerRepository
+	productTypeRepo internal.ProductTypeRepository
 }
 
 func (s *ProductDefault) GetAll() (v map[int]internal.Product, err error) {
@@ -43,19 +45,17 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
     if IsProductCodeExists(existingProducts, product.ProductCode) {
         return product, errors.New("product code already exists")
     }
-	allSellers, _ := s.sellerRepo.FindAll() // Supondo que você tenha uma função FindAll
-	fmt.Println("Available Sellers:", allSellers)
-    fmt.Println("Seller ID:", product.SellerId)
 
-    // Busca o vendedor pelo ID
-    seller, err := s.sellerRepo.FindByID(product.SellerId)
+    _, err = s.sellerRepo.FindByID(product.SellerId)
     if err != nil {
-        fmt.Println("Error fetching seller:", err) // Imprime erro se houver
-        return product, err // Retorna o erro se o vendedor não for encontrado
+        fmt.Println("Error fetching seller:", err)
+        return product, err
     }
-
-    fmt.Println("Seller Info:", seller)
-
+	_, err = s.productTypeRepo.FindByID(product.ProductTypeId)
+    if err != nil {
+        fmt.Println("Error fetching Product type:", err)
+        return product, err
+    }
     // Gera um novo ID para o produto
     product.Id = GenerateNewID(existingProducts)
 
@@ -76,6 +76,17 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	if err := ValidateProduct(product); err != nil {
 		return product, err 
 	}
+	_, err = s.sellerRepo.FindByID(product.SellerId)
+    if err != nil {
+        fmt.Println("Error fetching seller:", err)
+        return product, err
+    }
+	_, err = s.productTypeRepo.FindByID(product.ProductTypeId)
+    if err != nil {
+        fmt.Println("Error fetching Product type:", err)
+        return product, err
+    }
+	
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
 		return product, errors.New("product code already exists")
 	}
