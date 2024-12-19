@@ -88,8 +88,9 @@ func warehouseRoute(r chi.Router, whRepository internal.WarehouseRepository) {
 }
 
 func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository) {
-	rp := repository.NewRepositorySection()
-	sv := service.NewServiceSection(rp, whRepository)
+	rpS := repository.NewRepositorySection()
+	rpT := repository.NewRepositoryProductType()
+	sv := service.NewServiceSection(rpS, rpT, whRepository)
 	hd := handler.NewHandlerSection(sv)
 
 	r.Get("/", hd.GetAll)
