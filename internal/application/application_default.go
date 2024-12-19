@@ -51,7 +51,9 @@ func (a *ServerChi) Run() (err error) {
 	pdRepository := repository.NewProductMap()
 
 	rt.Route("/api/v1", func(r chi.Router) {
-		r.Route("/employees", employeeRouter)
+		r.Route("/employees", func(r chi.Router) {
+			employeeRouter(r, whRepository)
+		})
 		r.Route("/buyers", buyerRouter)
 		r.Route("/sections", func(r chi.Router) {
 			sectionsRoutes(r, whRepository, pdRepository)
@@ -106,14 +108,14 @@ func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository, ptR
 	r.Delete("/{id}", hd.Delete)
 }
 
-func employeeRouter(r chi.Router) {
-	repo := repository.NewEmployeeRepository()
-	svc := service.NewEmployeeServiceDefault(repo)
-	hd := handler.NewEmployeeDefault(svc)
+func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
+	rp := repository.NewEmployeeRepository()
+	sv := service.NewEmployeeServiceDefault(rp, whRepository)
+	hd := handler.NewEmployeeDefault(sv)
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)
-	r.Post("/", hd.Save)
+	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
 }

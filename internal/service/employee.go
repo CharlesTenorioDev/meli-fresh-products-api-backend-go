@@ -13,18 +13,17 @@ var (
 	EmployeeNotFound  = errors.New("employee not found")
 )
 
-func NewEmployeeServiceDefault(rp repository.EmployeeRepository) *EmployeeDefault {
+func NewEmployeeServiceDefault(rp repository.EmployeeRepository, rpWarehouse internal.WarehouseRepository) *EmployeeDefault {
 	return &EmployeeDefault{
-		rp: rp,
-		// warehouseSvc WarehouseService
-
+		rp:  rp,
+		rpW: rpWarehouse,
 	}
 
 }
 
 type EmployeeDefault struct {
-	rp repository.EmployeeRepository
-	// warehouseSvc WarehouseService
+	rp  repository.EmployeeRepository
+	rpW internal.WarehouseRepository
 }
 
 type EmployeeService interface {
@@ -61,6 +60,11 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 	if !validate {
 		err = errors.New("invalid entity data")
 		return
+	}
+
+	_, err = s.rpW.FindByID(emp.WarehouseId)
+	if err != nil {
+		return WarehouseNotFound
 	}
 
 	if cardNumberIdInUse(emp.CardNumberId, employees) {

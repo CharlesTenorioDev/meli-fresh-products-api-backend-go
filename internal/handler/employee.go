@@ -25,6 +25,7 @@ func NewEmployeeDefault(sv service.EmployeeService) *EmployeeHandlerDefault {
 func (h *EmployeeHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	dataEmployee := h.sv.GetAll()
 
+	w.Header().Set("Content-Type", "application/json")
 	response.JSON(w, http.StatusOK, map[string]any{
 		"data": dataEmployee,
 	})
@@ -55,7 +56,7 @@ func (h *EmployeeHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request)
 
 }
 
-func (h *EmployeeHandlerDefault) Save(w http.ResponseWriter, r *http.Request) {
+func (h *EmployeeHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 
 	var employee internal.Employee
 
@@ -73,7 +74,7 @@ func (h *EmployeeHandlerDefault) Save(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, service.EmployeeInUse) || errors.Is(err, service.CardNumberIdInUse) {
 			response.JSON(w, http.StatusConflict, map[string]any{
-				"data": err.Error(),
+				"error": "employee already in use",
 			})
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
