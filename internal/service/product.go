@@ -2,24 +2,28 @@ package service
 
 import (
 	"errors"
-
+	"fmt"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
-func NewProductService(rp internal.ProductRepository) *ProductDefault {
-	return &ProductDefault{repo: rp}
-}
+func NewProductService(prRepo internal.ProductRepository, slRepo internal.SellerRepository) *ProductDefault {
+	return &ProductDefault{
+		productRepo: prRepo, 
+		sellerRepo: slRepo, 
 
+	}
+}
 type ProductDefault struct {
-	repo internal.ProductRepository
+	productRepo internal.ProductRepository
+	sellerRepo internal.SellerRepository
 }
 
 func (s *ProductDefault) GetAll() (v map[int]internal.Product, err error) {
-	v, err = s.repo.FindAll()
+	v, err = s.productRepo.FindAll()
 	return
 }
 func (s *ProductDefault) GetByID(id int) (internal.Product, error) {
-	product, err := s.repo.FindByID(id)
+	product, err := s.productRepo.FindByID(id)
 	if err != nil {
 		return internal.Product{}, err
 	}
@@ -27,26 +31,45 @@ func (s *ProductDefault) GetByID(id int) (internal.Product, error) {
 }
 
 func (s *ProductDefault) Create(product internal.Product) (internal.Product, error) {
-	existingProducts, err :=  s.repo.FindAll()
-	if err != nil {
-		return product, err
-	}
-	if err := ValidateProduct(product); err != nil {
-		return product, err
-	}
-	if IsProductCodeExists(existingProducts, product.ProductCode) {
-		return product, errors.New("product code already exists")
-	}
-	
-	product.Id = GenerateNewID(existingProducts)
-	product, err = s.repo.Save(product)
-	if err != nil {
-		return internal.Product{}, err
-	}
-	return product, nil
+    existingProducts, err := s.productRepo.FindAll()
+    if err != nil {
+        return product, err
+    }
+
+    if err := ValidateProduct(product); err != nil {
+        return product, err
+    }
+
+    if IsProductCodeExists(existingProducts, product.ProductCode) {
+        return product, errors.New("product code already exists")
+    }
+	allSellers, _ := s.sellerRepo.FindAll() // Supondo que você tenha uma função FindAll
+	fmt.Println("Available Sellers:", allSellers)
+    fmt.Println("Seller ID:", product.SellerId)
+
+    // Busca o vendedor pelo ID
+    seller, err := s.sellerRepo.FindByID(product.SellerId)
+    if err != nil {
+        fmt.Println("Error fetching seller:", err) // Imprime erro se houver
+        return product, err // Retorna o erro se o vendedor não for encontrado
+    }
+
+    fmt.Println("Seller Info:", seller)
+
+    // Gera um novo ID para o produto
+    product.Id = GenerateNewID(existingProducts)
+
+    // Salva o novo produto no repositório
+    product, err = s.productRepo.Save(product)
+    if err != nil {
+        return internal.Product{}, err
+    }
+    
+    return product, nil
 }
+
 func (s *ProductDefault) Update(product internal.Product) (internal.Product, error) {
-	existingProducts, err :=  s.repo.FindAll()
+	existingProducts, err :=  s.productRepo.FindAll()
 	if err != nil {
 		return product, err
 	}
@@ -56,14 +79,14 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
 		return product, errors.New("product code already exists")
 	}
-	productupdate, err := s.repo.Update(product)
+	productupdate, err := s.productRepo.Update(product)
 	if err != nil {
 		return internal.Product{}, err
 	}
 	return productupdate, nil
 }
 func (s *ProductDefault) Delete(id int) (error) {
-	err := s.repo.Delete(id)
+	err := s.productRepo.Delete(id)
 	if err != nil {
 		return err
 	}
