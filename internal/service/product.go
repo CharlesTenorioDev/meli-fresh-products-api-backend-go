@@ -24,6 +24,7 @@ func (s *ProductDefault) GetAll() (v map[int]internal.Product, err error) {
 	v, err = s.productRepo.FindAll()
 	return
 }
+
 func (s *ProductDefault) GetByID(id int) (internal.Product, error) {
 	product, err := s.productRepo.FindByID(id)
 	if err != nil {
@@ -69,33 +70,70 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 }
 
 func (s *ProductDefault) Update(product internal.Product) (internal.Product, error) {
-	existingProducts, err :=  s.productRepo.FindAll()
+	existingProducts, err := s.productRepo.FindAll()
 	if err != nil {
 		return product, err
 	}
-	if err := ValidateProduct(product); err != nil {
-		return product, err 
+
+	existingProduct, err := s.productRepo.FindByID(product.Id)
+	if err != nil {
+		return product, err
 	}
+
+	if product.ProductCode == "" {
+		product.ProductCode = existingProduct.ProductCode
+	}
+	if product.Description == "" {
+		product.Description = existingProduct.Description
+	}
+	if product.Height == 0 {
+		product.Height = existingProduct.Height
+	}
+	if product.Width == 0 {
+		product.Width = existingProduct.Width
+	}
+	if product.NetWeight == 0 {
+		product.NetWeight = existingProduct.NetWeight
+	}
+	if product.ExpirationRate.IsZero() {
+		product.ExpirationRate = existingProduct.ExpirationRate
+	}
+	if product.RecommendedFreezingTemperature == 0 {
+		product.RecommendedFreezingTemperature = existingProduct.RecommendedFreezingTemperature
+	}
+	if product.FreezingRate == 0 {
+		product.FreezingRate = existingProduct.FreezingRate
+	}
+	if product.ProductTypeId == 0 {
+		product.ProductTypeId = existingProduct.ProductTypeId
+	}
+	if product.SellerId == 0 {
+		product.SellerId = existingProduct.SellerId
+	}
+
 	_, err = s.sellerRepo.FindByID(product.SellerId)
-    if err != nil {
-        fmt.Println("Error fetching seller:", err)
-        return product, err
-    }
+	if err != nil {
+		return product, err
+	}
+
 	_, err = s.productTypeRepo.FindByID(product.ProductTypeId)
-    if err != nil {
-        fmt.Println("Error fetching Product type:", err)
-        return product, err
-    }
-	
-	if IsProductCodeExists(existingProducts, product.ProductCode) {
+	if err != nil {
+		return product, err
+	}
+
+	if IsProductCodeExists(existingProducts, product.ProductCode) && product.ProductCode != existingProduct.ProductCode {
 		return product, errors.New("product code already exists")
 	}
-	productupdate, err := s.productRepo.Update(product)
+
+	productUpdate, err := s.productRepo.Update(product)
 	if err != nil {
 		return internal.Product{}, err
 	}
-	return productupdate, nil
+
+	return productUpdate, nil
 }
+
+
 func (s *ProductDefault) Delete(id int) (error) {
 	err := s.productRepo.Delete(id)
 	if err != nil {
