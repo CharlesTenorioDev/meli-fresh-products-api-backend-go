@@ -245,6 +245,34 @@ func (s *BuyerRouterSuite) TestCreateBuyer() {
 	}
 }
 
+func (s *BuyerRouterSuite) TestCreateUnprocessableEntity() {
+	b, _ := json.Marshal(internal.Buyer{
+		FirstName:    "",
+		LastName:     "",
+		CardNumberId: "",
+	})
+	w := httptest.NewRecorder()
+	r, err := http.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
+	require.NoError(s.T(), err)
+	s.rt.ServeHTTP(w, r)
+	ok := s.Run("the endpoint replies with unprocessable entity", func() {
+		require.Equal(s.T(), http.StatusUnprocessableEntity, w.Result().StatusCode)
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+
+	ok = s.Run("the rest error is as expected", func() {
+		expectedRestErr := *rest_err.NewUnprocessableEntityError("couldn't parse buyer")
+		var resRestErr rest_err.RestErr
+		json.NewDecoder(w.Body).Decode(&resRestErr)
+		require.Equal(s.T(), expectedRestErr, resRestErr)
+	})
+	if !ok {
+		s.T().FailNow()
+	}
+}
+
 func TestBuyerRouterSuite(t *testing.T) {
 	suite.Run(t, new(BuyerRouterSuite))
 }
