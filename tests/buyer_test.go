@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
@@ -30,6 +31,7 @@ func (s *BuyerRouterSuite) SetupTest() {
 	s.rt = chi.NewRouter()
 	s.rt.Route("/api/v1/buyers", func(r chi.Router) {
 		r.Get("/", s.hd.GetAll)
+		r.Get("/{id}", s.hd.GetByID)
 	})
 }
 
@@ -69,10 +71,78 @@ func (s *BuyerRouterSuite) TestGetAllBuyers() {
 	}
 
 	ok = s.Run("the endpoint replied with content-type application/json", func() {
-		require.Equal(s.T(), w.HeaderMap["Content-Type"], []string{"application/json"})
+		require.Equal(s.T(), w.Header()["Content-Type"], []string{"application/json"})
 	})
 	if !ok {
 		s.T().FailNow()
+	}
+}
+
+func (s *BuyerRouterSuite) TestGetSpecificBuyers() {
+	tests := []struct {
+		ID                   int
+		ExpectedHttpStatus   int
+		ExpectedFirstName    string
+		ExpectedLastName     string
+		ExpectedCardNumberid string
+	}{
+		{
+			ID:                   0,
+			ExpectedHttpStatus:   http.StatusOK,
+			ExpectedFirstName:    "John",
+			ExpectedLastName:     "Doe",
+			ExpectedCardNumberid: "1234567812345678",
+		},
+		{
+			ID:                   1,
+			ExpectedHttpStatus:   http.StatusOK,
+			ExpectedFirstName:    "Jane",
+			ExpectedLastName:     "Smith",
+			ExpectedCardNumberid: "2345678923456789",
+		},
+		{
+			ID:                   2,
+			ExpectedHttpStatus:   http.StatusOK,
+			ExpectedFirstName:    "Alice",
+			ExpectedLastName:     "Johnson",
+			ExpectedCardNumberid: "3456789034567890",
+		},
+	}
+
+	for _, tt := range tests {
+		path := Api + "/" + strconv.Itoa(tt.ID)
+		idStr := strconv.Itoa(tt.ID)
+		r, _ := http.NewRequest(http.MethodGet, path, nil)
+		w := httptest.NewRecorder()
+		s.rt.ServeHTTP(w, r)
+
+		ok := s.Run("the router replied with status ok on api v1 buyers "+idStr, func() {
+			require.Equal(s.T(), tt.ExpectedHttpStatus, w.Result().StatusCode)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+
+		var buyers struct {
+			Data internal.Buyer `json:"data"`
+		}
+		err := json.NewDecoder(w.Body).Decode(&buyers)
+		ok = s.Run("got no error while decoding the response on api v1 buyers "+idStr, func() {
+			require.NoError(s.T(), err)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
+
+		ok = s.Run("the entries match on api v1 buyers "+idStr, func() {
+			require.Equal(s.T(), tt.ID, buyers.Data.ID)
+			require.Equal(s.T(), tt.ExpectedFirstName, buyers.Data.FirstName)
+			require.Equal(s.T(), tt.ExpectedLastName, buyers.Data.LastName)
+			require.Equal(s.T(), tt.ExpectedCardNumberid, buyers.Data.CardNumberId)
+		})
+		if !ok {
+			s.T().FailNow()
+		}
 	}
 }
 
