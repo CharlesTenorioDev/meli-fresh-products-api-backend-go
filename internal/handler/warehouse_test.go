@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -127,7 +126,12 @@ func TestWarehouseHandler(t *testing.T) {
 			url:            endpoint_warehouse + "/invalid",
 			expectedCode:   http.StatusBadRequest,
 			expectedHeader: jsonHeader,
-			expectedBody:   `{"message":"Invalid ID format", "status":"Bad Request"}`,
+			expectedBody: `{
+				"message": "Invalid ID format",
+				"error": "bad_request",
+				"code": 400,
+				"causes": null
+			}`,
 		},
 		{
 			name:           "CreateWarehouseWithoutMinimumTemperature_Error",
@@ -136,7 +140,12 @@ func TestWarehouseHandler(t *testing.T) {
 			body:           `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300}`,
 			expectedCode:   http.StatusUnprocessableEntity,
 			expectedHeader: jsonHeader,
-			expectedBody:   `{"message":"minimum temperature is required", "status":"Unprocessable Entity"}`,
+			expectedBody: `{
+				"message": "minimum temperature is required",
+				"error": "unprocessable_entity",
+				"code": 422,
+				"causes": null
+			}`,
 		},
 		{
 			name:           "CreateWarehouseInvalidData_Error",
@@ -145,7 +154,12 @@ func TestWarehouseHandler(t *testing.T) {
 			body:           `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":"invalid"}`,
 			expectedCode:   http.StatusBadRequest,
 			expectedHeader: jsonHeader,
-			expectedBody:   `{"message":"Invalid data", "status":"Bad Request"}`,
+			expectedBody: `{
+				"message": "Invalid data",
+				"error": "bad_request",
+				"code": 400,
+				"causes": null
+			}`,
 		},
 		{
 			name:           "UpdateWarehouseInvalidData_Error",
@@ -154,7 +168,12 @@ func TestWarehouseHandler(t *testing.T) {
 			body:           `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":"invalid"}`,
 			expectedCode:   http.StatusBadRequest,
 			expectedHeader: jsonHeader,
-			expectedBody:   `{"message":"Invalid data", "status":"Bad Request"}`,
+			expectedBody: `{
+				"message": "Invalid data",
+				"error": "bad_request",
+				"code": 400,
+				"causes": null
+			}`,
 		},
 		{
 			name:           "UpdateWarehouseNotFound_Error",
@@ -163,7 +182,12 @@ func TestWarehouseHandler(t *testing.T) {
 			body:           `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":-20}`,
 			expectedCode:   http.StatusNotFound,
 			expectedHeader: jsonHeader,
-			expectedBody:   `{"message":"Warehouse not found", "status":"Not Found"}`,
+			expectedBody: `{
+				"message": "Warehouse not found",
+				"error": "not_found",
+				"code": 404,
+				"causes": null
+			}`,
 		},
 		{
 			name:           "DeleteWarehouseNotFound_Error",
@@ -176,7 +200,6 @@ func TestWarehouseHandler(t *testing.T) {
 
 	// Iterating over the tests
 	for _, tt := range tests {
-		fmt.Printf("Test: %s\n", tt.name)
 		t.Run(tt.name, func(t *testing.T) {
 			// Request
 			var req *http.Request
