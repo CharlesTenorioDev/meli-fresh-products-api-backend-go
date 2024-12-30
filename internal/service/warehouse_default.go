@@ -74,7 +74,7 @@ func (s *WarehouseDefault) Update(id int, warehousePatch *internal.WarehousePatc
 	if warehousePatch.WarehouseCode != nil {
 		// We`re gonna check if there is a warehouse with the same code
 		err = s.checkWarehouseCodeExists(*warehousePatch.WarehouseCode)
-		if err != nil {
+		if err != nil && warehouse.WarehouseCode != *warehousePatch.WarehouseCode {
 			switch err {
 			case internal.ErrWarehouseRepositoryDuplicated:
 				return internal.Warehouse{}, internal.ErrWarehouseRepositoryDuplicated
