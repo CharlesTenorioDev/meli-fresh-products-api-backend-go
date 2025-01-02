@@ -35,12 +35,12 @@ type ProductMap struct {
 	db map[int]*internal.Product
 }
 
-func (r *ProductMap)FindAll() (db map[int]internal.Product, err error){
-	db = make(map[int]internal.Product)
-	for index, p := range r.db{
-		db[index] = *p
+func (r *ProductMap)FindAll() (db []internal.Product, err error){
+	products := make([]internal.Product, 0, len(r.db))
+	for _, p := range r.db {
+		products = append(products, *p) 
 	}
-	return
+	return products, nil 
 }
 func (r *ProductMap) FindByID(id int) (internal.Product, error) {
 	product, exists := r.db[id]
