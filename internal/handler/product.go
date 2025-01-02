@@ -23,13 +23,9 @@ func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Failed to get products", http.StatusInternalServerError)
 		return
 	}
-	var productList []internal.Product
-	for _, product := range products {
-		productList = append(productList, product)
-	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"data": productList,
+		"data": products,
 	})
 }
 func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {

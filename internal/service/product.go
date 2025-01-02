@@ -20,7 +20,7 @@ type ProductDefault struct {
 	productTypeRepo internal.ProductTypeRepository
 }
 
-func (s *ProductDefault) GetAll() (v map[int]internal.Product, err error) {
+func (s *ProductDefault) GetAll() (v []internal.Product, err error) {
 	v, err = s.productRepo.FindAll()
 	return
 }
@@ -142,7 +142,7 @@ func (s *ProductDefault) Delete(id int) (error) {
 	return nil
 }
 
-func GenerateNewID(existingProducts map[int]internal.Product) int {
+func GenerateNewID(existingProducts []internal.Product) int {
 	maxID := 0
 	for _, p := range existingProducts {
 		if p.Id > maxID {
@@ -151,7 +151,7 @@ func GenerateNewID(existingProducts map[int]internal.Product) int {
 	}
 	return maxID + 1
 }
-func IsProductCodeExists(existingProducts map[int]internal.Product, productCode string) bool {
+func IsProductCodeExists(existingProducts []internal.Product, productCode string) bool {
 	for _, p := range existingProducts {
 		if p.ProductCode == productCode {
 			return true

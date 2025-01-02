@@ -17,7 +17,7 @@ func NewProductMap() *ProductMap {
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer file.Close() 
+	defer file.Close()
 
 	err = json.NewDecoder(file).Decode(&products)
 	if err != nil {
@@ -25,22 +25,21 @@ func NewProductMap() *ProductMap {
 	}
 
 	for _, p := range products {
-		db[p.Id] = &p 
+		db[p.Id] = &p
 	}
 	return &ProductMap{db: db}
 }
-
 
 type ProductMap struct {
 	db map[int]*internal.Product
 }
 
-func (r *ProductMap)FindAll() (db map[int]internal.Product, err error){
-	db = make(map[int]internal.Product)
-	for index, p := range r.db{
-		db[index] = *p
+func (r *ProductMap) FindAll() (db []internal.Product, err error) {
+	products := make([]internal.Product, 0, len(r.db))
+	for _, p := range r.db {
+		products = append(products, *p)
 	}
-	return
+	return products, nil
 }
 func (r *ProductMap) FindByID(id int) (internal.Product, error) {
 	product, exists := r.db[id]
@@ -55,8 +54,8 @@ func (r *ProductMap) Save(product internal.Product) (internal.Product, error) {
 		return internal.Product{}, errors.New("product with this ID already exists")
 	}
 
-	r.db[product.Id] = &product 
-	return product, nil 
+	r.db[product.Id] = &product
+	return product, nil
 }
 
 func (r *ProductMap) Update(product internal.Product) (internal.Product, error) {
@@ -64,9 +63,9 @@ func (r *ProductMap) Update(product internal.Product) (internal.Product, error) 
 		return internal.Product{}, errors.New("product not found")
 	}
 
-	r.db[product.Id] = &product 
+	r.db[product.Id] = &product
 
-	return product, nil 
+	return product, nil
 }
 
 func (r *ProductMap) Delete(id int) error {
@@ -78,4 +77,3 @@ func (r *ProductMap) Delete(id int) error {
 
 	return nil
 }
-
