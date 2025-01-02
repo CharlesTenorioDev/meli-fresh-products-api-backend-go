@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -9,7 +10,6 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/dto"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
@@ -26,6 +26,31 @@ type SellerDefault struct {
 	sv internal.SellerService
 }
 
+type SellersGetJson struct {
+	Id          int    `json:"id"`
+	Cid         int    `json:"cid"`
+	CompanyName string `json:"company_name"`
+	Address     string `json:"address"`
+	Telephone   string `json:"telephone"`
+	Locality    int    `json:"locality_id"`
+}
+
+type SellersPostJson struct {
+	CID         int    `json:"cid"`
+	CompanyName string `json:"company_name"`
+	Address     string `json:"address"`
+	Telephone   string `json:"telephone"`
+	Locality    int    `json:"locality_id"`
+}
+
+type SellersUpdateJson struct {
+	CID         *int    `json:"cid"`
+	CompanyName *string `json:"company_name"`
+	Address     *string `json:"address"`
+	Telephone   *string `json:"telephone"`
+	Locality    *int    `json:"locality_id"`
+}
+
 // GetAll returns all sellers
 func (h *SellerDefault) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -39,9 +64,9 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 			return
 		}
 
-		var sellersJson []dto.SellersGetJson
+		var sellersJson []SellersGetJson
 		for i := range all {
-			sellersJson = append(sellersJson, dto.SellersGetJson{
+			sellersJson = append(sellersJson, SellersGetJson{
 				Id:          all[i].ID,
 				Cid:         all[i].CID,
 				CompanyName: all[i].CompanyName,
@@ -78,12 +103,13 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 			return
 		}
 
-		var sellerJson = dto.SellersGetJson{
+		var sellerJson = SellersGetJson{
 			Id:          seller.ID,
 			Cid:         seller.CID,
 			CompanyName: seller.CompanyName,
 			Address:     seller.Address,
 			Telephone:   seller.Telephone,
+			Locality:    seller.Locality,
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
@@ -96,7 +122,7 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 func (h *SellerDefault) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		var body dto.SellersPostJson
+		var body SellersPostJson
 		err := request.JSON(r, &body)
 		if err != nil {
 			response.JSON(w, http.StatusInternalServerError, nil)
@@ -108,6 +134,7 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 			CompanyName: body.CompanyName,
 			Address:     body.Address,
 			Telephone:   body.Telephone,
+			Locality:    body.Locality,
 		}
 
 		err = sl.Validate()
@@ -119,12 +146,14 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 
 		err = h.sv.Save(sl)
 		if err != nil {
+			log.Println(err)
+
 			if errors.Is(err, internal.ErrSellerConflict) || errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
 				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 				return
 			}
 
-			if errors.Is(err, internal.ErrSellerNotFound) {
+			if errors.Is(err, internal.ErrSellerNotFound) || errors.Is(err, internal.ErrLocalityNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 				return
 			}
@@ -153,7 +182,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 			return
 		}
 
-		var body dto.SellersUpdateJson
+		var body SellersUpdateJson
 		err = request.JSON(r, &body)
 		if err != nil {
 			response.JSON(w, http.StatusInternalServerError, nil)
@@ -165,6 +194,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 			CompanyName: body.CompanyName,
 			Address:     body.Address,
 			Telephone:   body.Telephone,
+			Locality:    body.Locality,
 		}
 
 		seller, err := h.sv.Update(id, slPatch)
@@ -190,12 +220,13 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": dto.SellersGetJson{
+			"data": SellersGetJson{
 				Id:          seller.ID,
 				Cid:         seller.CID,
 				CompanyName: seller.CompanyName,
 				Address:     seller.Address,
 				Telephone:   seller.Telephone,
+				Locality:    seller.Locality,
 			},
 		})
 

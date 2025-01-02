@@ -1,6 +1,8 @@
 package application
 
 import (
+	"database/sql"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -15,6 +17,7 @@ import (
 type ConfigServerChi struct {
 	// ServerAddress is the address where the server will be listening
 	ServerAddress string
+	Dsn           string
 }
 
 // NewServerChi is a function that returns a new instance of ServerChi
@@ -22,16 +25,21 @@ func NewServerChi(cfg *ConfigServerChi) *ServerChi {
 	// default values
 	defaultConfig := &ConfigServerChi{
 		ServerAddress: ":8080",
+		Dsn:           "",
 	}
 	if cfg != nil {
 		if cfg.ServerAddress != "" {
 			defaultConfig.ServerAddress = cfg.ServerAddress
+		}
+		if cfg.Dsn != "" {
+			defaultConfig.Dsn = cfg.Dsn
 		}
 
 	}
 
 	return &ServerChi{
 		serverAddress: defaultConfig.ServerAddress,
+		dsn:           defaultConfig.Dsn,
 	}
 }
 
@@ -39,15 +47,34 @@ func NewServerChi(cfg *ConfigServerChi) *ServerChi {
 type ServerChi struct {
 	// serverAddress is the address where the server will be listening
 	serverAddress string
+	dsn           string
 }
 
 // Run is a method that runs the application
 func (a *ServerChi) Run() (err error) {
+
+	db, err := sql.Open("mysql", a.dsn)
+	if err != nil {
+		return
+	}
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(db)
+	// - database: ping
+	err = db.Ping()
+	if err != nil {
+		return
+	}
+
 	rt := chi.NewRouter()
 	rt.Use(middleware.Logger)
 
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
-	slRepository := repository.NewSellerRepoMap()
+	slRepository := repository.NewSellerMysql(db)
+	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
 
 	rt.Route("/api/v1", func(r chi.Router) {
@@ -62,7 +89,10 @@ func (a *ServerChi) Run() (err error) {
 			warehouseRoute(r, whRepository)
 		})
 		r.Route("/sellers", func(r chi.Router) {
-			sellerRoutes(r, slRepository)
+			sellerRoutes(r, slRepository, lcRepository)
+		})
+		r.Route("/localities", func(r chi.Router) {
+			localitiesRoutes(r, lcRepository)
 		})
 		r.Route("/products", func(r chi.Router) {
 			productRoutes(r, pdRepository, slRepository)
@@ -73,8 +103,16 @@ func (a *ServerChi) Run() (err error) {
 	return
 }
 
-func sellerRoutes(r chi.Router, slRepository internal.SellerRepository) {
-	sv := service.NewSellerServiceDefault(slRepository)
+func localitiesRoutes(r chi.Router, lcRepository internal.LocalityRepository) {
+	sv := service.NewLocalityDefault(lcRepository)
+	hd := handler.NewLocalityDefault(sv)
+
+	r.Get("/report-sellers", hd.ReportSellers())
+	r.Post("/", hd.Save())
+}
+
+func sellerRoutes(r chi.Router, slRepository internal.SellerRepository, lcRepository internal.LocalityRepository) {
+	sv := service.NewSellerServiceDefault(slRepository, lcRepository)
 	hd := handler.NewSellerDefault(sv)
 
 	r.Get("/", hd.GetAll())
