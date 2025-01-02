@@ -9,6 +9,7 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
 // Structure to represent the warehouse in JSON format
@@ -54,7 +55,7 @@ func (h *WarehouseDefault) GetAll() http.HandlerFunc {
 		// Find all warehouses
 		warehouses, err := h.sv.FindAll()
 		if err != nil {
-			response.Error(w, http.StatusInternalServerError, ErrInternalServer)
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
 			return
 		}
 
@@ -83,7 +84,7 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
-			response.Error(w, http.StatusBadRequest, ErrInvalidID)
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(ErrInvalidID))
 			return
 		}
 
@@ -91,9 +92,9 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
-				response.Error(w, http.StatusNotFound, err.Error())
+				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 			default:
-				response.Error(w, http.StatusInternalServerError, ErrInternalServer)
+				response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
 			}
 			return
 		}
@@ -120,7 +121,7 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 
 		// decode the request
 		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
-			response.Error(w, http.StatusBadRequest, ErrInvalidData)
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(ErrInvalidData))
 			return
 		}
 
@@ -136,7 +137,7 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 
 		// validating the warehouse
 		if err := warehouse.Validate(); err != nil {
-			response.Error(w, http.StatusUnprocessableEntity, err.Error())
+			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 			return
 		}
 
@@ -145,9 +146,9 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
-				response.Error(w, http.StatusConflict, err.Error())
+				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 			default:
-				response.Error(w, http.StatusInternalServerError, ErrInternalServer)
+				response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
 			}
 			return
 		}
@@ -174,14 +175,14 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
-			response.Error(w, http.StatusBadRequest, ErrInvalidID)
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(ErrInvalidID))
 			return
 		}
 
 		// decode the request into a WarehousePatchUpdate
 		var requestInput *internal.WarehousePatchUpdate
 		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
-			response.Error(w, http.StatusBadRequest, ErrInvalidData)
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(ErrInvalidData))
 			return
 		}
 
@@ -190,11 +191,11 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
-				response.Error(w, http.StatusConflict, err.Error())
+				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
-				response.Error(w, http.StatusNotFound, err.Error())
+				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 			default:
-				response.Error(w, http.StatusInternalServerError, ErrInternalServer)
+				response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
 			}
 			return
 		}
@@ -222,7 +223,7 @@ func (h *WarehouseDefault) Delete() http.HandlerFunc {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
 		if err != nil {
-			response.Error(w, http.StatusBadRequest, ErrInvalidID)
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(ErrInvalidID))
 			return
 		}
 
@@ -230,9 +231,9 @@ func (h *WarehouseDefault) Delete() http.HandlerFunc {
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryNotFound):
-				response.Error(w, http.StatusNotFound, err.Error())
+				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 			default:
-				response.Error(w, http.StatusInternalServerError, ErrInternalServer)
+				response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
 			}
 			return
 		}
