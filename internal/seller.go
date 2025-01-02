@@ -16,6 +16,8 @@ type Seller struct {
 	Address string `json:"address"`
 	// Telephone is the telephone number of the company
 	Telephone string `json:"telephone"`
+	// Locality is the id of locality
+	Locality int `json:"locality_id"`
 }
 
 type SellerPatch struct {
@@ -38,6 +40,9 @@ func (seller *Seller) Validate() error {
 	}
 	if seller.Telephone == "" {
 		return errors.Join(err, errors.New("seller.Telephone is required"))
+	}
+	if seller.Locality == 0 {
+		return errors.Join(err, errors.New("seller.Locality is required"))
 	}
 	return err
 }

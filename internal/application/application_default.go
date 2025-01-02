@@ -2,6 +2,7 @@ package application
 
 import (
 	"database/sql"
+	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -56,7 +57,12 @@ func (a *ServerChi) Run() (err error) {
 	if err != nil {
 		return
 	}
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}(db)
 	// - database: ping
 	err = db.Ping()
 	if err != nil {
@@ -68,6 +74,7 @@ func (a *ServerChi) Run() (err error) {
 
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
 	slRepository := repository.NewSellerMysql(db)
+	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
 
 	rt.Route("/api/v1", func(r chi.Router) {
@@ -82,7 +89,10 @@ func (a *ServerChi) Run() (err error) {
 			warehouseRoute(r, whRepository)
 		})
 		r.Route("/sellers", func(r chi.Router) {
-			sellerRoutes(r, slRepository)
+			sellerRoutes(r, slRepository, lcRepository)
+		})
+		r.Route("/localities", func(r chi.Router) {
+
 		})
 		r.Route("/products", func(r chi.Router) {
 			productRoutes(r, pdRepository, slRepository)
@@ -93,8 +103,15 @@ func (a *ServerChi) Run() (err error) {
 	return
 }
 
-func sellerRoutes(r chi.Router, slRepository internal.SellerRepository) {
-	sv := service.NewSellerServiceDefault(slRepository)
+func localitiesRoutes(r chi.Router, lcRepository internal.LocalityRepository) {
+	sv := service.NewLocalityDefault(lcRepository)
+	hd := handler.NewLocalityDefault(sv)
+
+	r.Get("/report-sellers", hd.ReportSellers())
+}
+
+func sellerRoutes(r chi.Router, slRepository internal.SellerRepository, lcRepository internal.LocalityRepository) {
+	sv := service.NewSellerServiceDefault(slRepository, lcRepository)
 	hd := handler.NewSellerDefault(sv)
 
 	r.Get("/", hd.GetAll())

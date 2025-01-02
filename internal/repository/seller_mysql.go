@@ -70,7 +70,7 @@ func (r *SellerMysql) FindByID(id int) (seller internal.Seller, err error) {
 // FindByCID returns a seller from the database by its cid
 func (r *SellerMysql) FindByCID(cid int) (seller internal.Seller, err error) {
 	// execute the query
-	row := r.db.QueryRow("SELECT `s.id`, `s.cid`, `c.company_name`, `c.address`, `c.telephone` FROM `sellers` AS `s` WHERE `s.cid` = ?", cid)
+	row := r.db.QueryRow("SELECT `s.id`, `s.cid`, `s.company_name`, `s.address`, `s.telephone` FROM `sellers` AS `s` WHERE `s.cid` = ?", cid)
 
 	// scan the row into the seller
 	err = row.Scan(&seller.ID, &seller.CID, &seller.CompanyName, &seller.Address, &seller.Telephone)
