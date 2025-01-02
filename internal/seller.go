@@ -54,17 +54,17 @@ var (
 // SellerRepository is an interface that contains the methods that the seller repository should support
 type SellerRepository interface {
 	// FindAll returns all the sellers
-	FindAll() ([]Seller, error)
+	FindAll() (sellers []Seller, err error)
 	// FindByID returns the seller with the given ID
-	FindByID(id int) (Seller, error)
+	FindByID(id int) (seller Seller, err error)
 	// FindByCID returns the seller with the given CID
-	FindByCID(cid int) (*Seller, error)
+	FindByCID(cid int) (seller Seller, err error)
 	// Save saves the given seller
-	Save(seller *Seller) error
+	Save(seller *Seller) (err error)
 	// Update updates the given seller
-	Update(id int, seller *Seller) error
+	Update(seller *Seller) (err error)
 	// Delete deletes the seller with the given ID
-	Delete(id int) error
+	Delete(id int) (err error)
 }
 
 // SellerService is an interface that contains the methods that the seller service should support
