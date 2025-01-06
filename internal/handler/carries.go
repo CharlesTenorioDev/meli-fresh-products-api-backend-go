@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -28,5 +29,39 @@ func (h *CarriesHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusOK, map[string]any{
 		"data": all,
+	})
+}
+
+func (h *CarriesHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
+	var carry internal.Carries
+	err := json.NewDecoder(r.Body).Decode(&carry)
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, map[string]any{
+			"error": "failed to parse body",
+		})
+		return
+	}
+
+	if ok := carry.Ok(); !ok {
+		response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
+			"error": "missing fields",
+		})
+		return
+	}
+
+	lastId, err := h.sv.Create(carry)
+	if err != nil {
+		response.JSON(w, http.StatusConflict, map[string]any{
+			"error": "conflict",
+		})
+		return
+	}
+
+	response.JSON(w, http.StatusCreated, map[string]any{
+		"data": struct {
+			Id int64 `json:"id"`
+		}{
+			Id: lastId,
+		},
 	})
 }

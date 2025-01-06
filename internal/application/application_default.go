@@ -187,4 +187,5 @@ func carriesRoutes(r chi.Router, db *sql.DB) {
 	hd := handler.NewCarriesHandlerDefault(sv)
 
 	r.Get("/", hd.GetAll)
+	r.Post("/", hd.Create)
 }
