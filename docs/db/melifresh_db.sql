@@ -1,12 +1,9 @@
 -- DDL
-DROP
-DATABASE IF EXISTS `melifresh`;
+DROP DATABASE IF EXISTS `melifresh`;
 
-CREATE
-DATABASE `melifresh`;
+CREATE DATABASE `melifresh`;
 
-USE
-`melifresh`;
+USE `melifresh`;
 
 -- table `localities`
 CREATE TABLE `localities`
@@ -97,18 +94,31 @@ CREATE TABLE `buyers`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+-- table `purchase_orders`
+CREATE TABLE `purchase_orders`
+(
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `order_number` varchar(25)  NOT NULL,
+    `order_date` date NOT NULL,
+    `tracking_code` varchar(25) NOT NULL,
+    `buyer_id` int(11) NOT NULL,
+    `product_record_id` int(11) NOT NULL,
+    FOREIGN KEY (`buyer_id`) REFERENCES buyers (id),
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 -- DML
-INSERT INTO localities (name, province_name, country_name)
-VALUES ('New York City', 'New York', 'United States'),
-       ('Los Angeles', 'California', 'United States'),
-       ('Chicago', 'Illinois', 'United States'),
-       ('Houston', 'Texas', 'United States'),
-       ('Phoenix', 'Arizona', 'United States'),
-       ('Philadelphia', 'Pennsylvania', 'United States'),
-       ('San Antonio', 'Texas', 'United States'),
-       ('San Diego', 'California', 'United States'),
-       ('Dallas', 'Texas', 'United States'),
-       ('San Jose', 'California', 'United States');
+INSERT INTO localities (id, name, province_name, country_name)
+VALUES (1, 'New York City', 'New York', 'United States'),
+       (2, 'Los Angeles', 'California', 'United States'),
+       (3, 'Chicago', 'Illinois', 'United States'),
+       (4, 'Houston', 'Texas', 'United States'),
+       (5, 'Phoenix', 'Arizona', 'United States'),
+       (6, 'Philadelphia', 'Pennsylvania', 'United States'),
+       (7, 'San Antonio', 'Texas', 'United States'),
+       (8, 'San Diego', 'California', 'United States'),
+       (9, 'Dallas', 'Texas', 'United States'),
+       (10, 'San Jose', 'California', 'United States');
 
 INSERT INTO sellers (cid, company_name, address, telephone, locality_id)
 VALUES (1, 'Company A', '123 Main St', '123-456-7890', 1),
@@ -183,3 +193,15 @@ VALUES ('B1001', 'Alice', 'Brown'),
        ('B1008', 'Steven', 'Clark'),
        ('B1009', 'Betty', 'Lopez'),
        ('B1010', 'Edward', 'Gonzalez');
+
+INSERT INTO purchase_orders (order_number, order_date, tracking_code, buyer_id, product_record_id)
+VALUES  ('PO1001', '2021-01-01', 'T1001', 1, 1),
+        ('PO1002', '2021-01-02', 'T1002', 2, 2),
+        ('PO1003', '2021-01-03', 'T1003', 3, 3),
+        ('PO1004', '2021-01-04', 'T1004', 4, 4),
+        ('PO1005', '2021-01-05', 'T1005', 5, 5),
+        ('PO1006', '2021-01-06', 'T1006', 6, 6),
+        ('PO1007', '2021-01-07', 'T1007', 7, 7),
+        ('PO1008', '2021-01-08', 'T1008', 8, 8),
+        ('PO1009', '2021-01-09', 'T1009', 9, 9),
+        ('PO1010', '2021-01-10', 'T1010', 10, 10);
