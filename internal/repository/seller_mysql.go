@@ -43,6 +43,9 @@ func (r *SellerMysql) FindAll() (sellers []internal.Seller, err error) {
 	// check for errors
 	err = rows.Err()
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrSellerNotFound
+		}
 		return
 	}
 
@@ -59,9 +62,7 @@ func (r *SellerMysql) FindByID(id int) (seller internal.Seller, err error) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrSellerNotFound
-			return
 		}
-		return
 	}
 
 	return
@@ -77,9 +78,7 @@ func (r *SellerMysql) FindByCID(cid int) (seller internal.Seller, err error) {
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrSellerNotFound
-			return
 		}
-		return
 	}
 
 	return
@@ -98,12 +97,8 @@ func (r *SellerMysql) Save(seller *internal.Seller) (err error) {
 			switch mysqlErr.Number {
 			case 1062:
 				err = internal.ErrSellerConflict
-			default:
-				// ...
 			}
-			return
 		}
-
 		return
 	}
 
@@ -135,10 +130,7 @@ func (r *SellerMysql) Update(seller *internal.Seller) (err error) {
 			default:
 				err = internal.ErrSellerNotFound
 			}
-			return
 		}
-
-		return
 	}
 
 	return

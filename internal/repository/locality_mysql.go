@@ -31,13 +31,8 @@ func (r *LocalityMysql) Save(locality *internal.Locality) (err error) {
 			switch mysqlErr.Number {
 			case 1062:
 				err = internal.ErrLocalityConflict
-			default:
-				// ...
 			}
-			return
 		}
-
-		return
 	}
 
 	return
@@ -53,11 +48,8 @@ func (r *LocalityMysql) ReportSellers(id int) (locality internal.Locality, err e
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrLocalityNotFound
-			return
 		}
-		return
 	}
-
 	return
 }
 
@@ -70,10 +62,7 @@ func (r *LocalityMysql) FindByID(id int) (locality internal.Locality, err error)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrLocalityNotFound
-			return
 		}
-		return
 	}
-
 	return
 }

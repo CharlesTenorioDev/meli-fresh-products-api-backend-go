@@ -2,7 +2,6 @@ package application
 
 import (
 	"database/sql"
-	"log"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -57,12 +56,9 @@ func (a *ServerChi) Run() (err error) {
 	if err != nil {
 		return
 	}
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(db)
+
+	defer db.Close()
+
 	// - database: ping
 	err = db.Ping()
 	if err != nil {
