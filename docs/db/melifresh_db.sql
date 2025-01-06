@@ -5,8 +5,7 @@ DATABASE IF EXISTS `melifresh`;
 CREATE
 DATABASE `melifresh`;
 
-USE
-`melifresh`;
+USE `melifresh`;
 
 -- table `localities`
 CREATE TABLE `localities`
@@ -95,6 +94,18 @@ CREATE TABLE `buyers`
     `first_name`     varchar(50) NOT NULL,
     `last_name`      varchar(50) NOT NULL,
     PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+CREATE TABLE `carries`
+(
+    `id`             int(11) NOT NULL AUTO_INCREMENT,
+	`cid`            int(11) UNIQUE NOT NULL,
+	`company_name`   varchar(100) NOT NULL,
+	`address`        varchar(100) NOT NULL,
+	`phone_number`   varchar(20) NOT NULL,
+	`locality_id`    int(11) NOT NULL,
+    FOREIGN KEY (`locality_id`) REFERENCES localities (id),
+	PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 -- DML
