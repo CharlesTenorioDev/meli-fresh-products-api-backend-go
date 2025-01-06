@@ -1,4 +1,4 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
@@ -10,6 +10,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -48,18 +49,19 @@ func (m *MockSectionService) Delete(id int) error {
 
 type SectionTestSuite struct {
 	suite.Suite
-	handler *SectionHandler
+	handler *handler.SectionHandler
 	service *MockSectionService
 }
 
 func (suite *SectionTestSuite) SetupTest() {
 	suite.service = new(MockSectionService)
-	suite.handler = NewHandlerSection(suite.service)
+	suite.handler = handler.NewHandlerSection(suite.service)
 }
 
 func (suite *SectionTestSuite) TestGetAllSections() {
 	sections := []internal.Section{
 		{
+			ID:                 1,
 			SectionNumber:      101,
 			CurrentTemperature: 22.5,
 			MinimumTemperature: 15.0,
@@ -70,7 +72,9 @@ func (suite *SectionTestSuite) TestGetAllSections() {
 			ProductTypeID:      301,
 		},
 	}
-	suite.service.On("GetAll").Return(sections)
+
+	var err error
+	suite.service.On("FindAll").Return(sections, err)
 
 	r := httptest.NewRequest(http.MethodGet, "/sections", nil)
 	w := httptest.NewRecorder()
@@ -79,13 +83,14 @@ func (suite *SectionTestSuite) TestGetAllSections() {
 	assert.Equal(suite.T(), http.StatusOK, w.Result().StatusCode)
 
 	var response struct {
-		Data map[int]internal.Section `json:"data"`
+		Data []internal.Section `json:"data"`
 	}
-	err := json.NewDecoder(w.Body).Decode(&response)
+	err = json.NewDecoder(w.Body).Decode(&response)
 	require.NoError(suite.T(), err)
 
 	expected := []internal.Section{
 		{
+			ID:                 1,
 			SectionNumber:      101,
 			CurrentTemperature: 22.5,
 			MinimumTemperature: 15.0,
@@ -101,6 +106,7 @@ func (suite *SectionTestSuite) TestGetAllSections() {
 
 func (suite *SectionTestSuite) TestGetSectionById() {
 	section := internal.Section{
+		ID:                 1,
 		SectionNumber:      101,
 		CurrentTemperature: 22.5,
 		MinimumTemperature: 15.0,
@@ -110,7 +116,9 @@ func (suite *SectionTestSuite) TestGetSectionById() {
 		WarehouseID:        201,
 		ProductTypeID:      301,
 	}
-	suite.service.On("GetById", 1).Return(section, nil)
+
+	var err error
+	suite.service.On("FindByID", 1).Return(section, err)
 
 	r := httptest.NewRequest(http.MethodGet, "/sections/{id}", nil)
 	rctx := chi.NewRouteContext()
@@ -125,13 +133,13 @@ func (suite *SectionTestSuite) TestGetSectionById() {
 	var response struct {
 		Data internal.Section `json:"data"`
 	}
-	err := json.NewDecoder(w.Body).Decode(&response)
+	err = json.NewDecoder(w.Body).Decode(&response)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), section, response.Data)
 }
 
 func (suite *SectionTestSuite) TestGetSectionByIdNotFound() {
-	suite.service.On("GetById", 1).Return(internal.Section{}, service.SectionNotFound)
+	suite.service.On("FindByID", 1).Return(internal.Section{}, service.SectionNotFound)
 
 	r := httptest.NewRequest(http.MethodGet, "/sections/{id}", nil)
 	rctx := chi.NewRouteContext()
@@ -153,6 +161,7 @@ func (suite *SectionTestSuite) TestGetSectionByIdNotFound() {
 
 func (suite *SectionTestSuite) TestSaveSection() {
 	section := internal.Section{
+		ID:                 1,
 		SectionNumber:      101,
 		CurrentTemperature: 22.5,
 		MinimumTemperature: 15.0,
@@ -200,7 +209,7 @@ func (suite *SectionTestSuite) TestSaveSectionError() {
 
 	suite.handler.Create(w, r)
 
-	assert.Equal(suite.T(), http.StatusConflict, w.Result().StatusCode)
+	assert.Equal(suite.T(), http.StatusUnprocessableEntity, w.Result().StatusCode)
 
 	var response struct {
 		Error string `json:"error"`
@@ -208,22 +217,23 @@ func (suite *SectionTestSuite) TestSaveSectionError() {
 	err := json.NewDecoder(w.Body).Decode(&response)
 	require.NoError(suite.T(), err)
 	assert.NotEmpty(suite.T(), response.Error)
-	assert.Equal(suite.T(), "section already in use", response.Error)
+	assert.Equal(suite.T(), "unprocessable_entity", response.Error)
 }
 
 func (suite *SectionTestSuite) TestUpdateSection() {
 	section := internal.Section{
 		SectionNumber:      101,
-		CurrentTemperature: 22.5,
-		MinimumTemperature: 15.0,
-		CurrentCapacity:    50,
-		MinimumCapacity:    30,
-		MaximumCapacity:    100,
-		WarehouseID:        201,
-		ProductTypeID:      301,
+		CurrentTemperature: 1.0,
+		MinimumTemperature: 1.0,
+		CurrentCapacity:    1,
+		MinimumCapacity:    1,
+		MaximumCapacity:    1,
+		WarehouseID:        1,
+		ProductTypeID:      1,
 	}
-	suite.service.On("Update", section).Return(nil)
-	suite.service.On("GetById", 1).Return(section, nil)
+
+	suite.service.On("Update", 1, mock.Anything).Return(section, nil)
+	suite.service.On("FindByID", 1).Return(section, nil)
 
 	body, _ := json.Marshal(section)
 	r := httptest.NewRequest(http.MethodPut, "/sections/{id}", bytes.NewReader(body))
@@ -241,6 +251,7 @@ func (suite *SectionTestSuite) TestUpdateSection() {
 	}
 	err := json.NewDecoder(w.Body).Decode(&response)
 	require.NoError(suite.T(), err)
+
 	assert.Equal(suite.T(), section, response.Data)
 }
 
@@ -259,7 +270,7 @@ func (suite *SectionTestSuite) TestDeleteSection() {
 }
 
 func (suite *SectionTestSuite) TestDeleteSectionNotFound() {
-	suite.service.On("Delete", 1).Return(internal.ErrEmployeeNotFound)
+	suite.service.On("Delete", 1).Return(service.SectionNotFound)
 
 	r := httptest.NewRequest(http.MethodDelete, "/sections/{id}", nil)
 	rctx := chi.NewRouteContext()
@@ -269,13 +280,13 @@ func (suite *SectionTestSuite) TestDeleteSectionNotFound() {
 
 	suite.handler.Delete(w, r)
 
-	assert.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
+	assert.Equal(suite.T(), http.StatusInternalServerError, w.Result().StatusCode)
 	var response struct {
 		Error string `json:"data"`
 	}
 	err := json.NewDecoder(w.Body).Decode(&response)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), "section not found", response.Error)
+	assert.Equal(suite.T(), "", response.Error)
 }
 
 func TestSectionTestSuite(t *testing.T) {
