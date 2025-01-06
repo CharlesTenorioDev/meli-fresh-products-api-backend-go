@@ -16,6 +16,8 @@ type Seller struct {
 	Address string `json:"address"`
 	// Telephone is the telephone number of the company
 	Telephone string `json:"telephone"`
+	// Locality is the id of locality
+	Locality int `json:"locality_id"`
 }
 
 type SellerPatch struct {
@@ -23,6 +25,7 @@ type SellerPatch struct {
 	CompanyName *string
 	Address     *string
 	Telephone   *string
+	Locality    *int
 }
 
 func (seller *Seller) Validate() error {
@@ -39,6 +42,9 @@ func (seller *Seller) Validate() error {
 	if seller.Telephone == "" {
 		return errors.Join(err, errors.New("seller.Telephone is required"))
 	}
+	if seller.Locality == 0 {
+		return errors.Join(err, errors.New("seller.Locality is required"))
+	}
 	return err
 }
 
@@ -54,17 +60,17 @@ var (
 // SellerRepository is an interface that contains the methods that the seller repository should support
 type SellerRepository interface {
 	// FindAll returns all the sellers
-	FindAll() ([]Seller, error)
+	FindAll() (sellers []Seller, err error)
 	// FindByID returns the seller with the given ID
-	FindByID(id int) (Seller, error)
+	FindByID(id int) (seller Seller, err error)
 	// FindByCID returns the seller with the given CID
-	FindByCID(cid int) (*Seller, error)
+	FindByCID(cid int) (seller Seller, err error)
 	// Save saves the given seller
-	Save(seller *Seller) error
+	Save(seller *Seller) (err error)
 	// Update updates the given seller
-	Update(id int, seller *Seller) error
+	Update(seller *Seller) (err error)
 	// Delete deletes the seller with the given ID
-	Delete(id int) error
+	Delete(id int) (err error)
 }
 
 // SellerService is an interface that contains the methods that the seller service should support

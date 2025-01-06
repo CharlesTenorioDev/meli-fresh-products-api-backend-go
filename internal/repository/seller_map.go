@@ -7,12 +7,12 @@ import (
 	"os"
 )
 
-type SellerRepoMap struct {
+type SellerMap struct {
 	db     map[int]internal.Seller
 	lastId int
 }
 
-func NewSellerRepoMap() *SellerRepoMap {
+func NewSellerMap() *SellerMap {
 	var sellers []internal.Seller
 	db := make(map[int]internal.Seller)
 	file, err := os.Open("db/sellers.json")
@@ -29,13 +29,13 @@ func NewSellerRepoMap() *SellerRepoMap {
 		db[i+1] = s
 	}
 
-	return &SellerRepoMap{
+	return &SellerMap{
 		db:     db,
 		lastId: len(sellers),
 	}
 }
 
-func (s *SellerRepoMap) Save(seller *internal.Seller) error {
+func (s *SellerMap) Save(seller *internal.Seller) (err error) {
 	id := s.lastId + 1
 
 	_, ok := s.db[id]
@@ -50,7 +50,7 @@ func (s *SellerRepoMap) Save(seller *internal.Seller) error {
 	return nil
 }
 
-func (s *SellerRepoMap) FindByID(id int) (internal.Seller, error) {
+func (s *SellerMap) FindByID(id int) (seller internal.Seller, err error) {
 	seller, ok := s.db[id]
 	if !ok {
 		return internal.Seller{}, internal.ErrSellerNotFound
@@ -58,19 +58,17 @@ func (s *SellerRepoMap) FindByID(id int) (internal.Seller, error) {
 	return seller, nil
 }
 
-func (s *SellerRepoMap) FindByCID(cid int) (*internal.Seller, error) {
+func (s *SellerMap) FindByCID(cid int) (seller internal.Seller, err error) {
 	sellers := s.db
 	for _, seller := range sellers {
 		if seller.CID == cid {
-			return &seller, nil
+			return seller, nil
 		}
 	}
-	return nil, internal.ErrSellerNotFound
+	return internal.Seller{}, internal.ErrSellerNotFound
 }
 
-func (s *SellerRepoMap) FindAll() ([]internal.Seller, error) {
-	var sellers []internal.Seller
-
+func (s *SellerMap) FindAll() (sellers []internal.Seller, err error) {
 	if len(s.db) == 0 {
 		return nil, internal.ErrSellerNotFound
 	}
@@ -82,17 +80,17 @@ func (s *SellerRepoMap) FindAll() ([]internal.Seller, error) {
 	return sellers, nil
 }
 
-func (s *SellerRepoMap) Update(id int, seller *internal.Seller) error {
-	_, ok := s.db[id]
+func (s *SellerMap) Update(seller *internal.Seller) (err error) {
+	_, ok := s.db[seller.ID]
 
 	if !ok {
 		return internal.ErrSellerNotFound
 	}
-	s.db[id] = *seller
+	s.db[seller.ID] = *seller
 	return nil
 }
 
-func (s *SellerRepoMap) Delete(id int) error {
+func (s *SellerMap) Delete(id int) (err error) {
 	_, ok := s.db[id]
 	if !ok {
 		return internal.ErrSellerNotFound
