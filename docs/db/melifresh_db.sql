@@ -10,7 +10,7 @@ USE `melifresh`;
 -- table `localities`
 CREATE TABLE `localities`
 (
-    `id` int(11) NOT NULL,
+    `id` int(11) NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `province_name` varchar(255) NOT NULL,
     `country_name` varchar(255) NOT NULL,
@@ -194,3 +194,10 @@ VALUES ('B1001', 'Alice', 'Brown'),
        ('B1008', 'Steven', 'Clark'),
        ('B1009', 'Betty', 'Lopez'),
        ('B1010', 'Edward', 'Gonzalez');
+
+INSERT INTO carries (cid, company_name, address, phone_number, locality_id)
+VALUES (1, 'Meli Fresh Logistics', '123 Fresh St', '555-1001', 1),
+(2, 'Quick Delivery Services', '456 Fast Ave', '555-1002', 2),
+(3, 'Fresh Express', '789 Speed Blvd', '555-1003', 3),
+(4, 'Swift Transport Co.', '101 Pine St', '555-1004', 4),
+(5, 'Rapid Freight Solutions', '202 Oak Dr', '555-1005', 5);

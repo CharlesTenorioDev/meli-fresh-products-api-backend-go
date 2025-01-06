@@ -93,6 +93,9 @@ func (a *ServerChi) Run() (err error) {
 		r.Route("/products", func(r chi.Router) {
 			productRoutes(r, pdRepository, slRepository)
 		})
+		r.Route("/carries", func(r chi.Router) {
+			carriesRoutes(r, db)
+		})
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
@@ -176,4 +179,12 @@ func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+}
+
+func carriesRoutes(r chi.Router, db *sql.DB) {
+	rp := repository.NewCarriesMysql(db)
+	sv := service.NewCarriesService(rp)
+	hd := handler.NewCarriesHandlerDefault(sv)
+
+	r.Get("/", hd.GetAll)
 }
