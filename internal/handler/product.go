@@ -28,10 +28,11 @@ func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	response.JSON(w, http.StatusOK, map[string]any{
+	response.JSON(w, http.StatusOK, map[string]interface{}{
 		"data": products,
 	})
 }
+
 func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
