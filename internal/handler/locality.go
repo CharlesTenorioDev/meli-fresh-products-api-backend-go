@@ -3,12 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"github.com/bootcamp-go/web/response"
-	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/bootcamp-go/web/response"
+	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
 // NewLocalityDefault creates a new instance of the seller handler
@@ -37,6 +38,34 @@ type LocalityPostJson struct {
 	LocalityName string `json:"locality_name"`
 	ProvinceName string `json:"province_name"`
 	CountryName  string `json:"country_name"`
+}
+
+func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		idStr := r.URL.Query().Get("id")
+
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, nil)
+			return
+		}
+
+		amountOfCarries, err := h.sv.ReportCarries(id)
+		if err != nil {
+			response.JSON(w, http.StatusInternalServerError, map[string]any{
+				"error": "failed to fetch carries",
+			})
+			return
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": struct {
+				AmountOfCarries int `json:"amount_of_carries"`
+			}{
+				AmountOfCarries: amountOfCarries,
+			},
+		})
+	}
 }
 
 // ReportSellers returns locality with sellers count

@@ -107,6 +107,7 @@ func localitiesRoutes(r chi.Router, lcRepository internal.LocalityRepository) {
 	hd := handler.NewLocalityDefault(sv)
 
 	r.Get("/report-sellers", hd.ReportSellers())
+	r.Get("/reportCarries", hd.ReportCarries())
 	r.Post("/", hd.Save())
 }
 

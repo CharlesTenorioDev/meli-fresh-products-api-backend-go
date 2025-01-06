@@ -34,3 +34,7 @@ func (l *LocalityDefault) ReportSellers(id int) (locality internal.Locality, err
 func (l *LocalityDefault) FindByID(id int) (locality internal.Locality, err error) {
 	return l.rp.FindByID(id)
 }
+
+func (sv *LocalityDefault) ReportCarries(localityId int) (int, error) {
+	return sv.rp.ReportCarries(localityId)
+}

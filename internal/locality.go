@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+
 	"github.com/meli-fresh-products-api-backend-t1/utils/validator"
 )
 
@@ -58,10 +59,12 @@ type LocalityRepository interface {
 	Save(locality *Locality) (err error)
 	ReportSellers(id int) (locality Locality, err error)
 	FindByID(id int) (locality Locality, err error)
+	ReportCarries(localityId int) (amountOfCarries int, e error)
 }
 
 type LocalityService interface {
 	Save(locality *Locality) (err error)
 	ReportSellers(id int) (locality Locality, err error)
 	FindByID(id int) (locality Locality, err error)
+	ReportCarries(localityId int) (int, error)
 }

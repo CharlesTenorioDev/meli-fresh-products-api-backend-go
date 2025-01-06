@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+
 	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
@@ -16,6 +17,16 @@ func NewLocalityMysql(db *sql.DB) *LocalityMysql {
 type LocalityMysql struct {
 	// db is the database connection to mysql
 	db *sql.DB
+}
+
+func (r *LocalityMysql) ReportCarries(localityId int) (amountOfCarries int, e error) {
+	row := r.db.QueryRow(
+		"SELECT COUNT(c.locality_id) carries_registered FROM carries c WHERE locality_id = ?",
+		localityId,
+	)
+
+	e = row.Scan(&amountOfCarries)
+	return
 }
 
 // Save saves a locality into the database
