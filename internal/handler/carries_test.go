@@ -28,6 +28,11 @@ type CarriesTestSuite struct {
 	suite.Suite
 }
 
+func resetCarries(db *sql.DB) {
+	db.Exec("DELETE FROM carries")
+	db.Exec("ALTER TABLE carries AUTO_INCREMENT = 1")
+}
+
 func (c *CarriesTestSuite) SetupTest() {
 	var err error
 	cfg := mysql.Config{
@@ -49,10 +54,7 @@ func (c *CarriesTestSuite) SetupTest() {
 
 func (c *CarriesTestSuite) TestCarriesDefault_GetAll() {
 	c.T().Run("check if last entry is as expected", func(t *testing.T) {
-		defer func(db *sql.DB) {
-			db.Exec("DELETE FROM carries")
-			db.Exec("ALTER TABLE carries AUTO_INCREMENT = 1")
-		}(c.db)
+		defer resetCarries(c.db)
 		var data struct {
 			Data []internal.Carries `json:"data"`
 		}
@@ -72,11 +74,8 @@ func (c *CarriesTestSuite) TestCarriesDefault_GetAll() {
 }
 
 func (c *CarriesTestSuite) TestCarriesDefault_Create() {
-	c.T().Run("attempt to create", func(t *testing.T) {
-		defer func(db *sql.DB) {
-			db.Exec("DELETE FROM carries")
-			db.Exec("ALTER TABLE carries AUTO_INCREMENT = 1")
-		}(c.db)
+	defer resetCarries(c.db)
+	c.T().Run("attempt to create with valid entries", func(t *testing.T) {
 		carry := internal.Carries{
 			Cid:         15,
 			CompanyName: "Iris",
@@ -89,6 +88,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 		r := httptest.NewRequest(http.MethodPost, api, bytes.NewReader(b))
 		w := httptest.NewRecorder()
 		c.hd.Create(w, r)
+
 		var resCarry internal.Carries
 		row := c.db.QueryRow("SELECT cid, company_name, address, phone_number, locality_id FROM carries")
 		row.Scan(
@@ -98,7 +98,39 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			&resCarry.PhoneNumber,
 			&resCarry.LocalityId,
 		)
+		var data struct {
+			Data struct {
+				Id int `json:"id"`
+			} `json:"data"`
+		}
+		json.NewDecoder(w.Result().Body).Decode(&data)
+		require.Equal(c.T(), http.StatusCreated, w.Result().StatusCode)
 		require.Equal(c.T(), carry, resCarry)
+		require.Equal(c.T(), 1, data.Data.Id)
+	})
+	c.T().Run("attempt to create with invalid entries", func(t *testing.T) {
+		carry := internal.Carries{}
+		b, err := json.Marshal(carry)
+		require.NoError(t, err)
+		r := httptest.NewRequest(http.MethodPost, api, bytes.NewReader(b))
+		w := httptest.NewRecorder()
+		c.hd.Create(w, r)
+		require.Equal(c.T(), http.StatusUnprocessableEntity, w.Result().StatusCode)
+	})
+	c.T().Run("attempt to create with repeated entries", func(t *testing.T) {
+		carry := internal.Carries{
+			Cid:         15,
+			CompanyName: "Iris",
+			Address:     "Paulista",
+			PhoneNumber: "11977021487",
+			LocalityId:  3,
+		}
+		b, err := json.Marshal(carry)
+		require.NoError(t, err)
+		r := httptest.NewRequest(http.MethodPost, api, bytes.NewReader(b))
+		w := httptest.NewRecorder()
+		c.hd.Create(w, r)
+		require.Equal(c.T(), http.StatusConflict, w.Result().StatusCode)
 	})
 }
 
