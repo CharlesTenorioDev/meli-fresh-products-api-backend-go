@@ -70,8 +70,10 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	response.JSON(w, http.StatusOK, map[string]any{
-		"data": newProduct,
+	response.JSON(w, http.StatusCreated, map[string]any{
+		"data": map[string]any{
+			"product_id": newProduct.Id,
+		},
 	})
 }
 
@@ -121,6 +123,12 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.s.Delete(id); err != nil {
+
+		if err.Error() == "product not found" {
+            response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("product not found"))
+            return
+        }
+
 		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
 		return
 	}

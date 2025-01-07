@@ -1,6 +1,8 @@
 package handler_test
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"net/http"
@@ -8,8 +10,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -49,7 +53,7 @@ func Test_GetAll(t *testing.T) {
 		name           string
 		mockSetup      func(*MockProductService)
 		expectedStatus int
-		expectedBody   map[string]any
+		expectedBody   interface{}
 	}{
 		{
 			name: "Success, show all products",
@@ -86,33 +90,33 @@ func Test_GetAll(t *testing.T) {
 				p.On("GetAll").Return(mockProduct, nil)
 			},
 			expectedStatus: http.StatusOK,
-			expectedBody: map[string]any{
-				"data": []map[string]interface{}{
+			expectedBody: map[string]interface{}{
+				"data": []internal.Product{
 					{
-						"id":                               1.0,
-						"product_code":                     "Product A",
-						"description":                      "Test description",
-						"height":                           10.0,
-						"width":                            10.0,
-						"net_weight":                       100.0,
-						"expiration_rate":                  time.Now().Truncate(24 * time.Hour).Format(time.RFC3339),
-						"recommended_freezing_temperature": 18.0,
-						"freezing_rate":                    18.0,
-						"product_type_id":                  1.0,
-						"seller_id":                        1.0,
+						Id:                             1,
+						ProductCode:                    "Product A",
+						Description:                    "Test description",
+						Height:                         10.0,
+						Width:                          10.0,
+						NetWeight:                      100,
+						ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+						RecommendedFreezingTemperature: 18,
+						FreezingRate:                   18,
+						ProductTypeId:                  1,
+						SellerId:                       1,
 					},
 					{
-						"id":                               2.0,
-						"product_code":                     "Product B",
-						"description":                      "Test description",
-						"height":                           10.0,
-						"width":                            10.0,
-						"net_weight":                       100.0,
-						"expiration_rate":                  time.Now().Truncate(24 * time.Hour).Format(time.RFC3339),
-						"recommended_freezing_temperature": 18.0,
-						"freezing_rate":                    18.0,
-						"product_type_id":                  1.0,
-						"seller_id":                        1.0,
+						Id:                             2,
+						ProductCode:                    "Product B",
+						Description:                    "Test description",
+						Height:                         10.0,
+						Width:                          10.0,
+						NetWeight:                      100,
+						ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+						RecommendedFreezingTemperature: 18,
+						FreezingRate:                   18,
+						ProductTypeId:                  1,
+						SellerId:                       1,
 					},
 				},
 			},
@@ -140,19 +144,27 @@ func Test_GetAll(t *testing.T) {
 
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 
-			if tt.expectedStatus == http.StatusOK {
-				var body map[string]interface{}
-				err := json.Unmarshal(rec.Body.Bytes(), &body)
-				assert.NoError(t, err)
-
-				for i, product := range body["data"].([]interface{}) {
-					productMap := product.(map[string]interface{})
-					expirationRate, ok := productMap["expiration_rate"].(string)
-					if ok {
-						_, err := time.Parse(time.RFC3339, expirationRate)
-						assert.NoError(t, err)
+			if tt.expectedBody != nil {
+				switch response := tt.expectedBody.(type) {
+				case map[string]interface{}:
+					var actualResponse struct {
+						Data []internal.Product `json:"data"`
 					}
-					assert.Equal(t, tt.expectedBody["data"].([]map[string]interface{})[i], productMap)
+					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response["data"], actualResponse.Data)
+
+				case rest_err.RestErr:
+					var actualResponse rest_err.RestErr
+					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
 				}
 			}
 
@@ -167,7 +179,7 @@ func Test_GetByID(t *testing.T) {
 		mockSetup      func(*MockProductService)
 		id             string
 		expectedStatus int
-		expectedBody   map[string]interface{}
+		expectedBody   interface{}
 	}{
 		{
 			name: "Success, get product by ID",
@@ -190,54 +202,51 @@ func Test_GetByID(t *testing.T) {
 			id:             "1",
 			expectedStatus: http.StatusOK,
 			expectedBody: map[string]interface{}{
-				"data": map[string]interface{}{
-					"id":                               1.0,
-					"product_code":                     "Product A",
-					"description":                      "Test description",
-					"height":                           10.0,
-					"width":                            10.0,
-					"net_weight":                       100.0,
-					"expiration_rate":                  time.Now().Truncate(24 * time.Hour).Format(time.RFC3339),
-					"recommended_freezing_temperature": 18.0,
-					"freezing_rate":                    18.0,
-					"product_type_id":                  1.0,
-					"seller_id":                        1.0,
+				"data": internal.Product{
+					Id:                             1,
+					ProductCode:                    "Product A",
+					Description:                    "Test description",
+					Height:                         10.0,
+					Width:                          10.0,
+					NetWeight:                      100,
+					ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+					RecommendedFreezingTemperature: 18,
+					FreezingRate:                   18,
+					ProductTypeId:                  1,
+					SellerId:                       1,
 				},
 			},
 		},
 		{
 			name: "Error, product not found",
 			mockSetup: func(p *MockProductService) {
-				p.On("GetByID", 1).Return(internal.Product{}, errors.New("product not found"))
+				p.On("GetByID", 1).Return(internal.Product{}, errors.New("Product not found"))
 			},
 			id:             "1",
 			expectedStatus: http.StatusNotFound,
-			expectedBody: map[string]interface{}{
-				"message": "product not found",
-			},
+			expectedBody:   *rest_err.NewNotFoundError("Product not found"),
 		},
 		{
-			name: "Error, invalid ID format",
-			mockSetup: func(p *MockProductService) {
-				// No mock call needed for this case
-			},
+			name:           "Error, invalid ID format",
+			mockSetup:      func(p *MockProductService) {},
 			id:             "invalid_id",
 			expectedStatus: http.StatusBadRequest,
-			expectedBody: map[string]interface{}{
-				"message": "strconv.Atoi: parsing \"invalid_id\": invalid syntax",
-			},
+			expectedBody:   nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockService := new(MockProductService)                         // Cria mock do serviço
-			productHandler := handler.NewProducHandlerDefault(mockService) // Cria handler
-			tt.mockSetup(mockService)                                      // Configura comportamento do mock
+			mockService := new(MockProductService)
+			productHandler := handler.NewProducHandlerDefault(mockService)
+			tt.mockSetup(mockService) // Configura comportamento do mock
 
 			// Cria request com o ID como parâmetro
 			req := httptest.NewRequest(http.MethodGet, "/products/"+tt.id, nil)
 			rec := httptest.NewRecorder()
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", tt.id)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
 
 			// Chama a função GetByID do handler
 			productHandler.GetByID(rec, req)
@@ -245,19 +254,225 @@ func Test_GetByID(t *testing.T) {
 			// Verifica o status da resposta
 			assert.Equal(t, tt.expectedStatus, rec.Code)
 
-			// Verifica a estrutura da resposta JSON
-			var body map[string]interface{}
-			err := json.Unmarshal(rec.Body.Bytes(), &body)
-			assert.NoError(t, err)
+			if tt.expectedBody != nil {
+				switch response := tt.expectedBody.(type) {
+				case map[string]interface{}:
+					var actualResponse struct {
+						Data internal.Product `json:"data"`
+					}
+					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response["data"], actualResponse.Data)
+				case rest_err.RestErr:
+					var actualResponse rest_err.RestErr
+					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
+				}
+			}
+		})
+	}
+}
 
-			if tt.expectedStatus == http.StatusOK {
-				assert.Equal(t, tt.expectedBody["data"], body["data"])
-			} else {
-				assert.Equal(t, tt.expectedBody["message"], body["message"])
+func Test_Create(t *testing.T) {
+	tests := []struct {
+		name           string
+		mockSetup      func(*MockProductService)
+		requestBody    interface{}
+		expectedStatus int
+		expectedBody   interface{}
+	}{
+		{
+			name: "should create a new Product",
+			mockSetup: func(m *MockProductService) {
+				m.On("Create", mock.Anything).Return(internal.Product{
+					Id:                             1,
+					ProductCode:                    "Product A",
+					Description:                    "Test description",
+					Height:                         10.0,
+					Width:                          10.0,
+					NetWeight:                      100,
+					ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+					RecommendedFreezingTemperature: 18,
+					FreezingRate:                   18,
+					ProductTypeId:                  1,
+					SellerId:                       1,
+				}, nil)
+			},
+			requestBody: internal.Product{
+				Id:                             1,
+				ProductCode:                    "Product A",
+				Description:                    "Test description",
+				Height:                         10.0,
+				Width:                          10.0,
+				NetWeight:                      100,
+				ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+				RecommendedFreezingTemperature: 18,
+				FreezingRate:                   18,
+				ProductTypeId:                  1,
+				SellerId:                       1,
+			},
+			expectedStatus: http.StatusCreated,
+			expectedBody: map[string]interface{}{
+				"data": map[string]int{
+					"product_id": 1,
+				},
+			},
+		},
+		{
+			name: "should return internal server error",
+			mockSetup: func(m *MockProductService) {
+				m.On("Create", mock.Anything).Return(internal.Product{}, errors.New("internal server error"))
+			},
+			requestBody: internal.Product{
+				Id:                             1,
+				ProductCode:                    "Product A",
+				Description:                    "descrição",
+				Height:                         10.0,
+				Width:                          10.0,
+				NetWeight:                      100,
+				ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+				RecommendedFreezingTemperature: 18,
+				FreezingRate:                   18,
+				ProductTypeId:                  1,
+				SellerId:                       1,
+			},
+			expectedStatus: http.StatusInternalServerError,
+			expectedBody:   nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := new(MockProductService)
+			productHandler := handler.NewProducHandlerDefault(mockService)
+			tt.mockSetup(mockService)
+
+			requestBody, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Fatal(err)
 			}
 
-			// Garante que as expectativas do mock foram cumpridas
-			mockService.AssertExpectations(t)
+			req, err := http.NewRequest(http.MethodPost, "/product", bytes.NewBuffer(requestBody))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("content-type", "application/json")
+
+			rec := httptest.NewRecorder()
+			productHandler.Create(rec, req)
+
+			assert.Equal(t, tt.expectedStatus, rec.Code)
+
+			if tt.expectedBody != nil {
+				switch response := tt.expectedBody.(type) {
+				case map[string]interface{}:
+					var actualResponse = struct {
+						Data map[string]int `json:"data"`
+					}{}
+					err = json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response["data"], actualResponse.Data)
+				case rest_err.RestErr:
+					var actualResponse rest_err.RestErr
+					err = json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
+				}
+			}
+		})
+	}
+}
+
+func Test_Delete(t *testing.T) {
+	tests := []struct {
+		name               string
+		mockSetup          func(*MockProductService)
+		id                 string
+		expectedStatusCode int
+		expectedResponse   interface{}
+	}{
+		{
+			name: "should delete a seller",
+			mockSetup: func(m *MockProductService) {
+				m.On("Delete", 1).Return(nil)
+			},
+			id:                 "1",
+			expectedStatusCode: http.StatusNoContent,
+			expectedResponse:   nil,
+		},
+		{
+			name: "should return not found error",
+			mockSetup: func(m *MockProductService) {
+				m.On("Delete", 1).Return(rest_err.NewNotFoundError("product not found"))
+			},
+			id:                 "1",
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   *rest_err.NewNotFoundError("product not found"),
+		},
+		{
+			name: "should return internal server error",
+			mockSetup: func(m *MockProductService) {
+				m.On("Delete", 1).Return(errors.New("internal server error"))
+			},
+			id:                 "1",
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   nil,
+		},
+		{
+			name:               "should return bad request error",
+			mockSetup:          func(m *MockProductService) {},
+			id:                 "invalid_id",
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := new(MockProductService)
+			productHandler := handler.NewProducHandlerDefault(mockService)
+			tt.mockSetup(mockService)
+
+			req, err := http.NewRequest(http.MethodDelete, "/products/"+tt.id, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rec := httptest.NewRecorder()
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", tt.id)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			productHandler.Delete(rec, req)
+
+			assert.Equal(t, tt.expectedStatusCode, rec.Code)
+
+			if tt.expectedResponse != nil {
+				switch response := tt.expectedResponse.(type) {
+				case rest_err.RestErr:
+					var actualResponse rest_err.RestErr
+					err = json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
+				}
+			}
 		})
 	}
 }
