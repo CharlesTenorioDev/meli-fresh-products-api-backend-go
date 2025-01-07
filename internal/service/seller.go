@@ -6,12 +6,14 @@ import (
 )
 
 type SellerServiceDefault struct {
-	rp internal.SellerRepository
+	rp       internal.SellerRepository
+	locality internal.LocalityRepository
 }
 
-func NewSellerServiceDefault(rp internal.SellerRepository) *SellerServiceDefault {
+func NewSellerServiceDefault(rp internal.SellerRepository, locality internal.LocalityRepository) *SellerServiceDefault {
 	return &SellerServiceDefault{
-		rp: rp,
+		rp:       rp,
+		locality: locality,
 	}
 }
 
@@ -40,7 +42,12 @@ func (s *SellerServiceDefault) Save(seller *internal.Seller) error {
 		return err
 	}
 
-	if sellerCid != nil {
+	_, err = s.locality.FindByID(seller.Locality)
+	if err != nil {
+		return err
+	}
+
+	if seller.CID == sellerCid.CID {
 		return internal.ErrSellerCIDAlreadyExists
 	}
 
@@ -62,7 +69,7 @@ func (s *SellerServiceDefault) Update(id int, updatedSeller internal.SellerPatch
 		if err != nil && !errors.Is(err, internal.ErrSellerNotFound) {
 			return internal.Seller{}, err
 		}
-		if sellerCid != nil && actualSeller.ID != sellerCid.ID {
+		if *updatedSeller.CID == sellerCid.CID && actualSeller.ID != sellerCid.ID {
 			return internal.Seller{}, internal.ErrSellerCIDAlreadyExists
 		}
 		actualSeller.CID = *updatedSeller.CID
@@ -80,7 +87,15 @@ func (s *SellerServiceDefault) Update(id int, updatedSeller internal.SellerPatch
 		actualSeller.Telephone = *updatedSeller.Telephone
 	}
 
-	err = s.rp.Update(actualSeller.ID, &actualSeller)
+	if updatedSeller.Locality != nil {
+		_, err := s.locality.FindByID(*updatedSeller.Locality)
+		if err != nil {
+			return internal.Seller{}, internal.ErrLocalityNotFound
+		}
+		actualSeller.Locality = *updatedSeller.Locality
+	}
+
+	err = s.rp.Update(&actualSeller)
 
 	return actualSeller, err
 }

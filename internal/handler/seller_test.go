@@ -7,7 +7,6 @@ import (
 	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/dto"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 	"github.com/stretchr/testify/assert"
@@ -91,7 +90,7 @@ func TestSellerDefault_GetAll(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": []dto.SellersGetJson{
+				"data": []handler.SellersGetJson{
 					{
 						Id:          1,
 						Cid:         123,
@@ -147,7 +146,7 @@ func TestSellerDefault_GetAll(t *testing.T) {
 				switch response := tt.expectedResponse.(type) {
 				case map[string]interface{}:
 					var actualResponse struct {
-						Data []dto.SellersGetJson `json:"data"`
+						Data []handler.SellersGetJson `json:"data"`
 					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
@@ -193,7 +192,7 @@ func TestSellerDefault_GetByID(t *testing.T) {
 			id:                 "1",
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": dto.SellersGetJson{
+				"data": handler.SellersGetJson{
 					Id:          1,
 					Cid:         123,
 					CompanyName: "Test Seller",
@@ -255,7 +254,7 @@ func TestSellerDefault_GetByID(t *testing.T) {
 				switch response := tt.expectedResponse.(type) {
 				case map[string]interface{}:
 					var actualResponse struct {
-						Data dto.SellersGetJson `json:"data"`
+						Data handler.SellersGetJson `json:"data"`
 					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
@@ -290,7 +289,7 @@ func TestSellerDefault_Save(t *testing.T) {
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(nil)
 			},
-			requestBody: dto.SellersPostJson{
+			requestBody: handler.SellersPostJson{
 				CID:         123,
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
@@ -307,7 +306,7 @@ func TestSellerDefault_Save(t *testing.T) {
 			name: "should return unprocessable entity error",
 			mockSetup: func(m *MockSellerService) {
 			},
-			requestBody: dto.SellersPostJson{
+			requestBody: handler.SellersPostJson{
 				CID:         123,
 				CompanyName: "", // Nome da empresa inválido
 				Address:     "Rua 1",
@@ -321,7 +320,7 @@ func TestSellerDefault_Save(t *testing.T) {
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(internal.ErrSellerConflict)
 			},
-			requestBody: dto.SellersPostJson{
+			requestBody: handler.SellersPostJson{
 				CID:         123,
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
@@ -335,7 +334,7 @@ func TestSellerDefault_Save(t *testing.T) {
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(errors.New("internal server error"))
 			},
-			requestBody: dto.SellersPostJson{
+			requestBody: handler.SellersPostJson{
 				CID:         123,
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
