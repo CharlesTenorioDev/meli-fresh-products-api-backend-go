@@ -98,9 +98,9 @@ CREATE TABLE `buyers`
 CREATE TABLE `purchase_orders`
 (
     `id` int(11) NOT NULL AUTO_INCREMENT,
-    `order_number` varchar(25)  NOT NULL,
+    `order_number` varchar(255)  NOT NULL,
     `order_date` date NOT NULL,
-    `tracking_code` varchar(25) NOT NULL,
+    `tracking_code` varchar(255) NOT NULL,
     `buyer_id` int(11) NOT NULL,
     `product_record_id` int(11) NOT NULL,
     FOREIGN KEY (`buyer_id`) REFERENCES buyers (id),
