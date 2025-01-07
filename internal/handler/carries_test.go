@@ -28,13 +28,7 @@ type CarriesTestSuite struct {
 	suite.Suite
 }
 
-func resetCarries(db *sql.DB) {
-	db.Exec("DELETE FROM carries")
-	db.Exec("ALTER TABLE carries AUTO_INCREMENT = 1")
-}
-
-func (c *CarriesTestSuite) SetupTest() {
-	var err error
+func init() {
 	cfg := mysql.Config{
 		User:   "root",
 		Passwd: "meli_pass",
@@ -42,10 +36,12 @@ func (c *CarriesTestSuite) SetupTest() {
 		Addr:   "localhost:3306",
 		DBName: "melifresh",
 	}
-	if _, err := sql.Open("txdb_carries", ""); err != nil {
-		txdb.Register("txdb_carries", "mysql", cfg.FormatDSN())
-	}
-	c.db, err = sql.Open("txdb_carries", "")
+	txdb.Register("txdb", "mysql", cfg.FormatDSN())
+}
+
+func (c *CarriesTestSuite) SetupTest() {
+	var err error
+	c.db, err = sql.Open("txdb", "identier")
 	require.NoError(c.T(), err)
 	rp := repository.NewCarriesMysql(c.db)
 	sv := service.NewCarriesService(rp)
@@ -53,28 +49,27 @@ func (c *CarriesTestSuite) SetupTest() {
 }
 
 func (c *CarriesTestSuite) TestCarriesDefault_GetAll() {
+	defer c.db.Close()
 	c.T().Run("check if last entry is as expected", func(t *testing.T) {
-		defer resetCarries(c.db)
 		var data struct {
 			Data []internal.Carries `json:"data"`
 		}
-		res, err := c.db.Exec("INSERT INTO carries (`cid`, `company_name`, `address`, `phone_number`, `locality_id`) VALUES (14, 'Mercado Livre', 'Location', '11977021487', 3)")
-		require.NoError(t, err)
-		lastId, err := res.LastInsertId()
+		_, err := c.db.Exec("INSERT INTO carries (`cid`, `company_name`, `address`, `phone_number`, `locality_id`) VALUES (14, 'Mercado Livre', 'Location', '11977021487', 3)")
 		require.NoError(t, err)
 		r := httptest.NewRequest(http.MethodGet, api, nil)
 		w := httptest.NewRecorder()
 		c.hd.GetAll(w, r)
 		json.NewDecoder(w.Result().Body).Decode(&data)
-		require.Equal(t, "Location", data.Data[lastId-1].Address)
-		require.Equal(t, "11977021487", data.Data[lastId-1].PhoneNumber)
-		require.Equal(t, "Mercado Livre", data.Data[lastId-1].CompanyName)
-		require.Equal(t, 14, data.Data[lastId-1].Cid)
+		last := len(data.Data) - 1
+		require.Equal(t, "Location", data.Data[last].Address)
+		require.Equal(t, "11977021487", data.Data[last].PhoneNumber)
+		require.Equal(t, "Mercado Livre", data.Data[last].CompanyName)
+		require.Equal(t, 14, data.Data[last].Cid)
 	})
 }
 
 func (c *CarriesTestSuite) TestCarriesDefault_Create() {
-	defer resetCarries(c.db)
+	defer c.db.Close()
 	c.T().Run("attempt to create with valid entries", func(t *testing.T) {
 		carry := internal.Carries{
 			Cid:         15,
@@ -90,7 +85,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 		c.hd.Create(w, r)
 
 		var resCarry internal.Carries
-		row := c.db.QueryRow("SELECT cid, company_name, address, phone_number, locality_id FROM carries")
+		row := c.db.QueryRow("SELECT cid, company_name, address, phone_number, locality_id FROM carries ORDER BY id DESC LIMIT 1")
 		row.Scan(
 			&resCarry.Cid,
 			&resCarry.CompanyName,
@@ -106,7 +101,6 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 		json.NewDecoder(w.Result().Body).Decode(&data)
 		require.Equal(c.T(), http.StatusCreated, w.Result().StatusCode)
 		require.Equal(c.T(), carry, resCarry)
-		require.Equal(c.T(), 1, data.Data.Id)
 	})
 	c.T().Run("attempt to create with invalid entries", func(t *testing.T) {
 		carry := internal.Carries{}
