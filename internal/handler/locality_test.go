@@ -102,6 +102,12 @@ func (l *LocalityTestSuite) TestLocalityDefault_ReportCarries() {
 		require.Equal(t, expectedCarriesCountPerLocality, res.Data)
 		require.Equal(t, http.StatusOK, w.Result().StatusCode)
 	})
+	l.T().Run("carries with a location that does not exist", func(t *testing.T) {
+		r := httptest.NewRequest(http.MethodGet, "/api/v1/localities/reportCarries?id=100", nil)
+		w := httptest.NewRecorder()
+		l.hd.ReportCarries()(w, r)
+		require.Equal(t, http.StatusNotFound, w.Result().StatusCode)
+	})
 }
 
 func TestLocalityTestSuite(t *testing.T) {
