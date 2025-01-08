@@ -69,6 +69,7 @@ func (a *ServerChi) Run() (err error) {
 	rt.Use(middleware.Logger)
 
 	buRepository := repository.NewBuyerMap("db/buyer.json")
+	buMysqlRepository := repository.NewBuyerMysqlRepository(db)
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
@@ -81,7 +82,7 @@ func (a *ServerChi) Run() (err error) {
 			employeeRouter(r, whRepository)
 		})
 		r.Route("/buyers", func(r chi.Router) {
-			buyerRouter(r, buRepository)
+			buyerRouter(r, buMysqlRepository)
 		})
 		r.Route("/sections", func(r chi.Router) {
 			sectionsRoutes(r, whRepository, pdRepository)
@@ -171,6 +172,7 @@ func buyerRouter(r chi.Router, buRepository internal.BuyerRepository) {
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+	r.Get("/report-purchase-orders", hd.ReportPurchaseOrders)
 }
 
 func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository internal.SellerRepository) {

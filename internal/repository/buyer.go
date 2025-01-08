@@ -59,3 +59,11 @@ func (r *BuyerMap) Update(id int, buyer internal.BuyerPatch) {
 func (r *BuyerMap) Delete(id int) {
 	delete(r.db, id)
 }
+
+func (r *BuyerMap) ReportPurchaseOrders() (purchaseOrders []internal.PurchaseOrdersByBuyer, err error) {
+	return
+}
+
+func (r *BuyerMap) ReportPurchaseOrdersById(id int) (purchaseOrders []internal.PurchaseOrdersByBuyer, err error) {
+	return
+}

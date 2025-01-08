@@ -7,9 +7,9 @@ import (
 )
 
 var (
-	BuyerNotFound = errors.New("buyer not found")
-	BuyerAlreadyExists = errors.New("buyer already exists")
-	CardNumberAlreadyInUse = errors.New("buyer with given card number already registered")
+	BuyerNotFound            = errors.New("buyer not found")
+	BuyerAlreadyExists       = errors.New("buyer already exists")
+	CardNumberAlreadyInUse   = errors.New("buyer with given card number already registered")
 	BuyerUnprocessableEntity = errors.New("couldn't parse buyer")
 )
 
@@ -48,7 +48,6 @@ func (s *BuyerServiceDefault) FindByID(id int) (b internal.Buyer, err error) {
 	return
 }
 
-
 func (s *BuyerServiceDefault) Save(buyer *internal.Buyer) (err error) {
 	all := s.repo.GetAll()
 	ok := buyer.Parse()
@@ -66,8 +65,7 @@ func (s *BuyerServiceDefault) Save(buyer *internal.Buyer) (err error) {
 	return
 }
 
-
-func (s* BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (err error) {
+func (s *BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (err error) {
 	all := s.repo.GetAll()
 	_, ok := all[id]
 	if !ok {
@@ -84,7 +82,7 @@ func (s* BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (er
 	return
 }
 
-func (s* BuyerServiceDefault) Delete(id int) (err error) {
+func (s *BuyerServiceDefault) Delete(id int) (err error) {
 	all := s.repo.GetAll()
 	_, ok := all[id]
 	if !ok {
@@ -93,5 +91,25 @@ func (s* BuyerServiceDefault) Delete(id int) (err error) {
 	}
 
 	s.repo.Delete(id)
+	return
+}
+
+// ReportPurchaseOrders returns all purchase orders of all buyers
+func (s *BuyerServiceDefault) ReportPurchaseOrders() (po []internal.PurchaseOrdersByBuyer, err error) {
+	po, err = s.repo.ReportPurchaseOrders()
+	// Check if there is no buyers records
+	if len(po) == 0 {
+		return nil, BuyerNotFound
+	}
+	return
+}
+
+// ReportPurchaseOrdersById returns all purchase orders of a specific buyer
+func (s *BuyerServiceDefault) ReportPurchaseOrdersById(id int) (po []internal.PurchaseOrdersByBuyer, err error) {
+	po, err = s.repo.ReportPurchaseOrdersById(id)
+	// Check if there is no records for the given buyer
+	if len(po) == 0 {
+		return nil, BuyerNotFound
+	}
 	return
 }

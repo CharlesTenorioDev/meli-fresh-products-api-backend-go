@@ -116,3 +116,35 @@ func (h *BuyerHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 
 	response.JSON(w, http.StatusNoContent, nil)
 }
+
+func (h *BuyerHandlerDefault) ReportPurchaseOrders(w http.ResponseWriter, r *http.Request) {
+	var purchaseOrdersByBuyer []internal.PurchaseOrdersByBuyer
+	var err error
+
+	// Check if there is an id query parameter and call the corresponding service method
+	id := r.URL.Query().Get("id")
+	if id != "" {
+		idInt, parseErr := strconv.Atoi(id)
+		if parseErr != nil {
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse id"))
+			return
+		}
+		purchaseOrdersByBuyer, err = h.s.ReportPurchaseOrdersById(idInt)
+	} else {
+		purchaseOrdersByBuyer, err = h.s.ReportPurchaseOrders()
+	}
+
+	if err != nil {
+		switch {
+		case errors.Is(err, service.BuyerNotFound):
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		default:
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+		}
+		return
+	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"data": purchaseOrdersByBuyer,
+	})
+}

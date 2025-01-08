@@ -13,19 +13,31 @@ type BuyerPatch struct {
 	LastName     *string `json:"last_name,omitempty"`
 }
 
+type PurchaseOrdersByBuyer struct {
+	BuyerID             int    `json:"id"`
+	CardNumberId        string `json:"card_number_id"`
+	FirstName           string `json:"first_name"`
+	LastName            string `json:"last_name"`
+	PurchaseOrdersCount int    `json:"purchase_orders_count"`
+}
+
 type BuyerRepository interface {
 	GetAll() (db map[int]Buyer)
 	Add(buyer *Buyer)
 	Update(id int, buyer BuyerPatch)
 	Delete(id int)
+	ReportPurchaseOrders() (purchaseOrders []PurchaseOrdersByBuyer, err error)
+	ReportPurchaseOrdersById(id int) (purchaseOrders []PurchaseOrdersByBuyer, err error)
 }
 
 type BuyerService interface {
-	GetAll() (map[int]Buyer)
+	GetAll() map[int]Buyer
 	FindByID(id int) (b Buyer, err error)
 	Save(buyer *Buyer) (err error)
 	Update(id int, buyerPatch BuyerPatch) (err error)
 	Delete(id int) (err error)
+	ReportPurchaseOrders() (purchaseOrders []PurchaseOrdersByBuyer, err error)
+	ReportPurchaseOrdersById(id int) (purchaseOrders []PurchaseOrdersByBuyer, err error)
 }
 
 func (b *Buyer) Parse() (ok bool) {
