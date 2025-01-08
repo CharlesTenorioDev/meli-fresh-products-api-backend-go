@@ -15,19 +15,84 @@ type BuyerMysqlRepository struct {
 }
 
 func (r *BuyerMysqlRepository) GetAll() (db map[int]internal.Buyer) {
-	return nil
+	db = make(map[int]internal.Buyer)
+	query := `
+		SELECT
+			id, card_number_id, first_name, last_name
+		FROM
+			buyers;
+	`
+
+	/// executing the query
+	rows, _ := r.db.Query(query)
+	// iterating over the rows
+	for rows.Next() {
+		var buyer internal.Buyer
+		rows.Scan(&buyer.ID, &buyer.CardNumberId, &buyer.FirstName, &buyer.LastName)
+		db[buyer.ID] = buyer
+	}
+
+	return
+
 }
 
 func (r *BuyerMysqlRepository) Add(buyer *internal.Buyer) {
-	return
+	// Inserting the buyer
+	query := `
+		INSERT INTO buyers (card_number_id, first_name, last_name)
+		VALUES (?, ?, ?)
+	`
+
+	result, _ := r.db.Exec(query, (*buyer).CardNumberId, (*buyer).FirstName, (*buyer).LastName)
+
+	// Get the ID of the last inserted purchase order
+	id, _ := result.LastInsertId()
+
+	// Set the ID of the purchase order
+	(*buyer).ID = int(id)
 }
 
 func (r *BuyerMysqlRepository) Update(id int, buyer internal.BuyerPatch) {
-	return
+	// Finding the buyer
+	query :=
+		`
+		SELECT
+			id, card_number_id, first_name, last_name
+		FROM
+			buyers
+		WHERE
+			id = ?;
+	`
+	// executing the query
+	row := r.db.QueryRow(query, id)
+
+	var b internal.Buyer
+	// scanning the row
+	row.Scan(&b.ID, &b.CardNumberId, &b.FirstName, &b.LastName)
+
+	// applying the patch
+	buyer.Patch(&b)
+
+	query = `
+		UPDATE buyers
+		SET
+			card_number_id = ?, first_name = ?, last_name = ?
+		WHERE
+			id = ?;
+	`
+
+	// applying the patch
+	r.db.Exec(query, buyer.CardNumberId, buyer.FirstName, buyer.LastName, id)
 }
 
 func (r *BuyerMysqlRepository) Delete(id int) {
-	return
+	query := `
+		DELETE FROM 
+			buyers
+		WHERE
+			id = ?;
+	`
+	r.db.Exec(query, id)
 }
 
 func (r *BuyerMysqlRepository) ReportPurchaseOrders() (purchaseOrders []internal.PurchaseOrdersByBuyer, err error) {
@@ -46,6 +111,7 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrders() (purchaseOrders []internal
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
 	// iterating over the rows
 	for rows.Next() {
@@ -80,6 +146,7 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrdersById(id int) (purchaseOrders 
 	`
 	// executing the query
 	rows, err := r.db.Query(query, id)
+
 	if err != nil {
 		return nil, err
 	}

@@ -101,9 +101,9 @@ CREATE TABLE `purchase_orders`
     `order_number` varchar(255)  NOT NULL,
     `order_date` date NOT NULL,
     `tracking_code` varchar(255) NOT NULL,
-    `buyer_id` int(11) NOT NULL,
+    `buyer_id` int(11) NULL,
     `product_record_id` int(11) NOT NULL,
-    FOREIGN KEY (`buyer_id`) REFERENCES buyers (id),
+    FOREIGN KEY (`buyer_id`) REFERENCES buyers (id) ON DELETE SET NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
