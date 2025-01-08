@@ -46,7 +46,7 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 
 		switch idStr {
 		case "":
-			sellers, err := h.sv.ReportSellers()
+			localities, err := h.sv.ReportSellers()
 			if err != nil {
 				log.Println(err)
 				if errors.Is(err, internal.ErrLocalityNotFound) {
@@ -57,10 +57,19 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 				return
 			}
 
+			var localitiesJson []LocalityGetJson
+			for _, locality := range localities {
+				localitiesJson = append(localitiesJson, LocalityGetJson{
+					ID:           locality.ID,
+					LocalityName: locality.LocalityName,
+					ProvinceName: locality.ProvinceName,
+					CountryName:  locality.CountryName,
+					SellersCount: locality.Sellers,
+				})
+			}
+
 			response.JSON(w, http.StatusOK, map[string]any{
-				"data": map[string]any{
-					"sellers_count": sellers,
-				},
+				"data": localitiesJson,
 			})
 		default:
 			id, err := strconv.Atoi(idStr)

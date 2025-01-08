@@ -38,13 +38,27 @@ func (r *LocalityMysql) Save(locality *internal.Locality) (err error) {
 	return
 }
 
-func (r *LocalityMysql) ReportSellers() (sellers int, err error) {
-	row := r.db.QueryRow("SELECT COUNT(s.id) FROM sellers AS s WHERE s.locality_id IS NOT NULL;")
-	err = row.Scan(&sellers)
+func (r *LocalityMysql) ReportSellers() (localities []internal.Locality, err error) {
+	rows, err := r.db.Query("SELECT l.id, l.name, l.province_name, l.country_name, COUNT(s.id) FROM localities AS l LEFT JOIN sellers AS s ON l.id = s.locality_id GROUP BY l.id")
+
+	err = rows.Err()
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrLocalityNotFound
 		}
+		return
+	}
+
+	for rows.Next() {
+		// create a new seller
+		var locality internal.Locality
+		err = rows.Scan(&locality.ID, &locality.LocalityName, &locality.ProvinceName, &locality.CountryName, &locality.Sellers)
+		if err != nil {
+			return
+		}
+
+		// append the seller to the slice
+		localities = append(localities, locality)
 	}
 
 	return

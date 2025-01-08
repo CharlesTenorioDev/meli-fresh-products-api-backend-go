@@ -11,7 +11,7 @@ USE
 -- table `localities`
 CREATE TABLE `localities`
 (
-    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `id` int(11) NOT NULL,
     `name` varchar(255) NOT NULL,
     `province_name` varchar(255) NOT NULL,
     `country_name` varchar(255) NOT NULL,
@@ -98,17 +98,17 @@ CREATE TABLE `buyers`
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 -- DML
-INSERT INTO localities (name, province_name, country_name)
-VALUES ('New York City', 'New York', 'United States'),
-       ('Los Angeles', 'California', 'United States'),
-       ('Chicago', 'Illinois', 'United States'),
-       ('Houston', 'Texas', 'United States'),
-       ('Phoenix', 'Arizona', 'United States'),
-       ('Philadelphia', 'Pennsylvania', 'United States'),
-       ('San Antonio', 'Texas', 'United States'),
-       ('San Diego', 'California', 'United States'),
-       ('Dallas', 'Texas', 'United States'),
-       ('San Jose', 'California', 'United States');
+INSERT INTO localities (id, name, province_name, country_name)
+VALUES (1, 'New York City', 'New York', 'United States'),
+       (2 ,'Los Angeles', 'California', 'United States'),
+       (3,'Chicago', 'Illinois', 'United States'),
+       (4, 'Houston', 'Texas', 'United States'),
+       (5, 'Phoenix', 'Arizona', 'United States'),
+       (6, 'Philadelphia', 'Pennsylvania', 'United States'),
+       (7, 'San Antonio', 'Texas', 'United States'),
+       (8, 'San Diego', 'California', 'United States'),
+       (9, 'Dallas', 'Texas', 'United States'),
+       (10, 'San Jose', 'California', 'United States');
 
 INSERT INTO sellers (cid, company_name, address, telephone, locality_id)
 VALUES (1, 'Company A', '123 Main St', '123-456-7890', 1),

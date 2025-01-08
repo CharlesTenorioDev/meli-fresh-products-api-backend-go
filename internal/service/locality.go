@@ -27,7 +27,7 @@ func (l *LocalityDefault) Save(locality *internal.Locality) (err error) {
 	return l.rp.Save(locality)
 }
 
-func (l *LocalityDefault) ReportSellers() (sellers int, err error) {
+func (l *LocalityDefault) ReportSellers() (localities []internal.Locality, err error) {
 	return l.rp.ReportSellers()
 }
 func (l *LocalityDefault) ReportSellersByID(id int) (locality internal.Locality, err error) {
