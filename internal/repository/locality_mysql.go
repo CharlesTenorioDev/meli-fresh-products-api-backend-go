@@ -8,6 +8,16 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
+const (
+	AmountOfCarriesForEveryLocalityQuery = `
+	SELECT COUNT(c.locality_id) carries_count, c.locality_id, l.name locality_name
+	FROM carries c
+	INNER JOIN localities l
+	ON l.id = c.locality_id
+	GROUP BY c.locality_id;
+	`
+)
+
 // NewLocalityMysql creates a new instance of the seller repository
 func NewLocalityMysql(db *sql.DB) *LocalityMysql {
 	return &LocalityMysql{db}
@@ -26,6 +36,26 @@ func (r *LocalityMysql) ReportCarries(localityId int) (amountOfCarries int, e er
 	)
 
 	e = row.Scan(&amountOfCarries)
+	return
+}
+
+func (r *LocalityMysql) GetAmountOfCarriesForEveryLocality() (c []internal.CarriesCountPerLocality, e error) {
+	rows, e := r.db.Query(AmountOfCarriesForEveryLocalityQuery)
+	if e != nil {
+		return
+	}
+
+	for rows.Next() {
+		var carryCountPerLocality internal.CarriesCountPerLocality
+		rows.Scan(
+			&carryCountPerLocality.CarriesCount,
+			&carryCountPerLocality.LocalityId,
+			&carryCountPerLocality.LocalityName,
+		)
+
+		c = append(c, carryCountPerLocality)
+	}
+
 	return
 }
 

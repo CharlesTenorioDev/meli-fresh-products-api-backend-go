@@ -44,6 +44,19 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
 
+		if idStr == "" {
+			carries, err := h.sv.GetAmountOfCarriesForEveryLocality()
+			if err != nil {
+				response.JSON(w, http.StatusInternalServerError, nil)
+				return
+			}
+
+			response.JSON(w, http.StatusOK, map[string]any{
+				"data": carries,
+			})
+			return
+		}
+
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, nil)

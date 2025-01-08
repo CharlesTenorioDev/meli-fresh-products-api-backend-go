@@ -14,6 +14,12 @@ type Locality struct {
 	Sellers      int
 }
 
+type CarriesCountPerLocality struct {
+	CarriesCount int    `json:"carries_count"`
+	LocalityId   int    `json:"locality_id"`
+	LocalityName string `json:"locality_name"`
+}
+
 var (
 	// ErrLocalityNotFound is returned when the seller is not found
 	ErrLocalityNotFound = errors.New("locality not found")
@@ -60,6 +66,7 @@ type LocalityRepository interface {
 	ReportSellers(id int) (locality Locality, err error)
 	FindByID(id int) (locality Locality, err error)
 	ReportCarries(localityId int) (amountOfCarries int, e error)
+	GetAmountOfCarriesForEveryLocality() (c []CarriesCountPerLocality, e error)
 }
 
 type LocalityService interface {
@@ -67,4 +74,5 @@ type LocalityService interface {
 	ReportSellers(id int) (locality Locality, err error)
 	FindByID(id int) (locality Locality, err error)
 	ReportCarries(localityId int) (int, error)
+	GetAmountOfCarriesForEveryLocality() ([]CarriesCountPerLocality, error)
 }
