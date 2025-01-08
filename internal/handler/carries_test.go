@@ -126,8 +126,23 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 		c.hd.Create(w, r)
 		require.Equal(c.T(), http.StatusConflict, w.Result().StatusCode)
 	})
+	c.T().Run("attempt to create with a invalid locality id", func(t *testing.T) {
+		carry := internal.Carries{
+			Cid:         100,
+			CompanyName: "Iris",
+			Address:     "Paulista",
+			PhoneNumber: "11977021487",
+			LocalityId:  100,
+		}
+		b, err := json.Marshal(carry)
+		require.NoError(t, err)
+		r := httptest.NewRequest(http.MethodPost, api, bytes.NewReader(b))
+		w := httptest.NewRecorder()
+		c.hd.Create(w, r)
+		require.Equal(c.T(), http.StatusConflict, w.Result().StatusCode)
+	})
 }
 
-func TestBuyerTestSuite(t *testing.T) {
+func TestCarrierTestSuite(t *testing.T) {
 	suite.Run(t, new(CarriesTestSuite))
 }
