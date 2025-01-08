@@ -35,7 +35,10 @@ func (r *LocalityMysql) ReportCarries(localityId int) (amountOfCarries int, e er
 		localityId,
 	)
 
-	e = row.Scan(&amountOfCarries)
+	row.Scan(&amountOfCarries)
+	if amountOfCarries == 0 {
+		e = sql.ErrNoRows
+	}
 	return
 }
 

@@ -65,8 +65,8 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 
 		amountOfCarries, err := h.sv.ReportCarries(id)
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, map[string]any{
-				"error": "failed to fetch carries",
+			response.JSON(w, http.StatusNotFound, map[string]any{
+				"error": "no carries on locality_id " + idStr,
 			})
 			return
 		}
