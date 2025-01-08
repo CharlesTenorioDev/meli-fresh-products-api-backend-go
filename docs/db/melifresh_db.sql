@@ -11,7 +11,7 @@ USE
 -- table `localities`
 CREATE TABLE `localities`
 (
-    `id` int(11) NOT NULL,
+    `id` int(11) NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `province_name` varchar(255) NOT NULL,
     `country_name` varchar(255) NOT NULL,

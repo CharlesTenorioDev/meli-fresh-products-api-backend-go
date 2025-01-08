@@ -44,36 +44,57 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
 
-		id, err := strconv.Atoi(idStr)
-
-		if err != nil {
-			response.JSON(w, http.StatusBadRequest, nil)
-			return
-		}
-
-		locality, err := h.sv.ReportSellers(id)
-		if err != nil {
-			log.Println(err)
-			if errors.Is(err, internal.ErrLocalityNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		switch idStr {
+		case "":
+			sellers, err := h.sv.ReportSellers()
+			if err != nil {
+				log.Println(err)
+				if errors.Is(err, internal.ErrLocalityNotFound) {
+					response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+					return
+				}
+				response.JSON(w, http.StatusInternalServerError, nil)
 				return
 			}
-			response.JSON(w, http.StatusInternalServerError, nil)
-			return
-		}
 
-		localityJson := LocalityGetJson{
-			ID:           locality.ID,
-			LocalityName: locality.LocalityName,
-			ProvinceName: locality.ProvinceName,
-			CountryName:  locality.CountryName,
-			SellersCount: locality.Sellers,
-		}
+			response.JSON(w, http.StatusOK, map[string]any{
+				"data": map[string]any{
+					"sellers_count": sellers,
+				},
+			})
+		default:
+			id, err := strconv.Atoi(idStr)
 
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": localityJson,
-		})
+			if err != nil {
+				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+				return
+			}
+
+			locality, err := h.sv.ReportSellersByID(id)
+			if err != nil {
+				log.Println(err)
+				if errors.Is(err, internal.ErrLocalityNotFound) {
+					response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+					return
+				}
+				response.JSON(w, http.StatusInternalServerError, nil)
+				return
+			}
+
+			localityJson := LocalityGetJson{
+				ID:           locality.ID,
+				LocalityName: locality.LocalityName,
+				ProvinceName: locality.ProvinceName,
+				CountryName:  locality.CountryName,
+				SellersCount: locality.Sellers,
+			}
+
+			response.JSON(w, http.StatusOK, map[string]any{
+				"data": localityJson,
+			})
+		}
 	}
+
 }
 
 // Save method save the locality
@@ -119,7 +140,7 @@ func (h *LocalityDefault) Save() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": locality,
+			"data": localityJson,
 		})
 	}
 }

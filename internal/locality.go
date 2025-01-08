@@ -56,12 +56,14 @@ func (l *Locality) Validate() (causes []Causes) {
 
 type LocalityRepository interface {
 	Save(locality *Locality) (err error)
-	ReportSellers(id int) (locality Locality, err error)
+	ReportSellers() (sellers int, err error)
+	ReportSellersByID(id int) (locality Locality, err error)
 	FindByID(id int) (locality Locality, err error)
 }
 
 type LocalityService interface {
 	Save(locality *Locality) (err error)
-	ReportSellers(id int) (locality Locality, err error)
+	ReportSellers() (sellers int, err error)
+	ReportSellersByID(id int) (locality Locality, err error)
 	FindByID(id int) (locality Locality, err error)
 }

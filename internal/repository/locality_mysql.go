@@ -38,8 +38,20 @@ func (r *LocalityMysql) Save(locality *internal.Locality) (err error) {
 	return
 }
 
-// ReportSellers returns a seller from the database by its id
-func (r *LocalityMysql) ReportSellers(id int) (locality internal.Locality, err error) {
+func (r *LocalityMysql) ReportSellers() (sellers int, err error) {
+	row := r.db.QueryRow("SELECT COUNT(s.id) FROM sellers AS s WHERE s.locality_id IS NOT NULL;")
+	err = row.Scan(&sellers)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrLocalityNotFound
+		}
+	}
+
+	return
+}
+
+// ReportSellersByID returns a seller from the database by its id
+func (r *LocalityMysql) ReportSellersByID(id int) (locality internal.Locality, err error) {
 	// execute the query
 	row := r.db.QueryRow("SELECT l.id, l.name, l.province_name, l.country_name, COUNT(s.id) FROM localities AS l LEFT JOIN sellers AS s ON l.id = s.locality_id WHERE l.id = ? GROUP BY l.id", id)
 
