@@ -10,6 +10,7 @@ import (
 	"github.com/DATA-DOG/go-txdb"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-sql-driver/mysql"
+	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
@@ -50,17 +51,57 @@ func (l *LocalityTestSuite) SetupTest() {
 
 func (l *LocalityTestSuite) TestLocalityDefault_ReportCarries() {
 	defer l.db.Close()
-	expectedAmountOfCarries := 1
-	r := httptest.NewRequest(http.MethodGet, "/api/v1/localities/reportCarries?id=3", nil)
-	w := httptest.NewRecorder()
-	l.hd.ReportCarries()(w, r)
-	var res struct {
-		Data struct {
-			AmountOfCarries int `json:"amount_of_carries"`
-		} `json:"data"`
-	}
-	json.NewDecoder(w.Result().Body).Decode(&res)
-	require.Equal(l.T(), expectedAmountOfCarries, res.Data.AmountOfCarries)
+	l.T().Run("carries with locality id 3", func(t *testing.T) {
+		expectedAmountOfCarries := 1
+		r := httptest.NewRequest(http.MethodGet, "/api/v1/localities/reportCarries?id=3", nil)
+		w := httptest.NewRecorder()
+		l.hd.ReportCarries()(w, r)
+		var res struct {
+			Data struct {
+				AmountOfCarries int `json:"amount_of_carries"`
+			} `json:"data"`
+		}
+		json.NewDecoder(w.Result().Body).Decode(&res)
+		require.Equal(t, expectedAmountOfCarries, res.Data.AmountOfCarries)
+	})
+	l.T().Run("carries without passing locality", func(t *testing.T) {
+		expectedCarriesCountPerLocality := []internal.CarriesCountPerLocality{
+			{
+				CarriesCount: 1,
+				LocalityId:   1,
+				LocalityName: "New York City",
+			},
+			{
+				CarriesCount: 1,
+				LocalityId:   2,
+				LocalityName: "Los Angeles",
+			},
+			{
+				CarriesCount: 1,
+				LocalityId:   3,
+				LocalityName: "Chicago",
+			},
+			{
+				CarriesCount: 1,
+				LocalityId:   4,
+				LocalityName: "Houston",
+			},
+			{
+				CarriesCount: 1,
+				LocalityId:   5,
+				LocalityName: "Phoenix",
+			},
+		}
+		r := httptest.NewRequest(http.MethodGet, "/api/v1/localities/reportCarries", nil)
+		w := httptest.NewRecorder()
+		l.hd.ReportCarries()(w, r)
+		var res struct {
+			Data []internal.CarriesCountPerLocality `json:"data"`
+		}
+		json.NewDecoder(w.Result().Body).Decode(&res)
+		require.Equal(t, expectedCarriesCountPerLocality, res.Data)
+		require.Equal(t, http.StatusOK, w.Result().StatusCode)
+	})
 }
 
 func TestLocalityTestSuite(t *testing.T) {
