@@ -67,8 +67,6 @@ func (p *PurchaseOrder) Validate() (causes []Causes) {
 
 // PurchaseOrdersRepository is an interface that contains the methods that the purchase order repository should support
 type PurchaseOrderRepository interface {
-	// // FindAll returns all the purchase orders
-	// FindAll() ([]PurchaseOrder, error)
 	// FindByID returns the purchase order with the given ID
 	FindByID(id int) (PurchaseOrder, error)
 	// Save saves the given purchase order
@@ -77,8 +75,6 @@ type PurchaseOrderRepository interface {
 
 // PurchaseOrderService is an interface that contains the methods that the purchase order service should support
 type PurchaseOrderService interface {
-	// // FindAll returns all the purchase orders
-	// FindAll() ([]PurchaseOrder, error)
 	// FindByID returns the purchase order with the given ID
 	FindByID(id int) (PurchaseOrder, error)
 	// Save saves the given purchase order
