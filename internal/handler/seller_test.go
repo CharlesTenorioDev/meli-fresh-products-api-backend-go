@@ -294,6 +294,7 @@ func TestSellerDefault_Save(t *testing.T) {
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
 				Telephone:   "1234567890",
+				Locality:    1,
 			},
 			expectedStatusCode: http.StatusCreated,
 			expectedResponse: map[string]interface{}{
@@ -311,6 +312,7 @@ func TestSellerDefault_Save(t *testing.T) {
 				CompanyName: "", // Nome da empresa inválido
 				Address:     "Rua 1",
 				Telephone:   "1234567890",
+				Locality:    1,
 			},
 			expectedStatusCode: http.StatusUnprocessableEntity,
 			expectedResponse:   *rest_err.NewUnprocessableEntityError("seller.CompanyName is required"),
@@ -325,6 +327,7 @@ func TestSellerDefault_Save(t *testing.T) {
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
 				Telephone:   "1234567890",
+				Locality:    1,
 			},
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   *rest_err.NewConflictError("seller already exists"),
@@ -339,6 +342,7 @@ func TestSellerDefault_Save(t *testing.T) {
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
 				Telephone:   "1234567890",
+				Locality:    1,
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedResponse:   nil,
@@ -375,6 +379,183 @@ func TestSellerDefault_Save(t *testing.T) {
 					var actualResponse = struct {
 						Data map[string]int `json:"data"`
 					}{}
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response["data"], actualResponse.Data)
+				case rest_err.RestErr:
+					var actualResponse rest_err.RestErr
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
+				}
+			}
+		})
+	}
+}
+
+func TestSellerDefault_Update(t *testing.T) {
+	tests := []struct {
+		name               string
+		mockSetup          func(*MockSellerService)
+		id                 string
+		requestBody        interface{}
+		expectedStatusCode int
+		expectedResponse   interface{}
+	}{
+		{
+			name: "should update a seller",
+			mockSetup: func(m *MockSellerService) {
+				mockSeller := internal.Seller{
+					ID:          1,
+					CID:         456,
+					CompanyName: "Updated Seller",
+					Address:     "Rua 2",
+					Telephone:   "9876543210",
+					Locality:    2,
+				}
+				m.On("Update", 1, internal.SellerPatch{
+					CID:         intPtr(456),
+					CompanyName: stringPtr("Updated Seller"),
+					Address:     stringPtr("Rua 2"),
+					Telephone:   stringPtr("9876543210"),
+					Locality:    intPtr(2),
+				}).Return(nil, mockSeller)
+			},
+			id: "1",
+			requestBody: handler.SellersUpdateJson{
+				CID:         intPtr(456),
+				CompanyName: stringPtr("Updated Seller"),
+				Address:     stringPtr("Rua 2"),
+				Telephone:   stringPtr("9876543210"),
+				Locality:    intPtr(2),
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"data": handler.SellersGetJson{
+					Id:          1,
+					Cid:         456,
+					CompanyName: "Updated Seller",
+					Address:     "Rua 2",
+					Telephone:   "9876543210",
+					Locality:    2,
+				},
+			},
+		},
+		{
+			name: "should return bad request error for invalid id",
+			mockSetup: func(m *MockSellerService) {
+			},
+			id:                 "invalid_id",
+			requestBody:        nil,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   nil,
+		},
+		{
+			name: "should return unprocessable entity error for invalid request body",
+			mockSetup: func(m *MockSellerService) {
+				m.On("Update", 1, mock.Anything).Return(internal.ErrSellerInvalidFields, internal.Seller{})
+			},
+			id: "1",
+			requestBody: handler.SellersUpdateJson{
+				CID:         intPtr(456),
+				CompanyName: stringPtr(""), // Nome da empresa inválido
+				Address:     stringPtr("Rua 2"),
+				Telephone:   stringPtr("9876543210"),
+				Locality:    intPtr(2),
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   *rest_err.NewBadRequestError("seller invalid fields"),
+		},
+		{
+			name: "should return conflict error",
+			mockSetup: func(m *MockSellerService) {
+				m.On("Update", 1, mock.Anything).Return(internal.ErrSellerCIDAlreadyExists, internal.Seller{})
+			},
+			id: "1",
+			requestBody: handler.SellersUpdateJson{
+				CID:         intPtr(456),
+				CompanyName: stringPtr("Updated Seller"),
+				Address:     stringPtr("Rua 2"),
+				Telephone:   stringPtr("9876543210"),
+				Locality:    intPtr(2),
+			},
+			expectedStatusCode: http.StatusConflict,
+			expectedResponse:   *rest_err.NewConflictError("seller with this CID already exists"),
+		},
+		{
+			name: "should return not found error",
+			mockSetup: func(m *MockSellerService) {
+				m.On("Update", 1, mock.Anything).Return(internal.ErrSellerNotFound, internal.Seller{})
+			},
+			id: "1",
+			requestBody: handler.SellersUpdateJson{
+				CID:         intPtr(456),
+				CompanyName: stringPtr("Updated Seller"),
+				Address:     stringPtr("Rua 2"),
+				Telephone:   stringPtr("9876543210"),
+				Locality:    intPtr(2),
+			},
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   *rest_err.NewNotFoundError("seller not found"),
+		},
+		{
+			name: "should return internal server error",
+			mockSetup: func(m *MockSellerService) {
+				m.On("Update", 1, mock.Anything).Return(errors.New("internal server error"), internal.Seller{})
+			},
+			id: "1",
+			requestBody: handler.SellersUpdateJson{
+				CID:         intPtr(456),
+				CompanyName: stringPtr("Updated Seller"),
+				Address:     stringPtr("Rua 2"),
+				Telephone:   stringPtr("9876543210"),
+				Locality:    intPtr(2),
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   nil,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := new(MockSellerService)
+			sellerHandler := handler.NewSellerDefault(mockService)
+			tt.mockSetup(mockService)
+
+			requestBody, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			req, err := http.NewRequest(http.MethodPut, "/sellers/"+tt.id, bytes.NewBuffer(requestBody))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("content-type", "application/json")
+
+			rr := httptest.NewRecorder()
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", tt.id)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			hd := sellerHandler.Update()
+			hd.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.expectedStatusCode, rr.Code)
+
+			if tt.expectedResponse != nil {
+				switch response := tt.expectedResponse.(type) {
+				case map[string]interface{}:
+					var actualResponse struct {
+						Data handler.SellersGetJson `json:"data"`
+					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)

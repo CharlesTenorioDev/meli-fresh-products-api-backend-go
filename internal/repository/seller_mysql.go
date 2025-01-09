@@ -24,6 +24,9 @@ func (r *SellerMysql) FindAll() (sellers []internal.Seller, err error) {
 	// execute the query
 	rows, err := r.db.Query("SELECT `s.id`, `s.cid`, `s.company_name`, `s.address`, `s.telephone` FROM `sellers` AS `s`")
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrSellerNotFound
+		}
 		return
 	}
 
