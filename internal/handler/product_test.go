@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -66,7 +65,7 @@ func Test_GetAll(t *testing.T) {
 						Height:                         10.0,
 						Width:                          10.0,
 						NetWeight:                      100,
-						ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+						ExpirationRate:                 1,
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
 						ProductTypeId:                  1,
@@ -79,7 +78,7 @@ func Test_GetAll(t *testing.T) {
 						Height:                         10.0,
 						Width:                          10.0,
 						NetWeight:                      100,
-						ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+						ExpirationRate:                 1,
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
 						ProductTypeId:                  1,
@@ -99,7 +98,7 @@ func Test_GetAll(t *testing.T) {
 						Height:                         10.0,
 						Width:                          10.0,
 						NetWeight:                      100,
-						ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+						ExpirationRate:                 1,
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
 						ProductTypeId:                  1,
@@ -112,7 +111,7 @@ func Test_GetAll(t *testing.T) {
 						Height:                         10.0,
 						Width:                          10.0,
 						NetWeight:                      100,
-						ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+						ExpirationRate:                 1,
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
 						ProductTypeId:                  1,
@@ -191,7 +190,7 @@ func Test_GetByID(t *testing.T) {
 					Height:                         10.0,
 					Width:                          10.0,
 					NetWeight:                      100,
-					ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
 					ProductTypeId:                  1,
@@ -209,7 +208,7 @@ func Test_GetByID(t *testing.T) {
 					Height:                         10.0,
 					Width:                          10.0,
 					NetWeight:                      100,
-					ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
 					ProductTypeId:                  1,
@@ -298,7 +297,7 @@ func Test_Create(t *testing.T) {
 					Height:                         10.0,
 					Width:                          10.0,
 					NetWeight:                      100,
-					ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
 					ProductTypeId:                  1,
@@ -312,7 +311,7 @@ func Test_Create(t *testing.T) {
 				Height:                         10.0,
 				Width:                          10.0,
 				NetWeight:                      100,
-				ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+				ExpirationRate:                 1,
 				RecommendedFreezingTemperature: 18,
 				FreezingRate:                   18,
 				ProductTypeId:                  1,
@@ -337,7 +336,7 @@ func Test_Create(t *testing.T) {
 				Height:                         10.0,
 				Width:                          10.0,
 				NetWeight:                      100,
-				ExpirationRate:                 time.Now().Truncate(24 * time.Hour),
+				ExpirationRate:                 1,
 				RecommendedFreezingTemperature: 18,
 				FreezingRate:                   18,
 				ProductTypeId:                  1,

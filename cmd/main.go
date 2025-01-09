@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/go-sql-driver/mysql"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal/application"
@@ -12,7 +13,7 @@ func main() {
 		User:      "root",
 		Passwd:    "meli_pass",
 		Net:       "tcp",
-		Addr:      "localhost:3306",
+		Addr:      "localhost:3307",
 		DBName:    "melifresh",
 		ParseTime: true,
 	}

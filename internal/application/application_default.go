@@ -72,6 +72,7 @@ func (a *ServerChi) Run() (err error) {
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
+	prodRecRepository := repository.NewProductRecordsSQL(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
@@ -92,6 +93,10 @@ func (a *ServerChi) Run() (err error) {
 		})
 		r.Route("/products", func(r chi.Router) {
 			productRoutes(r, pdRepository, slRepository)
+		})
+
+		r.Route("/productRecords", func(r chi.Router) {
+			productRecordsRoutes(r, prodRecRepository, pdRepository)
 		})
 	})
 
@@ -176,4 +181,10 @@ func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+}
+func productRecordsRoutes(r chi.Router, prodRecRepository internal.ProductRecordsRepository, prodRepository internal.ProductRepository) {
+	svc := service.NewProductRecordsDefault(prodRecRepository, prodRepository)
+	hd := handler.NewProductRecordsDefault(svc)
+
+	r.Post("/", hd.Create)
 }
