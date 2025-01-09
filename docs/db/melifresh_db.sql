@@ -100,7 +100,7 @@ CREATE TABLE `buyers`
 CREATE TABLE `inbound_orders`
 (
     `id`               int(11) NOT NULL AUTO_INCREMENT,
-    `order_date`       datetime(6) NOT NULL,
+    `order_date`       date NOT NULL,
     `order_number`     varchar(255) NOT NULL,
     `employee_id`      int(11) NOT NULL,
     `product_batch_id` int(11) NOT NULL,

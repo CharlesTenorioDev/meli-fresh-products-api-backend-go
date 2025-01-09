@@ -47,6 +47,7 @@ type ServerChi struct {
 	// serverAddress is the address where the server will be listening
 	serverAddress string
 	dsn           string
+	db            *sql.DB
 }
 
 // Run is a method that runs the application
@@ -95,7 +96,7 @@ func (a *ServerChi) Run() (err error) {
 			productRoutes(r, pdRepository, slRepository)
 		})
 		r.Route("/inbound-orders", func(r chi.Router) {
-			inboundOrdersRoutes(r, empRepository, whRepository)
+			inboundOrdersRoutes(r, empRepository, whRepository, a)
 		})
 	})
 
@@ -182,10 +183,10 @@ func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository
 	r.Delete("/{id}", hd.Delete)
 }
 
-func inboundOrdersRoutes(r chi.Router, empRepository internal.EmployeeRepository, whRepository internal.WarehouseRepository) {
-	rp := repository.NewEmployeeRepository()
+func inboundOrdersRoutes(r chi.Router, empRepository internal.EmployeeRepository, whRepository internal.WarehouseRepository, a *ServerChi) {
+	rp := repository.NewInboundOrderMysql(a.db)
 	sv := service.NewInboundOrderService(rp, empRepository, whRepository)
-	hd := handler.NewInboundOrderHandlerDefault(sv)
+	hd := handler.NewInboundOrdersHandler(sv)
 
 	r.Post("/", hd.Create)
 
