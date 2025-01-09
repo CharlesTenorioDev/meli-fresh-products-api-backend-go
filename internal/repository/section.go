@@ -30,7 +30,6 @@ func NewRepositorySection() *SectionDB {
 			MaximumCapacity:    value.MaximumCapacity,
 			WarehouseID:        value.WarehouseID,
 			ProductTypeID:      value.ProductTypeID,
-			ProductBatches:     value.ProductBatches,
 		}
 
 		bdSections[value.ID] = &section
@@ -66,6 +65,10 @@ func (r *SectionDB) FindByID(id int) (internal.Section, error) {
 		return internal.Section{}, errors.New("section not found")
 	}
 	return *section, nil
+}
+
+func (s *SectionDB) ReportProductsByID(id int) (prodBatchs []internal.ProductBatch, err error) {
+	return
 }
 
 func (r *SectionDB) SectionNumberExists(section internal.Section) error {

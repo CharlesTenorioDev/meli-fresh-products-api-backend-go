@@ -13,6 +13,17 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
+type SectionJSON struct {
+	SectionNumber      int     `json:"section_number"`
+	CurrentTemperature float64 `json:"current_temperature"`
+	MinimumTemperature float64 `json:"minimum_temperature"`
+	CurrentCapacity    int     `json:"current_capacity"`
+	MinimumCapacity    int     `json:"minimum_capacity"`
+	MaximumCapacity    int     `json:"maximum_capacity"`
+	WarehouseID        int     `json:"warehouse_id"`
+	ProductTypeID      int     `json:"product_type_id"`
+}
+
 func NewHandlerSection(svc internal.SectionService) *SectionHandler {
 	return &SectionHandler{
 		sv: svc,
@@ -54,11 +65,67 @@ func (h *SectionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) {
+	/*var prodBatchs []internal.ProductBatch
+	var err error
+
+	idStr := r.URL.Query().Get("id")
+
+	switch idStr {
+	case "":
+		prodBatchs, err = h.sv.ReportProducts()
+	default:
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+			return
+		}
+
+		prodBatchs, err = h.sv.ReportProductsByID(id)
+	}
+
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, service.ProductBatchNotFound) {
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+			return
+		}
+		response.JSON(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	var localitiesJson []LocalityGetJson
+	for _, locality := range prodBatchs {
+		localitiesJson = append(localitiesJson, LocalityGetJson{
+			ID:           locality.ID,
+			LocalityName: locality.LocalityName,
+			ProvinceName: locality.ProvinceName,
+			CountryName:  locality.CountryName,
+			SellersCount: locality.Sellers,
+		})
+	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"data": localitiesJson,
+	})*/
+}
+
 func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var section internal.Section
-	if err := json.NewDecoder(r.Body).Decode(&section); err != nil {
+	var sectionJSON SectionJSON
+	if err := json.NewDecoder(r.Body).Decode(&sectionJSON); err != nil {
 		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
+	}
+
+	section := internal.Section{
+		SectionNumber:      sectionJSON.SectionNumber,
+		CurrentTemperature: sectionJSON.CurrentTemperature,
+		MinimumTemperature: sectionJSON.MinimumTemperature,
+		CurrentCapacity:    sectionJSON.CurrentCapacity,
+		MinimumCapacity:    sectionJSON.MinimumCapacity,
+		MaximumCapacity:    sectionJSON.MaximumCapacity,
+		WarehouseID:        sectionJSON.WarehouseID,
+		ProductTypeID:      sectionJSON.ProductTypeID,
 	}
 
 	err := h.sv.Save(&section)

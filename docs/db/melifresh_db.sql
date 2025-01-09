@@ -96,6 +96,7 @@ CREATE TABLE `buyers`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+-- table `carries`
 CREATE TABLE `carries`
 (
     `id`             int(11) NOT NULL AUTO_INCREMENT,
@@ -107,6 +108,24 @@ CREATE TABLE `carries`
     FOREIGN KEY (`locality_id`) REFERENCES localities (id),
 	PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+-- table `product_batches`
+CREATE TABLE `product_batches` (
+    `id`                 INT(11) NOT NULL AUTO_INCREMENT,
+    `batch_number`      INT(11) NOT NULL,
+    `current_quantity`   INT(11) NOT NULL,
+    `current_temperature` FLOAT NOT NULL,
+    `due_date`          DATE NOT NULL,     
+    `initial_quantity`  INT(11) NOT NULL,
+    `manufacturing_date` DATE NOT NULL,                   
+    `manufacturing_hour` INT(11) NOT NULL,                  
+    `minumum_temperature` FLOAT NOT NULL,
+    `product_id`        INT(11) NOT NULL,
+    `section_id`        INT(11) NOT NULL,
+    FOREIGN KEY (`product_id`) REFERENCES products(id),
+    FOREIGN KEY (`section_id`) REFERENCES sections(id)
+    PRIMARY KEY (`id`),
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- DML
 INSERT INTO localities (id, name, province_name, country_name)
@@ -196,8 +215,20 @@ VALUES ('B1001', 'Alice', 'Brown'),
        ('B1010', 'Edward', 'Gonzalez');
 
 INSERT INTO carries (cid, company_name, address, phone_number, locality_id)
-VALUES (1, 'Meli Fresh Logistics', '123 Fresh St', '555-1001', 1),
-(2, 'Quick Delivery Services', '456 Fast Ave', '555-1002', 2),
-(3, 'Fresh Express', '789 Speed Blvd', '555-1003', 3),
-(4, 'Swift Transport Co.', '101 Pine St', '555-1004', 4),
-(5, 'Rapid Freight Solutions', '202 Oak Dr', '555-1005', 5);
+VALUES  (1, 'Meli Fresh Logistics', '123 Fresh St', '555-1001', 1),
+        (2, 'Quick Delivery Services', '456 Fast Ave', '555-1002', 2),
+        (3, 'Fresh Express', '789 Speed Blvd', '555-1003', 3),
+        (4, 'Swift Transport Co.', '101 Pine St', '555-1004', 4),
+        (5, 'Rapid Freight Solutions', '202 Oak Dr', '555-1005', 5);
+
+INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minumum_temperature, product_id, section_id)
+VALUES  (1, 100, 20.0, '2022-01-08', 150, '2022-01-01', 10, -5.0, 1, 1),
+        (2, 200, 18.5, '2022-02-04', 250, '2022-01-02', 11, -4.0, 2, 1),
+        (3, 150, 15.0, '2022-03-01', 180, '2022-01-03', 12, -3.0, 1, 2),
+        (4, 300, 22.0, '2022-03-15', 350, '2022-01-04', 9, -6.0, 2, 2),
+        (5, 250, 25.0, '2022-04-10', 300, '2022-01-05', 8, -2.0, 1, 3),
+        (6, 400, 30.0, '2022-05-05', 450, '2022-01-06', 7, -1.0, 3, 2),
+        (7, 500, 5.5,  '2022-06-01', 600, '2022-01-07', 6, -5.0, 3, 3),
+        (8, 600, 10.2, '2022-06-15', 550, '2022-01-08', 5, -4.1, 4, 4),
+        (9, 350, 12.3, '2022-07-01', 400, '2022-01-09', 4, -3.2, 5, 1),
+        (10, 450, 16.4, '2022-07-15', 250, '2022-01-10', 3, -7.5, 5, 3);

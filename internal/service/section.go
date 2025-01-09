@@ -52,24 +52,12 @@ func (s *SectionService) FindByID(id int) (internal.Section, error) {
 	return section, nil
 }
 
-func validateRequiredFields(section internal.Section) error {
-	if section.SectionNumber <= 0 ||
-		section.CurrentTemperature < -273.15 ||
-		section.MinimumTemperature < -273.15 ||
-		section.CurrentCapacity < 0 ||
-		section.MinimumCapacity < 0 ||
-		section.MaximumCapacity < 0 ||
-		section.WarehouseID <= 0 ||
-		section.ProductTypeID <= 0 ||
-		len(section.ProductBatches) == 0 {
-		return errors.New("all fields must be valid and filled, unless otherwise stated")
-	}
-
-	return nil
+func (s *SectionService) ReportProductsByID(id int) (prodBatchs []internal.ProductBatch, err error) {
+	return
 }
 
 func (s *SectionService) Save(section *internal.Section) error {
-	if err := validateRequiredFields(*section); err != nil {
+	if ok := section.Ok(); !ok {
 		return SectionUnprocessableEntity
 	}
 
@@ -86,13 +74,6 @@ func (s *SectionService) Save(section *internal.Section) error {
 	_, err = s.rpT.FindByID(section.ProductTypeID)
 	if err != nil {
 		return ProductTypeNotFound
-	}
-
-	for _, productBatch := range section.ProductBatches {
-		_, err = s.rpP.FindByID(productBatch.ProductID)
-		if err != nil {
-			return ProductNotFound
-		}
 	}
 
 	err = s.rpS.Save(section)
@@ -195,45 +176,6 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 		_, err = s.rpT.FindByID(section.ProductTypeID)
 		if err != nil {
 			return internal.Section{}, ProductTypeNotFound
-		}
-	}
-
-	if productBatches, ok := updates["product_batches"]; ok {
-		if batches, ok := productBatches.([]interface{}); ok {
-			var batchs []internal.ProductBatch
-			for _, batchItem := range batches {
-				var batch internal.ProductBatch
-
-				if batchMap, ok := batchItem.(map[string]interface{}); ok {
-					if productId, ok := batchMap["product_id"].(float64); ok {
-						batch.ProductID = int(productId)
-					} else {
-						return internal.Section{}, fmt.Errorf("product_id is required and must be a number")
-					}
-
-					_, err = s.rpP.FindByID(batch.ProductID)
-					if err != nil {
-						return internal.Section{}, ProductNotFound
-					}
-
-					if quantity, ok := batchMap["quantity"].(float64); ok {
-						batch.Quantity = int(quantity)
-					} else {
-						return internal.Section{}, fmt.Errorf("quantity is required and must be a number")
-					}
-
-					batchs = append(batchs, batch)
-				} else {
-					return internal.Section{}, fmt.Errorf("each item in product_batches must be an object")
-				}
-			}
-
-			if len(batchs) > 0 {
-				section.ProductBatches = batchs
-			}
-
-		} else {
-			return internal.Section{}, fmt.Errorf("product_batches must be a list of objects")
 		}
 	}
 
