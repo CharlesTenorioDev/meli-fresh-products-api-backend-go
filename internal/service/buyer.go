@@ -7,10 +7,12 @@ import (
 )
 
 var (
-	BuyerNotFound            = errors.New("buyer not found")
-	BuyerAlreadyExists       = errors.New("buyer already exists")
-	CardNumberAlreadyInUse   = errors.New("buyer with given card number already registered")
-	BuyerUnprocessableEntity = errors.New("couldn't parse buyer")
+	BuyerNotFound                    = errors.New("buyer not found")
+	BuyerAlreadyExists               = errors.New("buyer already exists")
+	CardNumberAlreadyInUse           = errors.New("buyer with given card number already registered")
+	BuyerUnprocessableEntity         = errors.New("couldn't parse buyer")
+	ErrPurchaseOrdersByBuyerNotFound = errors.New("purchase orders not found for the given buyer")
+	ErrPurchaseOrdersNotFound        = errors.New("purchase orders not found for any buyer")
 )
 
 func cardNumberIdAlreadyInUse(cardNumber string, buyers map[int]internal.Buyer) bool {
@@ -99,17 +101,23 @@ func (s *BuyerServiceDefault) ReportPurchaseOrders() (po []internal.PurchaseOrde
 	po, err = s.repo.ReportPurchaseOrders()
 	// Check if there is no buyers records
 	if len(po) == 0 {
-		return nil, BuyerNotFound
+		return nil, ErrPurchaseOrdersNotFound
 	}
 	return
 }
 
 // ReportPurchaseOrdersById returns all purchase orders of a specific buyer
 func (s *BuyerServiceDefault) ReportPurchaseOrdersById(id int) (po []internal.PurchaseOrdersByBuyer, err error) {
+	// Check if the buyer exists
+	_, err = s.FindByID(id)
+	if err != nil {
+		return nil, err
+	}
+	// Get the purchase orders of the given buyer
 	po, err = s.repo.ReportPurchaseOrdersById(id)
 	// Check if there is no records for the given buyer
 	if len(po) == 0 {
-		return nil, BuyerNotFound
+		return nil, ErrPurchaseOrdersByBuyerNotFound
 	}
 	return
 }

@@ -68,14 +68,13 @@ func (a *ServerChi) Run() (err error) {
 	rt := chi.NewRouter()
 	rt.Use(middleware.Logger)
 
-	buRepository := repository.NewBuyerMap("db/buyer.json")
 	buMysqlRepository := repository.NewBuyerMysqlRepository(db)
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
 	poMysqlRepository := repository.NewPurchaseOrderMysqlRepository(db)
-	buyerService := service.NewBuyerService(buRepository)
+	buyerService := service.NewBuyerService(buMysqlRepository)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
