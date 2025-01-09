@@ -47,7 +47,11 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 		if idStr == "" {
 			carries, err := h.sv.GetAmountOfCarriesForEveryLocality()
 			if err != nil {
-				response.JSON(w, http.StatusInternalServerError, nil)
+				response.JSON(
+					w,
+					http.StatusInternalServerError,
+					rest_err.NewInternalServerError("failed to fetch carries"),
+				)
 				return
 			}
 
@@ -59,15 +63,21 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, nil)
+			response.JSON(
+				w,
+				http.StatusBadRequest,
+				rest_err.NewBadRequestError("id should be a number"),
+			)
 			return
 		}
 
 		amountOfCarries, err := h.sv.ReportCarries(id)
 		if err != nil {
-			response.JSON(w, http.StatusNotFound, map[string]any{
-				"error": "no carries on locality_id " + idStr,
-			})
+			response.JSON(
+				w,
+				http.StatusNotFound,
+				rest_err.NewNotFoundError("not carries on locality_id "+idStr),
+			)
 			return
 		}
 
