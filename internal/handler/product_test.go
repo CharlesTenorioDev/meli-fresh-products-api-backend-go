@@ -66,6 +66,7 @@ func Test_GetAll(t *testing.T) {
 						Width:                          10.0,
 						NetWeight:                      100,
 						ExpirationRate:                 1,
+
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
 						ProductTypeId:                  1,
@@ -79,6 +80,7 @@ func Test_GetAll(t *testing.T) {
 						Width:                          10.0,
 						NetWeight:                      100,
 						ExpirationRate:                 1,
+
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
 						ProductTypeId:                  1,
@@ -99,6 +101,7 @@ func Test_GetAll(t *testing.T) {
 						Width:                          10.0,
 						NetWeight:                      100,
 						ExpirationRate:                 1,
+
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
 						ProductTypeId:                  1,
@@ -112,6 +115,7 @@ func Test_GetAll(t *testing.T) {
 						Width:                          10.0,
 						NetWeight:                      100,
 						ExpirationRate:                 1,
+
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
 						ProductTypeId:                  1,
@@ -190,7 +194,8 @@ func Test_GetByID(t *testing.T) {
 					Height:                         10.0,
 					Width:                          10.0,
 					NetWeight:                      100,
-					ExpirationRate:                 1,
+						ExpirationRate:                 1,
+
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
 					ProductTypeId:                  1,
@@ -208,7 +213,8 @@ func Test_GetByID(t *testing.T) {
 					Height:                         10.0,
 					Width:                          10.0,
 					NetWeight:                      100,
-					ExpirationRate:                 1,
+						ExpirationRate:                 1,
+
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
 					ProductTypeId:                  1,
@@ -297,7 +303,8 @@ func Test_Create(t *testing.T) {
 					Height:                         10.0,
 					Width:                          10.0,
 					NetWeight:                      100,
-					ExpirationRate:                 1,
+						ExpirationRate:                 1,
+
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
 					ProductTypeId:                  1,
@@ -311,7 +318,8 @@ func Test_Create(t *testing.T) {
 				Height:                         10.0,
 				Width:                          10.0,
 				NetWeight:                      100,
-				ExpirationRate:                 1,
+        ExpirationRate:                 1,
+
 				RecommendedFreezingTemperature: 18,
 				FreezingRate:                   18,
 				ProductTypeId:                  1,
@@ -336,7 +344,8 @@ func Test_Create(t *testing.T) {
 				Height:                         10.0,
 				Width:                          10.0,
 				NetWeight:                      100,
-				ExpirationRate:                 1,
+        ExpirationRate:                 1,
+
 				RecommendedFreezingTemperature: 18,
 				FreezingRate:                   18,
 				ProductTypeId:                  1,
