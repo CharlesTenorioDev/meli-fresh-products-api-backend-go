@@ -54,7 +54,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_GetAll() {
 		var data struct {
 			Data []internal.Carries `json:"data"`
 		}
-		_, err := c.db.Exec("INSERT INTO carries (`cid`, `company_name`, `address`, `phone_number`, `locality_id`) VALUES (14, 'Mercado Livre', 'Location', '11977021487', 3)")
+		_, err := c.db.Exec("INSERT INTO carries (`cid`, `company_name`, `address`, `phone_number`, `locality_id`) VALUES ('CID#14', 'Mercado Livre', 'Location', '11977021487', 3)")
 		require.NoError(t, err)
 		r := httptest.NewRequest(http.MethodGet, api, nil)
 		w := httptest.NewRecorder()
@@ -64,7 +64,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_GetAll() {
 		require.Equal(t, "Location", data.Data[last].Address)
 		require.Equal(t, "11977021487", data.Data[last].PhoneNumber)
 		require.Equal(t, "Mercado Livre", data.Data[last].CompanyName)
-		require.Equal(t, 14, data.Data[last].Cid)
+		require.Equal(t, "CID#14", data.Data[last].Cid)
 	})
 }
 
@@ -72,7 +72,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 	defer c.db.Close()
 	c.T().Run("attempt to create with valid entries", func(t *testing.T) {
 		carry := internal.Carries{
-			Cid:         15,
+			Cid:         "CID#15",
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",
@@ -113,7 +113,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 	})
 	c.T().Run("attempt to create with repeated entries", func(t *testing.T) {
 		carry := internal.Carries{
-			Cid:         15,
+			Cid:         "CID#15",
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",
@@ -128,7 +128,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 	})
 	c.T().Run("attempt to create with a invalid locality id", func(t *testing.T) {
 		carry := internal.Carries{
-			Cid:         100,
+			Cid:         "CID#100",
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",

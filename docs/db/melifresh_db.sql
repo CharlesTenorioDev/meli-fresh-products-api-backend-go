@@ -99,7 +99,7 @@ CREATE TABLE `buyers`
 CREATE TABLE `carries`
 (
     `id`             int(11) NOT NULL AUTO_INCREMENT,
-	`cid`            int(11) UNIQUE NOT NULL,
+	`cid`            varchar(10) UNIQUE NOT NULL,
 	`company_name`   varchar(100) NOT NULL,
 	`address`        varchar(100) NOT NULL,
 	`phone_number`   varchar(20) NOT NULL,

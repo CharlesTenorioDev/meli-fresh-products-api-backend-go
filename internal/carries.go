@@ -2,7 +2,7 @@ package internal
 
 type Carries struct {
 	Id          int    `json:"id"`
-	Cid         int    `json:"cid"`
+	Cid         string `json:"cid"`
 	CompanyName string `json:"company_name"`
 	Address     string `json:"address"`
 	PhoneNumber string `json:"phone_number"`
@@ -20,7 +20,7 @@ type CarriesRepository interface {
 }
 
 func (c *Carries) Ok() bool {
-	if c.Cid < 0 || c.CompanyName == "" || c.Address == "" || c.PhoneNumber == "" || c.LocalityId < 0 {
+	if c.Cid < "" || c.CompanyName == "" || c.Address == "" || c.PhoneNumber == "" || c.LocalityId < 0 {
 		return false
 	}
 	return true
