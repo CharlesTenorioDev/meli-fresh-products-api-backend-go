@@ -143,6 +143,6 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 	})
 }
 
-func TestCarrierTestSuite(t *testing.T) {
+func TestCarriesTestSuite(t *testing.T) {
 	suite.Run(t, new(CarriesTestSuite))
 }
