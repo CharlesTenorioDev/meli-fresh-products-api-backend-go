@@ -13,7 +13,7 @@ func main() {
 		User:      "root",
 		Passwd:    "meli_pass",
 		Net:       "tcp",
-		Addr:      "localhost:3307",
+		Addr:      "localhost:3306",
 		DBName:    "melifresh",
 		ParseTime: true,
 	}
