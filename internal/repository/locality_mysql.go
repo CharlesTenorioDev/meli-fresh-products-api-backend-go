@@ -82,11 +82,38 @@ func (r *LocalityMysql) Save(locality *internal.Locality) (err error) {
 	return
 }
 
-// ReportSellers returns a seller from the database by its id
-func (r *LocalityMysql) ReportSellers(id int) (locality internal.Locality, err error) {
+func (r *LocalityMysql) ReportSellers() (localities []internal.Locality, err error) {
+	rows, err := r.db.Query("SELECT l.id, l.name, l.province_name, l.country_name, COUNT(s.id) FROM localities AS l LEFT JOIN sellers AS s ON l.id = s.locality_id GROUP BY l.id")
+
+	err = rows.Err()
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrLocalityNotFound
+		}
+		return
+	}
+
+	for rows.Next() {
+		// create a new seller
+		var locality internal.Locality
+		err = rows.Scan(&locality.ID, &locality.LocalityName, &locality.ProvinceName, &locality.CountryName, &locality.Sellers)
+		if err != nil {
+			return
+		}
+
+		// append the seller to the slice
+		localities = append(localities, locality)
+	}
+
+	return
+}
+
+// ReportSellersByID returns a seller from the database by its id
+func (r *LocalityMysql) ReportSellersByID(id int) (localities []internal.Locality, err error) {
 	// execute the query
 	row := r.db.QueryRow("SELECT l.id, l.name, l.province_name, l.country_name, COUNT(s.id) FROM localities AS l LEFT JOIN sellers AS s ON l.id = s.locality_id WHERE l.id = ? GROUP BY l.id", id)
 
+	var locality internal.Locality
 	// scan the row into the seller
 	err = row.Scan(&locality.ID, &locality.LocalityName, &locality.ProvinceName, &locality.CountryName, &locality.Sellers)
 	if err != nil {
@@ -94,6 +121,9 @@ func (r *LocalityMysql) ReportSellers(id int) (locality internal.Locality, err e
 			err = internal.ErrLocalityNotFound
 		}
 	}
+
+	localities = append(localities, locality)
+
 	return
 }
 

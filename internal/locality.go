@@ -63,7 +63,8 @@ func (l *Locality) Validate() (causes []Causes) {
 
 type LocalityRepository interface {
 	Save(locality *Locality) (err error)
-	ReportSellers(id int) (locality Locality, err error)
+	ReportSellers() (localities []Locality, err error)
+	ReportSellersByID(id int) (localities []Locality, err error)
 	FindByID(id int) (locality Locality, err error)
 	ReportCarries(localityId int) (amountOfCarries int, e error)
 	GetAmountOfCarriesForEveryLocality() (c []CarriesCountPerLocality, e error)
@@ -71,7 +72,8 @@ type LocalityRepository interface {
 
 type LocalityService interface {
 	Save(locality *Locality) (err error)
-	ReportSellers(id int) (locality Locality, err error)
+	ReportSellers() (localities []Locality, err error)
+	ReportSellersByID(id int) (localities []Locality, err error)
 	FindByID(id int) (locality Locality, err error)
 	ReportCarries(localityId int) (int, error)
 	GetAmountOfCarriesForEveryLocality() ([]CarriesCountPerLocality, error)
