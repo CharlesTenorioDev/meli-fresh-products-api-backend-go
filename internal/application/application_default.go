@@ -73,11 +73,11 @@ func (a *ServerChi) Run() (err error) {
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
-	empRepository := repository.NewEmployeeRepository()
+	empRepository := repository.NewEmployeeMysql(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
-			employeeRouter(r, whRepository)
+			employeeRouter(r, whRepository, a)
 		})
 		r.Route("/buyers", buyerRouter)
 		r.Route("/sections", func(r chi.Router) {
@@ -147,8 +147,8 @@ func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository, ptR
 	r.Delete("/{id}", hd.Delete)
 }
 
-func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
-	rp := repository.NewEmployeeRepository()
+func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository, a *ServerChi) {
+	rp := repository.NewEmployeeMysql(a.db)
 	sv := service.NewEmployeeServiceDefault(rp, whRepository)
 	hd := handler.NewEmployeeDefault(sv)
 
@@ -157,6 +157,7 @@ func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+	r.Get("/report-inbound-orders", hd.ReportInboundOrders)
 }
 
 func buyerRouter(r chi.Router) {

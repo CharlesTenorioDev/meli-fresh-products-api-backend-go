@@ -124,3 +124,11 @@ func (s *EmployeeDefault) Delete(id int) (err error) {
 	s.rp.Delete(id)
 	return
 }
+
+func (s *EmployeeDefault) CountInboundOrdersPerEmployee() (io []internal.InboundOrdersPerEmployee, err error) {
+	return s.rp.CountInboundOrdersPerEmployee()
+}
+
+func (s *EmployeeDefault) ReportInboundOrdersById(employeeId int) (totalInboundOrders int, err error) {
+	return s.rp.ReportInboundOrdersById(employeeId)
+}

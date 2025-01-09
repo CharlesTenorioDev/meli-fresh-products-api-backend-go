@@ -10,6 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
 type EmployeeHandlerDefault struct {
@@ -157,4 +158,42 @@ func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	response.JSON(w, http.StatusNoContent, nil) //status 204
+}
+
+func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *http.Request) {
+
+	idStr := r.URL.Query().Get("id")
+
+	if idStr == "" {
+		inboundOrders, err := h.sv.CountInboundOrdersPerEmployee()
+		if err != nil {
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("faleid to fetch inbound orders"))
+			return
+		}
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": inboundOrders,
+		})
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("invalid id format"))
+		return
+	}
+
+	countInboundOrders, err := h.sv.ReportInboundOrdersById(id)
+
+	if err != nil {
+		if errors.Is(err, service.EmployeeNotFound) {
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("not found inbounds on this employee"+idStr))
+			return
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": countInboundOrders,
+		})
+
+	}
+
 }
