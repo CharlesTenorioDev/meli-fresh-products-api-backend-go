@@ -91,8 +91,12 @@ func (a *ServerChi) Run() (err error) {
 		r.Route("/localities", func(r chi.Router) {
 			localitiesRoutes(r, lcRepository)
 		})
+
 		r.Route("/products", func(r chi.Router) {
 			productRoutes(r, pdRepository, slRepository)
+		})
+		r.Route("/carries", func(r chi.Router) {
+			carriesRoutes(r, db)
 		})
 
 		r.Route("/productRecords", func(r chi.Router) {
@@ -109,6 +113,7 @@ func localitiesRoutes(r chi.Router, lcRepository internal.LocalityRepository) {
 	hd := handler.NewLocalityDefault(sv)
 
 	r.Get("/report-sellers", hd.ReportSellers())
+	r.Get("/report-carries", hd.ReportCarries())
 	r.Post("/", hd.Save())
 }
 
@@ -181,6 +186,15 @@ func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+}
+
+func carriesRoutes(r chi.Router, db *sql.DB) {
+	rp := repository.NewCarriesMysql(db)
+	sv := service.NewCarriesService(rp)
+	hd := handler.NewCarriesHandlerDefault(sv)
+
+	r.Get("/", hd.GetAll)
+	r.Post("/", hd.Create)
 }
 func productRecordsRoutes(r chi.Router, prodRecRepository internal.ProductRecordsRepository, prodRepository internal.ProductRepository) {
 	svc := service.NewProductRecordsDefault(prodRecRepository, prodRepository)

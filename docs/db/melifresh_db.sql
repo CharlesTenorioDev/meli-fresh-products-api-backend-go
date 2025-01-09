@@ -5,7 +5,7 @@ DATABASE IF EXISTS melifresh;
 CREATE
 DATABASE melifresh;
 
-USE melifresh;
+USE `melifresh`;
 
 -- table localities
 CREATE TABLE localities
@@ -89,12 +89,13 @@ CREATE TABLE employees
 -- table buyers
 CREATE TABLE buyers
 (
-    id             int(11) NOT NULL AUTO_INCREMENT,
-    card_number_id varchar(25) NOT NULL,
-    first_name     varchar(50) NOT NULL,
-    last_name      varchar(50) NOT NULL,
-    PRIMARY KEY (id)
+    `id`             int(11) NOT NULL AUTO_INCREMENT,
+    `card_number_id` varchar(25) NOT NULL,
+    `first_name`     varchar(50) NOT NULL,
+    `last_name`      varchar(50) NOT NULL,
+    PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 
 CREATE TABLE carries
 (
@@ -107,6 +108,7 @@ CREATE TABLE carries
     FOREIGN KEY (locality_id) REFERENCES localities (id),
 	PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 CREATE TABLE product_records
 (
     id                int(11) NOT NULL AUTO_INCREMENT,
@@ -118,17 +120,17 @@ CREATE TABLE product_records
 	PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 -- DML
-INSERT INTO localities (name, province_name, country_name)
-VALUES ('New York City', 'New York', 'United States'),
-       ('Los Angeles', 'California', 'United States'),
-       ('Chicago', 'Illinois', 'United States'),
-       ('Houston', 'Texas', 'United States'),
-       ('Phoenix', 'Arizona', 'United States'),
-       ('Philadelphia', 'Pennsylvania', 'United States'),
-       ('San Antonio', 'Texas', 'United States'),
-       ('San Diego', 'California', 'United States'),
-       ('Dallas', 'Texas', 'United States'),
-       ('San Jose', 'California', 'United States');
+INSERT INTO localities (id, name, province_name, country_name)
+VALUES (1, 'New York City', 'New York', 'United States'),
+       (2, 'Los Angeles', 'California', 'United States'),
+       (3, 'Chicago', 'Illinois', 'United States'),
+       (4, 'Houston', 'Texas', 'United States'),
+       (5, 'Phoenix', 'Arizona', 'United States'),
+       (6, 'Philadelphia', 'Pennsylvania', 'United States'),
+       (7, 'San Antonio', 'Texas', 'United States'),
+       (8, 'San Diego', 'California', 'United States'),
+       (9, 'Dallas', 'Texas', 'United States'),
+       (10, 'San Jose', 'California', 'United States');
 
 INSERT INTO sellers (cid, company_name, address, telephone, locality_id)
 VALUES (1, 'Company A', '123 Main St', '123-456-7890', 1),
@@ -218,3 +220,4 @@ VALUES (1, '2025-01-01 10:00:00', 50.00, 70.00, 1),
 (3, '2025-01-03 14:45:00', 100.00, 150.00, 3),
 (4, '2025-01-04 09:15:00', 20.00, 35.00, 4),
 (5, '2025-01-05 16:00:00', 75.00, 110.00, 5);
+

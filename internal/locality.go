@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+
 	"github.com/meli-fresh-products-api-backend-t1/utils/validator"
 )
 
@@ -11,6 +12,12 @@ type Locality struct {
 	ProvinceName string
 	CountryName  string
 	Sellers      int
+}
+
+type CarriesCountPerLocality struct {
+	CarriesCount int    `json:"carries_count"`
+	LocalityId   int    `json:"locality_id"`
+	LocalityName string `json:"locality_name"`
 }
 
 var (
@@ -56,12 +63,18 @@ func (l *Locality) Validate() (causes []Causes) {
 
 type LocalityRepository interface {
 	Save(locality *Locality) (err error)
-	ReportSellers(id int) (locality Locality, err error)
+	ReportSellers() (localities []Locality, err error)
+	ReportSellersByID(id int) (localities []Locality, err error)
 	FindByID(id int) (locality Locality, err error)
+	ReportCarries(localityId int) (amountOfCarries int, e error)
+	GetAmountOfCarriesForEveryLocality() (c []CarriesCountPerLocality, e error)
 }
 
 type LocalityService interface {
 	Save(locality *Locality) (err error)
-	ReportSellers(id int) (locality Locality, err error)
+	ReportSellers() (localities []Locality, err error)
+	ReportSellersByID(id int) (localities []Locality, err error)
 	FindByID(id int) (locality Locality, err error)
+	ReportCarries(localityId int) (int, error)
+	GetAmountOfCarriesForEveryLocality() ([]CarriesCountPerLocality, error)
 }
