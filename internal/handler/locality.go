@@ -42,35 +42,14 @@ type LocalityPostJson struct {
 // ReportSellers returns locality with sellers count
 func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var localities []internal.Locality
+		var err error
+
 		idStr := r.URL.Query().Get("id")
 
 		switch idStr {
 		case "":
-			localities, err := h.sv.ReportSellers()
-			if err != nil {
-				log.Println(err)
-				if errors.Is(err, internal.ErrLocalityNotFound) {
-					response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-					return
-				}
-				response.JSON(w, http.StatusInternalServerError, nil)
-				return
-			}
-
-			var localitiesJson []LocalityGetJson
-			for _, locality := range localities {
-				localitiesJson = append(localitiesJson, LocalityGetJson{
-					ID:           locality.ID,
-					LocalityName: locality.LocalityName,
-					ProvinceName: locality.ProvinceName,
-					CountryName:  locality.CountryName,
-					SellersCount: locality.Sellers,
-				})
-			}
-
-			response.JSON(w, http.StatusOK, map[string]any{
-				"data": localitiesJson,
-			})
+			localities, err = h.sv.ReportSellers()
 		default:
 			id, err := strconv.Atoi(idStr)
 
@@ -79,29 +58,33 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 				return
 			}
 
-			locality, err := h.sv.ReportSellersByID(id)
-			if err != nil {
-				log.Println(err)
-				if errors.Is(err, internal.ErrLocalityNotFound) {
-					response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-					return
-				}
-				response.JSON(w, http.StatusInternalServerError, nil)
+			localities, err = h.sv.ReportSellersByID(id)
+		}
+
+		if err != nil {
+			log.Println(err)
+			if errors.Is(err, internal.ErrLocalityNotFound) {
+				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 				return
 			}
+			response.JSON(w, http.StatusInternalServerError, nil)
+			return
+		}
 
-			localityJson := LocalityGetJson{
+		var localitiesJson []LocalityGetJson
+		for _, locality := range localities {
+			localitiesJson = append(localitiesJson, LocalityGetJson{
 				ID:           locality.ID,
 				LocalityName: locality.LocalityName,
 				ProvinceName: locality.ProvinceName,
 				CountryName:  locality.CountryName,
 				SellersCount: locality.Sellers,
-			}
-
-			response.JSON(w, http.StatusOK, map[string]any{
-				"data": localityJson,
 			})
 		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": localitiesJson,
+		})
 	}
 
 }

@@ -65,10 +65,11 @@ func (r *LocalityMysql) ReportSellers() (localities []internal.Locality, err err
 }
 
 // ReportSellersByID returns a seller from the database by its id
-func (r *LocalityMysql) ReportSellersByID(id int) (locality internal.Locality, err error) {
+func (r *LocalityMysql) ReportSellersByID(id int) (localities []internal.Locality, err error) {
 	// execute the query
 	row := r.db.QueryRow("SELECT l.id, l.name, l.province_name, l.country_name, COUNT(s.id) FROM localities AS l LEFT JOIN sellers AS s ON l.id = s.locality_id WHERE l.id = ? GROUP BY l.id", id)
 
+	var locality internal.Locality
 	// scan the row into the seller
 	err = row.Scan(&locality.ID, &locality.LocalityName, &locality.ProvinceName, &locality.CountryName, &locality.Sellers)
 	if err != nil {
@@ -76,6 +77,9 @@ func (r *LocalityMysql) ReportSellersByID(id int) (locality internal.Locality, e
 			err = internal.ErrLocalityNotFound
 		}
 	}
+
+	localities = append(localities, locality)
+
 	return
 }
 
