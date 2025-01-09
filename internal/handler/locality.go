@@ -42,16 +42,25 @@ type LocalityPostJson struct {
 // ReportSellers returns locality with sellers count
 func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var localities []internal.Locality
+		var err error
+
 		idStr := r.URL.Query().Get("id")
 
-		id, err := strconv.Atoi(idStr)
+		switch idStr {
+		case "":
+			localities, err = h.sv.ReportSellers()
+		default:
+			id, err := strconv.Atoi(idStr)
 
-		if err != nil {
-			response.JSON(w, http.StatusBadRequest, nil)
-			return
+			if err != nil {
+				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+				return
+			}
+
+			localities, err = h.sv.ReportSellersByID(id)
 		}
 
-		locality, err := h.sv.ReportSellers(id)
 		if err != nil {
 			log.Println(err)
 			if errors.Is(err, internal.ErrLocalityNotFound) {
@@ -62,18 +71,22 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 			return
 		}
 
-		localityJson := LocalityGetJson{
-			ID:           locality.ID,
-			LocalityName: locality.LocalityName,
-			ProvinceName: locality.ProvinceName,
-			CountryName:  locality.CountryName,
-			SellersCount: locality.Sellers,
+		var localitiesJson []LocalityGetJson
+		for _, locality := range localities {
+			localitiesJson = append(localitiesJson, LocalityGetJson{
+				ID:           locality.ID,
+				LocalityName: locality.LocalityName,
+				ProvinceName: locality.ProvinceName,
+				CountryName:  locality.CountryName,
+				SellersCount: locality.Sellers,
+			})
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": localityJson,
+			"data": localitiesJson,
 		})
 	}
+
 }
 
 // Save method save the locality
@@ -119,7 +132,7 @@ func (h *LocalityDefault) Save() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": locality,
+			"data": localityJson,
 		})
 	}
 }
