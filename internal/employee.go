@@ -42,3 +42,18 @@ func (emp EmployeePatch) EmployeePatch(empUpdate *Employee) {
 		empUpdate.LastName = *emp.LastName
 	}
 }
+
+type EmployeeRepository interface {
+	GetAll() (db map[int]Employee)
+	Save(emp *Employee) int
+	Update(id int, employee Employee)
+	Delete(id int)
+}
+
+type EmployeeService interface {
+	GetAll() map[int]Employee
+	GetById(id int) (emp Employee, err error)
+	Save(emp *Employee) (err error)
+	Update(employees Employee) (err error)
+	Delete(id int) (err error)
+}

@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 )
 
 var (
@@ -15,7 +14,7 @@ var (
 	ConflictInEmployee  = errors.New("conflict in employee")
 )
 
-func NewEmployeeServiceDefault(rp repository.EmployeeRepository, rpWarehouse internal.WarehouseRepository) *EmployeeDefault {
+func NewEmployeeServiceDefault(rp internal.EmployeeRepository, rpWarehouse internal.WarehouseRepository) *EmployeeDefault {
 	return &EmployeeDefault{
 		rp:  rp,
 		rpW: rpWarehouse,
@@ -24,16 +23,8 @@ func NewEmployeeServiceDefault(rp repository.EmployeeRepository, rpWarehouse int
 }
 
 type EmployeeDefault struct {
-	rp  repository.EmployeeRepository
+	rp  internal.EmployeeRepository
 	rpW internal.WarehouseRepository
-}
-
-type EmployeeService interface {
-	GetAll() map[int]internal.Employee
-	GetById(id int) (emp internal.Employee, err error)
-	Save(emp *internal.Employee) (err error)
-	Update(employees internal.Employee) (err error)
-	Delete(id int) (err error)
 }
 
 func (s *EmployeeDefault) GetAll() map[int]internal.Employee {

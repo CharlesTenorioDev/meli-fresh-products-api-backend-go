@@ -5,8 +5,7 @@ DATABASE IF EXISTS `melifresh`;
 CREATE
 DATABASE `melifresh`;
 
-USE
-`melifresh`;
+USE `melifresh`;
 
 -- table `localities`
 CREATE TABLE `localities`
@@ -97,6 +96,20 @@ CREATE TABLE `buyers`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+-- table `inbound_orders`
+CREATE TABLE `inbound_orders`
+(
+    `id`               int(11) NOT NULL AUTO_INCREMENT,
+    `order_date`       datetime(6) NOT NULL,
+    `order_number`     varchar(255) NOT NULL,
+    `employee_id`      int(11) NOT NULL,
+    `product_batch_id` int(11) NOT NULL,
+    `warehouse_id`     int(11) NOT NULL,
+    FOREIGN KEY (`employee_id`) REFERENCES employees (id),
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses (id),
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 -- DML
 INSERT INTO localities (name, province_name, country_name)
 VALUES ('New York City', 'New York', 'United States'),
@@ -183,3 +196,15 @@ VALUES ('B1001', 'Alice', 'Brown'),
        ('B1008', 'Steven', 'Clark'),
        ('B1009', 'Betty', 'Lopez'),
        ('B1010', 'Edward', 'Gonzalez');
+
+INSERT INTO inbound_orders (order_date, order_number, employee_id, product_batch_id, warehouse_id)
+VALUES ('2025-01-01', 'ORD001', 1, 1, 1),
+       ('2025-01-02', 'ORD002', 2, 2, 2),
+       ('2025-01-03', 'ORD003', 3, 3, 3),
+       ('2025-01-04', 'ORD004', 4, 4, 4),
+       ('2025-01-05', 'ORD005', 5, 5, 5),
+       ('2025-01-06', 'ORD006', 6, 6, 6),
+       ('2025-01-07', 'ORD007', 7, 7, 7),
+       ('2025-01-08', 'ORD008', 8, 8, 8),
+       ('2025-01-09', 'ORD009', 9, 9, 9),
+       ('2025-01-10', 'ORD010', 10, 10, 10);

@@ -13,10 +13,10 @@ import (
 )
 
 type EmployeeHandlerDefault struct {
-	sv service.EmployeeService
+	sv internal.EmployeeService
 }
 
-func NewEmployeeDefault(sv service.EmployeeService) *EmployeeHandlerDefault {
+func NewEmployeeDefault(sv internal.EmployeeService) *EmployeeHandlerDefault {
 	return &EmployeeHandlerDefault{
 		sv: sv,
 	}
