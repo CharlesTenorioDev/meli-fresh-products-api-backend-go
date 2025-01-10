@@ -72,7 +72,7 @@ func (h *SectionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) {
-	var productIDs []int
+	var totalQuantity int
 	var err error
 	var section internal.Section
 
@@ -80,7 +80,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 
 	switch idStr {
 	case "":
-		productIDs, err = h.sv.ReportProducts()
+		totalQuantity, err = h.sv.ReportProducts()
 		section = internal.Section{}
 	default:
 		idSection, err := strconv.Atoi(idStr)
@@ -95,7 +95,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		productIDs, err = h.sv.ReportProductsByID(idSection)
+		totalQuantity, err = h.sv.ReportProductsByID(idSection)
 	}
 
 	if err != nil {
@@ -111,7 +111,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 	responseReport := ResponseReportProd{
 		SectionID:     0,
 		SectionNumber: 0,
-		ProductsCount: len(productIDs),
+		ProductsCount: totalQuantity,
 	}
 
 	if section.ID != 0 {

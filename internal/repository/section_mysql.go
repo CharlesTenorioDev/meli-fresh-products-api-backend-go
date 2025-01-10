@@ -69,62 +69,46 @@ func (r *SectionMysql) FindByID(id int) (internal.Section, error) {
 	return s, nil
 }
 
-func (r *SectionMysql) ReportProducts() ([]int, error) {
+func (r *SectionMysql) ReportProducts() (int, error) {
 	query := `
         SELECT 
-            p.id 
+            SUM(pb.current_quantity) 
         FROM 
-            product_batches pb
-        JOIN 
-            products p ON pb.product_id = p.id`
+            product_batches pb`
 
-	rows, err := r.db.Query(query)
+	var totalQuantity int
+
+	err := r.db.QueryRow(query).Scan(&totalQuantity)
 	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var productIDs []int
-	for rows.Next() {
-		var productID int
-		err := rows.Scan(&productID)
-		if err != nil {
-			return nil, err
+		if err == sql.ErrNoRows {
+			return 0, nil
 		}
-		productIDs = append(productIDs, productID)
+		return 0, err
 	}
 
-	return productIDs, nil
+	return totalQuantity, nil
 }
 
-func (r *SectionMysql) ReportProductsByID(sectionID int) ([]int, error) {
+func (r *SectionMysql) ReportProductsByID(sectionID int) (int, error) {
 	query := `
         SELECT 
-            p.id 
+            SUM(pb.current_quantity) 
         FROM 
             product_batches pb
-        INNER JOIN 
-            products p ON pb.product_id = p.id
         WHERE 
             pb.section_id = ?`
 
-	rows, err := r.db.Query(query, sectionID)
+	var totalQuantity int
+
+	err := r.db.QueryRow(query, sectionID).Scan(&totalQuantity)
 	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var productIDs []int
-	for rows.Next() {
-		var productID int
-		err := rows.Scan(&productID)
-		if err != nil {
-			return nil, err
+		if err == sql.ErrNoRows {
+			return 0, nil
 		}
-		productIDs = append(productIDs, productID)
+		return 0, err
 	}
 
-	return productIDs, nil
+	return totalQuantity, nil
 }
 
 func (r *SectionMysql) SectionNumberExists(section internal.Section) (bool, error) {

@@ -67,12 +67,12 @@ func (r *SectionDB) FindByID(id int) (internal.Section, error) {
 	return *section, nil
 }
 
-func (s *SectionDB) ReportProducts() (prodBatchs []internal.ProductBatch, err error) {
-	return
+func (s *SectionDB) ReportProducts() (int, error) {
+	return 0, nil
 }
 
-func (s *SectionDB) ReportProductsByID(id int) (prodBatchs []internal.ProductBatch, err error) {
-	return
+func (s *SectionDB) ReportProductsByID(id int) (int, error) {
+	return 0, nil
 }
 
 func (r *SectionDB) SectionNumberExists(section internal.Section) error {
