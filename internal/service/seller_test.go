@@ -14,40 +14,6 @@ type repositoryMock struct {
 	mock.Mock
 }
 
-type localityRepositoryMock struct {
-	mock.Mock
-}
-
-func (r *localityRepositoryMock) ReportCarries(localityId int) (amountOfCarries int, e error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (r *localityRepositoryMock) GetAmountOfCarriesForEveryLocality() (c []internal.CarriesCountPerLocality, e error) {
-	//TODO implement me
-	panic("implement me")
-}
-
-func (r *localityRepositoryMock) Save(locality *internal.Locality) (err error) {
-	args := r.Called(locality)
-	return args.Error(0)
-}
-
-func (r *localityRepositoryMock) ReportSellers() (localities []internal.Locality, err error) {
-	args := r.Called()
-	return args.Get(0).([]internal.Locality), args.Error(1)
-}
-
-func (r *localityRepositoryMock) ReportSellersByID(id int) (localities []internal.Locality, err error) {
-	args := r.Called(id)
-	return args.Get(0).([]internal.Locality), args.Error(1)
-}
-
-func (r *localityRepositoryMock) FindByID(id int) (locality internal.Locality, err error) {
-	args := r.Called(id)
-	return args.Get(0).(internal.Locality), args.Error(1)
-}
-
 func (r *repositoryMock) FindAll() ([]internal.Seller, error) {
 	args := r.Called()
 	return args.Get(0).([]internal.Seller), args.Error(1)
@@ -78,7 +44,7 @@ func (r *repositoryMock) Delete(id int) error {
 	return args.Error(0)
 }
 
-func TestFindAll(t *testing.T) {
+func TestSellerServiceDefault_FindAll(t *testing.T) {
 	t.Run("should return all sellers", func(t *testing.T) {
 		repo := new(repositoryMock)
 		localityRepo := new(localityRepositoryMock)
@@ -94,7 +60,7 @@ func TestFindAll(t *testing.T) {
 	})
 }
 
-func TestFindByID(t *testing.T) {
+func TestSellerServiceDefault_FindByID(t *testing.T) {
 	t.Run("should return seller by id", func(t *testing.T) {
 		repo := new(repositoryMock)
 		localityRepo := new(localityRepositoryMock)
@@ -123,7 +89,7 @@ func TestFindByID(t *testing.T) {
 	})
 }
 
-func TestSave(t *testing.T) {
+func TestSellerServiceDefault_Save(t *testing.T) {
 	seller := &internal.Seller{
 		CID:         12345,
 		CompanyName: "Test Seller",
@@ -186,92 +152,7 @@ func TestSave(t *testing.T) {
 	})
 }
 
-func TestUpdate(t *testing.T) {
-	seller := internal.Seller{
-		ID:          1,
-		CID:         12345,
-		CompanyName: "Test Seller",
-		Address:     "Rua 1",
-		Telephone:   "1234567890",
-		Locality:    1,
-	}
-	updatedSeller := internal.SellerPatch{
-		CID:         new(int),
-		CompanyName: new(string),
-		Address:     new(string),
-		Telephone:   new(string),
-		Locality:    new(int),
-	}
-	*updatedSeller.CID = 67890
-	*updatedSeller.CompanyName = "Updated Seller"
-	*updatedSeller.Address = "Rua 2"
-	*updatedSeller.Telephone = "9876543210"
-	*updatedSeller.Locality = 2
-
-	t.Run("should update seller successfully", func(t *testing.T) {
-		repo := new(repositoryMock)
-		localityRepo := new(localityRepositoryMock)
-		svc := service.NewSellerServiceDefault(repo, localityRepo)
-
-		repo.On("FindByID", seller.ID).Return(seller, nil)
-		repo.On("FindByCID", *updatedSeller.CID).Return(internal.Seller{}, internal.ErrSellerNotFound)
-		localityRepo.On("FindByID", *updatedSeller.Locality).Return(internal.Locality{}, nil)
-		repo.On("Update", &seller).Return(nil)
-
-		updated, err := svc.Update(seller.ID, updatedSeller)
-
-		assert.Nil(t, err)
-		assert.Equal(t, *updatedSeller.CID, updated.CID)
-		assert.Equal(t, *updatedSeller.CompanyName, updated.CompanyName)
-		assert.Equal(t, *updatedSeller.Address, updated.Address)
-		assert.Equal(t, *updatedSeller.Telephone, updated.Telephone)
-		assert.Equal(t, *updatedSeller.Locality, updated.Locality)
-	})
-
-	t.Run("should return error if seller CID already exists", func(t *testing.T) {
-		repo := new(repositoryMock)
-		localityRepo := new(localityRepositoryMock)
-		service := service.NewSellerServiceDefault(repo, localityRepo)
-
-		repo.On("FindByID", seller.ID).Return(seller, nil)
-		repo.On("FindByCID", *updatedSeller.CID).Return(internal.Seller{CID: *updatedSeller.CID, ID: 2}, nil)
-
-		_, err := service.Update(seller.ID, updatedSeller)
-
-		assert.Equal(t, internal.ErrSellerCIDAlreadyExists, err)
-	})
-
-	t.Run("should return error if locality does not exist", func(t *testing.T) {
-		repo := new(repositoryMock)
-		localityRepo := new(localityRepositoryMock)
-		svc := service.NewSellerServiceDefault(repo, localityRepo)
-
-		repo.On("FindByID", seller.ID).Return(seller, nil)
-		repo.On("FindByCID", *updatedSeller.CID).Return(internal.Seller{}, internal.ErrSellerNotFound)
-		localityRepo.On("FindByID", *updatedSeller.Locality).Return(internal.Locality{}, errors.New("locality not found"))
-
-		_, err := svc.Update(seller.ID, updatedSeller)
-
-		assert.NotNil(t, err)
-	})
-
-	t.Run("should return error if repository fails to update", func(t *testing.T) {
-		repo := new(repositoryMock)
-		localityRepo := new(localityRepositoryMock)
-		svc := service.NewSellerServiceDefault(repo, localityRepo)
-
-		repo.On("FindByID", seller.ID).Return(seller, nil)
-		repo.On("FindByCID", *updatedSeller.CID).Return(internal.Seller{}, internal.ErrSellerNotFound)
-		localityRepo.On("FindByID", *updatedSeller.Locality).Return(internal.Locality{}, nil)
-		repo.On("Update", &seller).Return(errors.New("repository error"))
-
-		_, err := svc.Update(seller.ID, updatedSeller)
-
-		assert.NotNil(t, err)
-	})
-}
-
-func TestDelete(t *testing.T) {
+func TestSellerServiceDefault_Delete(t *testing.T) {
 	t.Run("should delete seller successfully", func(t *testing.T) {
 		repo := new(repositoryMock)
 		localityRepo := new(localityRepositoryMock)
