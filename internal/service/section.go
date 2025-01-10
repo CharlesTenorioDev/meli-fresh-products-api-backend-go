@@ -52,6 +52,10 @@ func (s *SectionService) FindByID(id int) (internal.Section, error) {
 	return section, nil
 }
 
+func (s *SectionService) ReportProducts() (prodBatchs []internal.ProductBatch, err error) {
+	return
+}
+
 func (s *SectionService) ReportProductsByID(id int) (prodBatchs []internal.ProductBatch, err error) {
 	return
 }

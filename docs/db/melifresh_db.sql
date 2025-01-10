@@ -123,8 +123,8 @@ CREATE TABLE `product_batches` (
     `product_id`        INT(11) NOT NULL,
     `section_id`        INT(11) NOT NULL,
     FOREIGN KEY (`product_id`) REFERENCES products(id),
-    FOREIGN KEY (`section_id`) REFERENCES sections(id)
-    PRIMARY KEY (`id`),
+    FOREIGN KEY (`section_id`) REFERENCES sections(id),
+    PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- DML
