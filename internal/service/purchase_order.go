@@ -1,21 +1,25 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
 // NewPurchaseOrderService creates a new instance of the purchase order service
-func NewPurchaseOrderService(rpPurchaseOrder internal.PurchaseOrderRepository, svBuyer internal.BuyerService) *PurchaseOrderService {
+func NewPurchaseOrderService(rpPurchaseOrder internal.PurchaseOrderRepository, rpProductRecords internal.ProductRecordsRepository, svBuyer internal.BuyerService) *PurchaseOrderService {
 	return &PurchaseOrderService{
-		rpPurchaseOrder: rpPurchaseOrder,
-		svBuyer:         svBuyer,
+		rpPurchaseOrder:  rpPurchaseOrder,
+		rpProductRecords: rpProductRecords,
+		svBuyer:          svBuyer,
 	}
 }
 
 // PurchaseOrderService is the implementation of the purchase order service
 type PurchaseOrderService struct {
-	rpPurchaseOrder internal.PurchaseOrderRepository
-	svBuyer         internal.BuyerService
+	rpPurchaseOrder  internal.PurchaseOrderRepository
+	rpProductRecords internal.ProductRecordsRepository
+	svBuyer          internal.BuyerService
 }
 
 // FindById returns a purchase order
@@ -33,6 +37,13 @@ func (s *PurchaseOrderService) Save(p *internal.PurchaseOrder) (err error) {
 			Message: "Purchase Order inputs are Invalid",
 			Causes:  causes,
 		}
+	}
+
+	// Check if the product records exists
+	_, err = s.rpProductRecords.FindByID(p.ProductRecordId)
+	if err != nil {
+		fmt.Println(err)
+		return err
 	}
 
 	// Check if the buyer exists

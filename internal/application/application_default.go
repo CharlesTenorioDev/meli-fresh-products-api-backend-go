@@ -75,6 +75,7 @@ func (a *ServerChi) Run() (err error) {
 	pdRepository := repository.NewProductMap()
 	poMysqlRepository := repository.NewPurchaseOrderMysqlRepository(db)
 	buyerService := service.NewBuyerService(buMysqlRepository)
+	prodRecRepository := repository.NewProductRecordsSQL(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
@@ -99,7 +100,7 @@ func (a *ServerChi) Run() (err error) {
 			productRoutes(r, pdRepository, slRepository)
 		})
 		r.Route("/purchase-orders", func(r chi.Router) {
-			purchaseOrderRouter(r, poMysqlRepository, buyerService)
+			purchaseOrderRouter(r, poMysqlRepository, prodRecRepository, buyerService)
 		})
 	})
 
@@ -186,8 +187,8 @@ func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository
 	r.Delete("/{id}", hd.Delete)
 }
 
-func purchaseOrderRouter(r chi.Router, poRepository internal.PurchaseOrderRepository, buyerService internal.BuyerService) {
-	sv := service.NewPurchaseOrderService(poRepository, buyerService)
+func purchaseOrderRouter(r chi.Router, poRepository internal.PurchaseOrderRepository, prodRecRepository internal.ProductRecordsRepository, buyerService internal.BuyerService) {
+	sv := service.NewPurchaseOrderService(poRepository, prodRecRepository, buyerService)
 	hd := handler.NewPurchaseOrderHandler(sv)
 
 	r.Post("/", hd.Create())
