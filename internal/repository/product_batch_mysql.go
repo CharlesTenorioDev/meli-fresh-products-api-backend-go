@@ -8,15 +8,15 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
-func NewProductBatchMysql(db *sql.DB) *ProductBatchDB {
-	return &ProductBatchDB{db}
+func NewProductBatchMysql(db *sql.DB) *ProductBatchMysql {
+	return &ProductBatchMysql{db}
 }
 
-type ProductBatchDB struct {
+type ProductBatchMysql struct {
 	db *sql.DB
 }
 
-func (r *ProductBatchDB) FindByID(id int) (internal.ProductBatch, error) {
+func (r *ProductBatchMysql) FindByID(id int) (internal.ProductBatch, error) {
 	query := `
 	SELECT 
 		pb.id,
@@ -59,7 +59,7 @@ func (r *ProductBatchDB) FindByID(id int) (internal.ProductBatch, error) {
 	return pb, nil
 }
 
-func (r *ProductBatchDB) Save(prodBatch *internal.ProductBatch) error {
+func (r *ProductBatchMysql) Save(prodBatch *internal.ProductBatch) error {
 	result, err := r.db.Exec(
 		"INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minumum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		prodBatch.BatchNumber,
@@ -91,11 +91,10 @@ func (r *ProductBatchDB) Save(prodBatch *internal.ProductBatch) error {
 	}
 
 	prodBatch.ID = int(id)
-
 	return nil
 }
 
-func (r *ProductBatchDB) ProductBatchNumberExists(batchNumber int) (bool, error) {
+func (r *ProductBatchMysql) ProductBatchNumberExists(batchNumber int) (bool, error) {
 	query := "SELECT COUNT(*) FROM product_batches WHERE batch_number = ?"
 
 	var count int
@@ -107,7 +106,7 @@ func (r *ProductBatchDB) ProductBatchNumberExists(batchNumber int) (bool, error)
 	return count > 0, nil
 }
 
-func (r *ProductBatchDB) ReportProducts() (prodBatches []internal.ProductBatch, err error) {
+func (r *ProductBatchMysql) ReportProducts() (prodBatches []internal.ProductBatch, err error) {
 	query := `
 	SELECT 
 		pb.batch_number,
@@ -160,7 +159,7 @@ func (r *ProductBatchDB) ReportProducts() (prodBatches []internal.ProductBatch, 
 	return prodBatches, nil
 }
 
-func (r *ProductBatchDB) ReportProductsByID(id int) (prodBatches []internal.ProductBatch, err error) {
+func (r *ProductBatchMysql) ReportProductsByID(id int) (prodBatches []internal.ProductBatch, err error) {
 	query := `
 	SELECT 
 		pb.batch_number,
@@ -171,8 +170,8 @@ func (r *ProductBatchDB) ReportProductsByID(id int) (prodBatches []internal.Prod
 		pb.manufacturing_date,
 		pb.manufacturing_hour,
 		pb.minumum_temperature,
-		p.product_code,          -- Supondo que você queira o código do produto
-		s.section_number         -- Supondo que você queira o número da seção
+		p.product_code,         
+		s.section_number      
 	FROM 
 		product_batches pb
 	JOIN 
@@ -205,6 +204,5 @@ func (r *ProductBatchDB) ReportProductsByID(id int) (prodBatches []internal.Prod
 	}
 
 	prodBatches = append(prodBatches, pb)
-
 	return prodBatches, nil
 }
