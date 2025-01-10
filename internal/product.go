@@ -1,6 +1,13 @@
 package internal
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ProductNotFound = errors.New("product not found")
+)
 
 type Product struct {
 	Id                             int       `json:"id"`

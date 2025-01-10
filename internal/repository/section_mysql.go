@@ -7,11 +7,7 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
-var (
-	ErrSectionNotFound = errors.New("section not found")
-)
-
-func NewRepositorySectionMysql(db *sql.DB) *SectionMysql {
+func NewSectionMysql(db *sql.DB) *SectionMysql {
 	return &SectionMysql{db}
 }
 
@@ -65,7 +61,7 @@ func (r *SectionMysql) FindByID(id int) (internal.Section, error) {
 	err := r.db.QueryRow(query, id).Scan(&s.ID, &s.SectionNumber, &s.CurrentTemperature, &s.MinimumTemperature, &s.CurrentCapacity, &s.MinimumCapacity, &s.MaximumCapacity, &s.WarehouseID, &s.ProductTypeID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return s, ErrSectionNotFound
+			return s, internal.SectionNotFound
 		}
 		return s, err
 	}

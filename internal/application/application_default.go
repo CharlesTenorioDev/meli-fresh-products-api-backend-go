@@ -72,8 +72,9 @@ func (a *ServerChi) Run() (err error) {
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
-	scRepository := repository.NewRepositorySectionMysql(db)
-	pbRepository := repository.NewRepositoryProductBatchMysql(db)
+	scRepository := repository.NewSectionMysql(db)
+	pbRepository := repository.NewProductBatchMysql(db)
+	ptRepository := repository.NewProductTypeMysql(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
@@ -81,7 +82,7 @@ func (a *ServerChi) Run() (err error) {
 		})
 		r.Route("/buyers", buyerRouter)
 		r.Route("/sections", func(r chi.Router) {
-			sectionsRoutes(r, scRepository, whRepository, pdRepository)
+			sectionsRoutes(r, scRepository, ptRepository, whRepository, pdRepository)
 		})
 		r.Route("/product-batches", func(r chi.Router) {
 			productBatchRoutes(r, pbRepository, scRepository, pdRepository)
@@ -96,7 +97,7 @@ func (a *ServerChi) Run() (err error) {
 			localitiesRoutes(r, lcRepository)
 		})
 		r.Route("/products", func(r chi.Router) {
-			productRoutes(r, pdRepository, slRepository)
+			productRoutes(r, pdRepository, slRepository, ptRepository)
 		})
 		r.Route("/carries", func(r chi.Router) {
 			carriesRoutes(r, db)
@@ -138,9 +139,8 @@ func warehouseRoute(r chi.Router, whRepository internal.WarehouseRepository) {
 	r.Delete("/{id}", warehouseHandler.Delete())
 }
 
-func sectionsRoutes(r chi.Router, scRepository internal.SectionRepository, whRepository internal.WarehouseRepository, ptRepository internal.ProductRepository) {
-	rpT := repository.NewRepositoryProductType()
-	sv := service.NewServiceSection(scRepository, rpT, ptRepository, whRepository)
+func sectionsRoutes(r chi.Router, scRepository internal.SectionRepository, ptRepository internal.ProductTypeRepository, whRepository internal.WarehouseRepository, pdRepository internal.ProductRepository) {
+	sv := service.NewServiceSection(scRepository, ptRepository, pdRepository, whRepository)
 	hd := handler.NewHandlerSection(sv)
 
 	r.Get("/", hd.GetAll)
@@ -183,9 +183,8 @@ func buyerRouter(r chi.Router) {
 	r.Delete("/{id}", hd.Delete)
 }
 
-func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository internal.SellerRepository) {
-	rpT := repository.NewRepositoryProductType()
-	svc := service.NewProductService(ptRepo, slRepository, rpT)
+func productRoutes(r chi.Router, pdRepository internal.ProductRepository, slRepository internal.SellerRepository, ptRepository internal.ProductTypeRepository) {
+	svc := service.NewProductService(pdRepository, slRepository, ptRepository)
 	hd := handler.NewProducHandlerDefault(svc)
 
 	r.Get("/", hd.GetAll)

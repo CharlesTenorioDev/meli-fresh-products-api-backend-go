@@ -14,7 +14,7 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
-type SectionJSON struct {
+type RequestSectionJSON struct {
 	SectionNumber      int     `json:"section_number"`
 	CurrentTemperature float64 `json:"current_temperature"`
 	MinimumTemperature float64 `json:"minimum_temperature"`
@@ -126,7 +126,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var sectionJSON SectionJSON
+	var sectionJSON RequestSectionJSON
 	if err := json.NewDecoder(r.Body).Decode(&sectionJSON); err != nil {
 		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
@@ -145,7 +145,7 @@ func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := h.sv.Save(&section)
 	if err != nil {
-		if errors.Is(err, service.SectionAlreadyExists) || errors.Is(err, service.SectionNumberAlreadyInUse) {
+		if errors.Is(err, internal.SectionAlreadyExists) || errors.Is(err, internal.SectionNumberAlreadyInUse) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
@@ -173,7 +173,7 @@ func (h *SectionHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	section, err := h.sv.Update(id, updates)
 	if err != nil {
-		if errors.Is(err, service.SectionNotFound) {
+		if errors.Is(err, internal.SectionNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
@@ -195,7 +195,12 @@ func (h *SectionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err = h.sv.Delete(id)
 	if err != nil {
-		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+		switch {
+		case errors.Is(err, internal.SectionNotFound):
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		default:
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
+		}
 		return
 	}
 

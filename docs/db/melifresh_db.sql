@@ -42,6 +42,14 @@ CREATE TABLE `warehouses`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+-- table `product_type`
+CREATE TABLE `product_type`
+(
+    `id` int(11) NOT NULL,
+    `description` varchar(255) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 -- table `sections`
 CREATE TABLE `sections`
 (
@@ -54,6 +62,8 @@ CREATE TABLE `sections`
     `maximum_capacity`    int   NOT NULL,
     `warehouse_id`        int(11) NOT NULL,
     `product_type_id`     int(11) NOT NULL,
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id),
+    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -72,6 +82,8 @@ CREATE TABLE `products`
     `recommended_freezing_temperature` float       NOT NULL,
     `seller_id`                        int(11) NOT NULL,
     `product_type_id`                  int(11) NOT NULL,
+    FOREIGN KEY (`seller_id`) REFERENCES sellers(id),
+    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -83,6 +95,7 @@ CREATE TABLE `employees`
     `first_name`     varchar(50) NOT NULL,
     `last_name`      varchar(50) NOT NULL,
     `warehouse_id`   int(11) NOT NULL,
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id),
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -163,6 +176,18 @@ VALUES ('WH01', '200 Warehouse Rd', '234-567-8901', 100, 0),
        ('WH08', '207 Supply Ct', '234-567-8908', 170, -4),
        ('WH09', '208 Goods Rd', '234-567-8909', 130, 3),
        ('WH10', '209 Freight St', '234-567-8910', 190, -1);
+
+INSERT INTO product_type (id, description)
+VALUES  (1, 'Dairy'),
+        (2, 'Meat'),
+        (3, 'Vegetables'),
+        (4, 'Fruits'),
+        (5, 'Bakery'),
+        (6, 'Seafood'),
+        (7, 'Beverages'),
+        (8, 'Snacks'),
+        (9, 'Condiments'),
+        (10, 'Frozen Foods');
 
 INSERT INTO sections (section_number, current_temperature, minimum_temperature, current_capacity,
                       minimum_capacity, maximum_capacity, warehouse_id, product_type_id)

@@ -1,5 +1,14 @@
 package internal
 
+import "errors"
+
+var (
+	SectionNotFound            = errors.New("section not found")
+	SectionAlreadyExists       = errors.New("section already exists")
+	SectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
+	SectionUnprocessableEntity = errors.New("couldn't parse section")
+)
+
 type Section struct {
 	ID                 int     `json:"id"`
 	SectionNumber      int     `json:"section_number"`

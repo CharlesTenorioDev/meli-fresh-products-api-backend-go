@@ -23,7 +23,7 @@ type ProductBatchHandler struct {
 	sv internal.ProductBatchService
 }
 
-type ProductBatchJSON struct {
+type RequestProductBatchJSON struct {
 	BatchNumber        int     `json:"batch_number"`
 	CurrentQuantity    int     `json:"current_quantity"`
 	CurrentTemperature float64 `json:"current_temperature"`
@@ -56,7 +56,7 @@ func (h *ProductBatchHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var prodBatchJSON ProductBatchJSON
+	var prodBatchJSON RequestProductBatchJSON
 	if err := json.NewDecoder(r.Body).Decode(&prodBatchJSON); err != nil {
 		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return

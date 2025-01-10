@@ -1,21 +1,10 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-)
-
-var (
-	SectionNotFound            = errors.New("section not found")
-	WarehouseNotFound          = errors.New("warehouse not found")
-	ProductTypeNotFound        = errors.New("product_type not found")
-	ProductNotFound            = errors.New("product not found")
-	SectionAlreadyExists       = errors.New("section already exists")
-	SectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
-	SectionUnprocessableEntity = errors.New("couldn't parse section")
 )
 
 func NewServiceSection(rpSection internal.SectionRepository, rpProductType internal.ProductTypeRepository, rpProduct internal.ProductRepository, rpWareHouse internal.WarehouseRepository) *SectionService {
@@ -46,7 +35,7 @@ func (s *SectionService) FindAll() ([]internal.Section, error) {
 func (s *SectionService) FindByID(id int) (internal.Section, error) {
 	section, err := s.rpS.FindByID(id)
 	if err != nil {
-		return internal.Section{}, SectionNotFound
+		return internal.Section{}, internal.SectionNotFound
 	}
 
 	return section, nil
@@ -64,7 +53,7 @@ func (s *SectionService) ReportProducts() ([]int, error) {
 func (s *SectionService) ReportProductsByID(id int) ([]int, error) {
 	prodBatchs, err := s.rpS.ReportProductsByID(id)
 	if err != nil {
-		return nil, SectionNotFound
+		return nil, internal.SectionNotFound
 	}
 
 	return prodBatchs, nil
@@ -72,22 +61,22 @@ func (s *SectionService) ReportProductsByID(id int) ([]int, error) {
 
 func (s *SectionService) Save(section *internal.Section) error {
 	if ok := section.Ok(); !ok {
-		return SectionUnprocessableEntity
+		return internal.SectionUnprocessableEntity
 	}
 
 	countExists, err := s.rpS.SectionNumberExists(*section)
 	if err != nil || countExists {
-		return SectionNumberAlreadyInUse
+		return internal.SectionNumberAlreadyInUse
 	}
 
 	_, err = s.rpW.FindByID(section.WarehouseID)
 	if err != nil {
-		return WarehouseNotFound
+		return internal.ErrWarehouseRepositoryNotFound
 	}
 
 	_, err = s.rpT.FindByID(section.ProductTypeID)
 	if err != nil {
-		return ProductTypeNotFound
+		return internal.ProductTypeNotFound
 	}
 
 	err = s.rpS.Save(section)
@@ -101,7 +90,7 @@ func (s *SectionService) Save(section *internal.Section) error {
 func (s *SectionService) Update(id int, updates map[string]interface{}) (internal.Section, error) {
 	section, err := s.FindByID(id)
 	if err != nil {
-		return internal.Section{}, SectionNotFound
+		return internal.Section{}, internal.SectionNotFound
 	}
 
 	processInt := func(key string, target *int) error {
@@ -147,7 +136,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 
 		countExists, err := s.rpS.SectionNumberExists(section)
 		if err != nil || countExists {
-			return internal.Section{}, SectionNumberAlreadyInUse
+			return internal.Section{}, internal.SectionNumberAlreadyInUse
 		}
 	}
 
@@ -178,7 +167,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 
 		_, err = s.rpW.FindByID(section.WarehouseID)
 		if err != nil {
-			return internal.Section{}, WarehouseNotFound
+			return internal.Section{}, internal.ErrWarehouseRepositoryNotFound
 		}
 	}
 
@@ -189,7 +178,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 
 		_, err = s.rpT.FindByID(section.ProductTypeID)
 		if err != nil {
-			return internal.Section{}, ProductTypeNotFound
+			return internal.Section{}, internal.ProductTypeNotFound
 		}
 	}
 
@@ -204,7 +193,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 func (s *SectionService) Delete(id int) error {
 	_, err := s.FindByID(id)
 	if err != nil {
-		return SectionNotFound
+		return internal.SectionNotFound
 	}
 
 	err = s.rpS.Delete(id)

@@ -13,7 +13,7 @@ var (
 	ProductBatchNotFound      = errors.New("product-batch not found")
 )
 
-func NewRepositoryProductBatchMysql(db *sql.DB) *ProductBatchDB {
+func NewProductBatchMysql(db *sql.DB) *ProductBatchDB {
 	return &ProductBatchDB{db}
 }
 
