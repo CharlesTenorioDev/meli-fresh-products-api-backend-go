@@ -20,3 +20,7 @@ func (s *InboundOrderService) Create(internal.InboundOrders) (int64, error) {
 	inboundOrder := internal.InboundOrders{}
 	return s.rp.Create(inboundOrder)
 }
+
+func (s *InboundOrderService) FindAll() ([]internal.InboundOrders, error) {
+	return s.rp.FindAll()
+}

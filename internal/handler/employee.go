@@ -24,12 +24,18 @@ func NewEmployeeDefault(sv internal.EmployeeService) *EmployeeHandlerDefault {
 }
 
 func (h *EmployeeHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
-	dataEmployee := h.sv.GetAll()
+	dataEmployee, err := h.sv.GetAll()
+
+	if err != nil {
+		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	response.JSON(w, http.StatusOK, map[string]any{
 		"data": dataEmployee,
 	})
+
 }
 
 func (h *EmployeeHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {

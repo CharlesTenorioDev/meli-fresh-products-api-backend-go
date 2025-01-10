@@ -37,3 +37,24 @@ func (rp *InboundOrdersMysql) Create(internal.InboundOrders) (int64, error) {
 
 	return id, err
 }
+
+func (rp *InboundOrdersMysql) FindAll() (inbounds []internal.InboundOrders, err error) {
+	row, err := rp.db.Query(AllInboundsQuery)
+
+	if err != nil {
+		return
+	}
+
+	for row.Next() {
+		var inboundOrder internal.InboundOrders
+		err = row.Scan(&inboundOrder.Id, &inboundOrder.OrderDate, &inboundOrder.OrderNumber, &inboundOrder.EmployeeId, &inboundOrder.ProductBatchId, &inboundOrder.WarehouseId)
+
+		if err != nil {
+			return
+		}
+
+		inbounds = append(inbounds, inboundOrder)
+
+	}
+	return
+}

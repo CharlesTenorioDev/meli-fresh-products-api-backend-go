@@ -54,16 +54,17 @@ func (emp EmployeePatch) EmployeePatch(empUpdate *Employee) {
 }
 
 type EmployeeRepository interface {
-	GetAll() (db map[int]Employee)
-	Save(emp *Employee) int
-	Update(id int, employee Employee)
-	Delete(id int)
+	GetAll() (db []Employee, err error)
+	GetById(id int) (emp Employee, err error)
+	Save(emp *Employee) (int, error)
+	Update(id int, employee Employee) error
+	Delete(id int) error
 	CountInboundOrdersPerEmployee() (io []InboundOrdersPerEmployee, err error)
 	ReportInboundOrdersById(employeeId int) (totalInboundOrders int, err error)
 }
 
 type EmployeeService interface {
-	GetAll() map[int]Employee
+	GetAll() (db []Employee, err error)
 	GetById(id int) (emp Employee, err error)
 	Save(emp *Employee) (err error)
 	Update(employees Employee) (err error)

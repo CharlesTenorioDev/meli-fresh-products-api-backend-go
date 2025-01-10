@@ -190,5 +190,6 @@ func inboundOrdersRoutes(r chi.Router, empRepository internal.EmployeeRepository
 	hd := handler.NewInboundOrdersHandler(sv)
 
 	r.Post("/", hd.Create)
+	r.Get("/", hd.GetAll)
 
 }

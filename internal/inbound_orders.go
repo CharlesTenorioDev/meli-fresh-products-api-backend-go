@@ -11,12 +11,12 @@ type InboundOrders struct {
 
 type InboundOrderService interface {
 	Create(InboundOrders) (int64, error)
-	// FindAll() ([]InboundOrders, error)
+	FindAll() ([]InboundOrders, error)
 }
 
 type InboundOrdersRepository interface {
 	Create(InboundOrders) (int64, error)
-	// FindAll() ([]InboundOrders, error)
+	FindAll() ([]InboundOrders, error)
 }
 
 // validate required fields

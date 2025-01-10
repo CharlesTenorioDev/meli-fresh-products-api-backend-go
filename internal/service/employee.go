@@ -27,24 +27,22 @@ type EmployeeDefault struct {
 	rpW internal.WarehouseRepository
 }
 
-func (s *EmployeeDefault) GetAll() map[int]internal.Employee {
-	return s.rp.GetAll()
+func (s *EmployeeDefault) GetAll() (emp []internal.Employee, err error) {
+	emp, err = s.rp.GetAll()
+	if err != nil {
+		return nil, err
+	}
+	return emp, nil
 }
 
 func (s *EmployeeDefault) GetById(id int) (emp internal.Employee, err error) {
-	employee := s.rp.GetAll()
-	emp, ok := employee[id]
-
-	if !ok {
-		err = EmployeeNotFound
-	}
-	return
+	return s.rp.GetById(id)
 }
 
 func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
-	employees := s.rp.GetAll()
+	employees, err := s.rp.GetAll()
 
-	if _, exists := employees[emp.Id]; exists && emp.Id != 0 {
+	if emp.Id != 0 {
 		err = errors.New("employee already exists")
 		return
 	}
@@ -57,7 +55,7 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 
 	_, err = s.rpW.FindByID(emp.WarehouseId)
 	if err != nil {
-		return UnprocessableEntity
+		return WarehouseNotFound
 	}
 
 	if cardNumberIdInUse(emp.CardNumberId, employees) {
@@ -65,14 +63,16 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 		return
 	}
 
-	savedId := s.rp.Save(emp)
-	emp.Id = savedId
+	_, err = s.rp.Save(emp)
+	if err != nil {
+		return err
+	}
 
 	return nil
 
 }
 
-func cardNumberIdInUse(cardId string, employees map[int]internal.Employee) bool {
+func cardNumberIdInUse(cardId string, employees []internal.Employee) bool {
 
 	for _, employee := range employees {
 		if employee.CardNumberId == cardId {
@@ -84,22 +84,31 @@ func cardNumberIdInUse(cardId string, employees map[int]internal.Employee) bool 
 
 func (s *EmployeeDefault) Update(emp internal.Employee) (err error) {
 
-	data := s.rp.GetAll()
-	existingEmployee, ok := data[emp.Id]
-	if !ok {
+	data, err := s.rp.GetAll()
+	if err != nil {
+		return err
+	}
+
+	var existingEmployee *internal.Employee
+	for _, employee := range data {
+		if employee.Id == emp.Id {
+			existingEmployee = &employee
+			break
+		}
+	}
+
+	if existingEmployee == nil {
 		err = EmployeeNotFound
 		return
 	}
 
-	// check if card number id is already in use
 	if cardNumberIdInUse(emp.CardNumberId, data) && existingEmployee.CardNumberId != emp.CardNumberId {
 		err = CardNumberIdInUse
 		return
 	}
 
-	validate := emp.RequirementsFields()
-	if !validate {
-		err = errors.New("invalid entity data")
+	if !emp.RequirementsFields() {
+		err = errors.New("required fields are missing")
 		return
 	}
 
@@ -108,21 +117,16 @@ func (s *EmployeeDefault) Update(emp internal.Employee) (err error) {
 		return ConflictInEmployee
 	}
 
-	s.rp.Update(emp.Id, emp)
+	err = s.rp.Update(emp.Id, emp)
+	if err != nil {
+		return err
+	}
+
 	return
 }
 
 func (s *EmployeeDefault) Delete(id int) (err error) {
-	employee := s.rp.GetAll() // search for employee by id
-	_, ok := employee[id]
-	// if employee not found
-	if !ok {
-		err = EmployeeNotFound
-		return
-	}
-
-	s.rp.Delete(id)
-	return
+	return s.rp.Delete(id)
 }
 
 func (s *EmployeeDefault) CountInboundOrdersPerEmployee() (io []internal.InboundOrdersPerEmployee, err error) {
