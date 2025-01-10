@@ -27,6 +27,15 @@ type ProductBatchService struct {
 	rpP internal.ProductRepository
 }
 
+func (s *ProductBatchService) FindByID(id int) (internal.ProductBatch, error) {
+	prodBatch, err := s.rpB.FindByID(id)
+	if err != nil {
+		return internal.ProductBatch{}, ProductBatchNotFound
+	}
+
+	return prodBatch, nil
+}
+
 func (s *ProductBatchService) Save(prodBatch *internal.ProductBatch) error {
 	if ok := prodBatch.Ok(); !ok {
 		return ProductBatchUnprocessableEntity

@@ -15,11 +15,13 @@ type ProductBatch struct {
 }
 
 type ProductBatchRepository interface {
+	FindByID(id int) (ProductBatch, error)
 	Save(prodBatch *ProductBatch) error
 	ProductBatchNumberExists(batchNumber int) (bool, error)
 }
 
 type ProductBatchService interface {
+	FindByID(id int) (ProductBatch, error)
 	Save(prodBatch *ProductBatch) error
 }
 

@@ -21,6 +21,49 @@ type ProductBatchDB struct {
 	db *sql.DB
 }
 
+func (r *ProductBatchDB) FindByID(id int) (internal.ProductBatch, error) {
+	query := `
+	SELECT 
+		pb.id,
+		pb.batch_number,
+		pb.current_quantity,
+		pb.current_temperature,
+		pb.due_date,
+		pb.initial_quantity,
+		pb.manufacturing_date,
+		pb.manufacturing_hour,
+		pb.minumum_temperature,           
+		pb.product_id,           
+		pb.section_id           
+	FROM 
+		product_batches pb
+	WHERE 
+		id = ?`
+
+	var pb internal.ProductBatch
+	err := r.db.QueryRow(query, id).Scan(
+		&pb.ID,
+		&pb.BatchNumber,
+		&pb.CurrentQuantity,
+		&pb.CurrentTemperature,
+		&pb.DueDate,
+		&pb.InitialQuantity,
+		&pb.ManufacturingDate,
+		&pb.ManufacturingHour,
+		&pb.MinumumTemperature,
+		&pb.ProductId,
+		&pb.SectionId,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return pb, ProductBatchNotFound
+		}
+		return pb, err
+	}
+
+	return pb, nil
+}
+
 func (r *ProductBatchDB) Save(prodBatch *internal.ProductBatch) error {
 	result, err := r.db.Exec(
 		"INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minumum_temperature, product_id, section_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",

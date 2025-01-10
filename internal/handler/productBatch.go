@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/bootcamp-go/web/response"
+	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
@@ -32,6 +34,25 @@ type ProductBatchJSON struct {
 	MinumumTemperature float64 `json:"minumum_temperature"`
 	ProductId          int     `json:"product_id"`
 	SectionId          int     `json:"section_id"`
+}
+
+func (h *ProductBatchHandler) GetByID(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		return
+	}
+
+	var prodBatch internal.ProductBatch
+	prodBatch, err = h.sv.FindByID(id)
+	if err != nil {
+		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		return
+	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"data": prodBatch,
+	})
 }
 
 func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {

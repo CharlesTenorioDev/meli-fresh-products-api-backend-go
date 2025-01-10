@@ -155,6 +155,7 @@ func productBatchRoutes(r chi.Router, pbRepository internal.ProductBatchReposito
 	sv := service.NewServiceProductBatch(pbRepository, scRepository, ptRepository)
 	hd := handler.NewHandlerProductBatch(sv)
 
+	r.Get("/{id}", hd.GetByID)
 	r.Post("/", hd.Create)
 }
 
