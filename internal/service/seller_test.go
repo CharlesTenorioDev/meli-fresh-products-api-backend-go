@@ -104,7 +104,7 @@ func TestSellerServiceDefault_Save(t *testing.T) {
 		svc := service.NewSellerServiceDefault(repo, localityRepo)
 
 		repo.On("FindByCID", seller.CID).Return(internal.Seller{}, internal.ErrSellerNotFound)
-		localityRepo.On("FindByID", seller.Locality).Return(internal.Locality{}, nil)
+		localityRepo.On("FindByID", seller.Locality).Return(internal.Locality{ID: 1}, nil)
 		repo.On("Save", seller).Return(nil)
 
 		err := svc.Save(seller)

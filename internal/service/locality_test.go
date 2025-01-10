@@ -10,7 +10,7 @@ type localityRepositoryMock struct {
 }
 
 func (l *localityRepositoryMock) Save(locality *internal.Locality) (err error) {
-	args := l.Called()
+	args := l.Called(locality)
 	return args.Error(0)
 }
 
@@ -20,17 +20,17 @@ func (l *localityRepositoryMock) ReportSellers() (localities []internal.Locality
 }
 
 func (l *localityRepositoryMock) ReportSellersByID(id int) (localities []internal.Locality, err error) {
-	args := l.Called()
+	args := l.Called(id)
 	return args.Get(0).([]internal.Locality), args.Error(1)
 }
 
 func (l *localityRepositoryMock) FindByID(id int) (locality internal.Locality, err error) {
-	args := l.Called()
+	args := l.Called(id)
 	return args.Get(0).(internal.Locality), args.Error(1)
 }
 
 func (l *localityRepositoryMock) ReportCarries(localityId int) (amountOfCarries int, e error) {
-	args := l.Called()
+	args := l.Called(localityId)
 	return args.Get(0).(int), args.Error(1)
 }
 
