@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const api = "/api/v1/purchase-orders"
+const api_po = "/api/v1/purchase-orders"
 
 type PurchaseOrdersTestSuite struct {
 	// db *sql.DB
@@ -64,7 +64,7 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
-			URL:    &url.URL{Path: api},
+			URL:    &url.URL{Path: api_po},
 			Body: io.NopCloser(strings.NewReader(
 				`{
 					"order_number": "123ABC",
@@ -105,7 +105,7 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
-			URL:    &url.URL{Path: api},
+			URL:    &url.URL{Path: api_po},
 			Body: io.NopCloser(strings.NewReader(
 				`{
 					"order_number": "PO1001",
@@ -143,7 +143,7 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
-			URL:    &url.URL{Path: api},
+			URL:    &url.URL{Path: api_po},
 			Body: io.NopCloser(strings.NewReader(
 				`{
 					"order_number": "PO1001",
@@ -186,7 +186,7 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
-			URL:    &url.URL{Path: api},
+			URL:    &url.URL{Path: api_po},
 			Body: io.NopCloser(strings.NewReader(
 				`{
 					"order_number": "PO1001",
@@ -224,7 +224,7 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
-			URL:    &url.URL{Path: api},
+			URL:    &url.URL{Path: api_po},
 			Body: io.NopCloser(strings.NewReader(
 				`{
 					"order_number": "PO1001",
@@ -262,7 +262,7 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
-			URL:    &url.URL{Path: api},
+			URL:    &url.URL{Path: api_po},
 			Body: io.NopCloser(strings.NewReader(`{
 				"order_date": "2023-10-05"
 			}`)),

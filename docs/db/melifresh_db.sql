@@ -119,6 +119,18 @@ CREATE TABLE `purchase_orders`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+CREATE TABLE `carries`
+(
+    `id`             int(11) NOT NULL AUTO_INCREMENT,
+	`cid`            varchar(10) UNIQUE NOT NULL,
+	`company_name`   varchar(100) NOT NULL,
+	`address`        varchar(100) NOT NULL,
+	`phone_number`   varchar(20) NOT NULL,
+	`locality_id`    int(11) NOT NULL,
+    FOREIGN KEY (`locality_id`) REFERENCES localities (id),
+	PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 -- DML
 INSERT INTO localities (id, name, province_name, country_name)
 VALUES (1, 'New York City', 'New York', 'United States'),
@@ -205,6 +217,13 @@ VALUES ('B1001', 'Alice', 'Brown'),
        ('B1008', 'Steven', 'Clark'),
        ('B1009', 'Betty', 'Lopez'),
        ('B1010', 'Edward', 'Gonzalez');
+
+INSERT INTO carries (cid, company_name, address, phone_number, locality_id)
+VALUES (1, 'Meli Fresh Logistics', '123 Fresh St', '555-1001', 1),
+(2, 'Quick Delivery Services', '456 Fast Ave', '555-1002', 2),
+(3, 'Fresh Express', '789 Speed Blvd', '555-1003', 3),
+(4, 'Swift Transport Co.', '101 Pine St', '555-1004', 4),
+(5, 'Rapid Freight Solutions', '202 Oak Dr', '555-1005', 5);
 
 INSERT INTO product_records (id, last_update_date, purchase_price, sale_price, product_id)
 VALUES (1, '2025-01-01 10:00:00', 50.00, 70.00, 1),

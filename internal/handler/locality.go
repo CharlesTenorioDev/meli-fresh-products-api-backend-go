@@ -3,12 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"github.com/bootcamp-go/web/response"
-	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 	"log"
 	"net/http"
 	"strconv"
+
+	"github.com/bootcamp-go/web/response"
+	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
 // NewLocalityDefault creates a new instance of the seller handler
@@ -39,19 +40,79 @@ type LocalityPostJson struct {
 	CountryName  string `json:"country_name"`
 }
 
-// ReportSellers returns locality with sellers count
-func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
+func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
 
-		id, err := strconv.Atoi(idStr)
+		if idStr == "" {
+			carries, err := h.sv.GetAmountOfCarriesForEveryLocality()
+			if err != nil {
+				response.JSON(
+					w,
+					http.StatusInternalServerError,
+					rest_err.NewInternalServerError("failed to fetch carries"),
+				)
+				return
+			}
 
-		if err != nil {
-			response.JSON(w, http.StatusBadRequest, nil)
+			response.JSON(w, http.StatusOK, map[string]any{
+				"data": carries,
+			})
 			return
 		}
 
-		locality, err := h.sv.ReportSellers(id)
+		id, err := strconv.Atoi(idStr)
+		if err != nil {
+			response.JSON(
+				w,
+				http.StatusBadRequest,
+				rest_err.NewBadRequestError("id should be a number"),
+			)
+			return
+		}
+
+		amountOfCarries, err := h.sv.ReportCarries(id)
+		if err != nil {
+			response.JSON(
+				w,
+				http.StatusNotFound,
+				rest_err.NewNotFoundError("not carries on locality_id "+idStr),
+			)
+			return
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": struct {
+				AmountOfCarries int `json:"amount_of_carries"`
+			}{
+				AmountOfCarries: amountOfCarries,
+			},
+		})
+	}
+}
+
+// ReportSellers returns locality with sellers count
+func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var localities []internal.Locality
+		var err error
+
+		idStr := r.URL.Query().Get("id")
+
+		switch idStr {
+		case "":
+			localities, err = h.sv.ReportSellers()
+		default:
+			id, err := strconv.Atoi(idStr)
+
+			if err != nil {
+				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+				return
+			}
+
+			localities, err = h.sv.ReportSellersByID(id)
+		}
+
 		if err != nil {
 			log.Println(err)
 			if errors.Is(err, internal.ErrLocalityNotFound) {
@@ -62,18 +123,22 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 			return
 		}
 
-		localityJson := LocalityGetJson{
-			ID:           locality.ID,
-			LocalityName: locality.LocalityName,
-			ProvinceName: locality.ProvinceName,
-			CountryName:  locality.CountryName,
-			SellersCount: locality.Sellers,
+		var localitiesJson []LocalityGetJson
+		for _, locality := range localities {
+			localitiesJson = append(localitiesJson, LocalityGetJson{
+				ID:           locality.ID,
+				LocalityName: locality.LocalityName,
+				ProvinceName: locality.ProvinceName,
+				CountryName:  locality.CountryName,
+				SellersCount: locality.Sellers,
+			})
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": localityJson,
+			"data": localitiesJson,
 		})
 	}
+
 }
 
 // Save method save the locality
@@ -119,7 +184,7 @@ func (h *LocalityDefault) Save() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": locality,
+			"data": localityJson,
 		})
 	}
 }

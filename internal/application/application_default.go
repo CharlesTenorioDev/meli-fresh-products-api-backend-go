@@ -102,6 +102,9 @@ func (a *ServerChi) Run() (err error) {
 		r.Route("/purchase-orders", func(r chi.Router) {
 			purchaseOrderRouter(r, poMysqlRepository, prodRecRepository, buyerService)
 		})
+		r.Route("/carries", func(r chi.Router) {
+			carriesRoutes(r, db)
+		})
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
@@ -113,6 +116,7 @@ func localitiesRoutes(r chi.Router, lcRepository internal.LocalityRepository) {
 	hd := handler.NewLocalityDefault(sv)
 
 	r.Get("/report-sellers", hd.ReportSellers())
+	r.Get("/report-carries", hd.ReportCarries())
 	r.Post("/", hd.Save())
 }
 
@@ -192,4 +196,13 @@ func purchaseOrderRouter(r chi.Router, poRepository internal.PurchaseOrderReposi
 	hd := handler.NewPurchaseOrderHandler(sv)
 
 	r.Post("/", hd.Create())
+}
+
+func carriesRoutes(r chi.Router, db *sql.DB) {
+	rp := repository.NewCarriesMysql(db)
+	sv := service.NewCarriesService(rp)
+	hd := handler.NewCarriesHandlerDefault(sv)
+
+	r.Get("/", hd.GetAll)
+	r.Post("/", hd.Create)
 }
