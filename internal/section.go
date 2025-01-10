@@ -15,9 +15,9 @@ type Section struct {
 type SectionRepository interface {
 	FindAll() ([]Section, error)
 	FindByID(id int) (Section, error)
-	ReportProducts() (prodBatchs []ProductBatch, err error)
-	ReportProductsByID(id int) (prodBatchs []ProductBatch, err error)
-	SectionNumberExists(section Section) error
+	ReportProducts() ([]int, error)
+	ReportProductsByID(id int) ([]int, error)
+	SectionNumberExists(section Section) (bool, error)
 	Save(section *Section) error
 	Update(section *Section) error
 	Delete(id int) error
@@ -26,8 +26,8 @@ type SectionRepository interface {
 type SectionService interface {
 	FindAll() ([]Section, error)
 	FindByID(id int) (Section, error)
-	ReportProducts() (prodBatchs []ProductBatch, err error)
-	ReportProductsByID(id int) (prodBatchs []ProductBatch, err error)
+	ReportProducts() ([]int, error)
+	ReportProductsByID(id int) ([]int, error)
 	Save(section *Section) error
 	Update(id int, updates map[string]interface{}) (Section, error)
 	Delete(id int) error

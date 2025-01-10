@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 
@@ -22,6 +23,12 @@ type SectionJSON struct {
 	MaximumCapacity    int     `json:"maximum_capacity"`
 	WarehouseID        int     `json:"warehouse_id"`
 	ProductTypeID      int     `json:"product_type_id"`
+}
+
+type ResponseReportProd struct {
+	SectionID     int `json:"section_id"`
+	SectionNumber int `json:"section_number"`
+	ProductsCount int `json:"products_count"`
 }
 
 func NewHandlerSection(svc internal.SectionService) *SectionHandler {
@@ -66,22 +73,30 @@ func (h *SectionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) {
-	/*var prodBatchs []internal.ProductBatch
+	var productIDs []int
 	var err error
+	var section internal.Section
 
 	idStr := r.URL.Query().Get("id")
 
 	switch idStr {
 	case "":
-		prodBatchs, err = h.sv.ReportProducts()
+		productIDs, err = h.sv.ReportProducts()
+		section = internal.Section{}
 	default:
-		id, err := strconv.Atoi(idStr)
+		idSection, err := strconv.Atoi(idStr)
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
 			return
 		}
 
-		prodBatchs, err = h.sv.ReportProductsByID(id)
+		section, err = h.sv.FindByID(idSection)
+		if err != nil {
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+			return
+		}
+
+		productIDs, err = h.sv.ReportProductsByID(idSection)
 	}
 
 	if err != nil {
@@ -94,20 +109,20 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	var localitiesJson []LocalityGetJson
-	for _, locality := range prodBatchs {
-		localitiesJson = append(localitiesJson, LocalityGetJson{
-			ID:           locality.ID,
-			LocalityName: locality.LocalityName,
-			ProvinceName: locality.ProvinceName,
-			CountryName:  locality.CountryName,
-			SellersCount: locality.Sellers,
-		})
+	responseReport := ResponseReportProd{
+		SectionID:     0,
+		SectionNumber: 0,
+		ProductsCount: len(productIDs),
+	}
+
+	if section.ID != 0 {
+		responseReport.SectionID = section.ID
+		responseReport.SectionNumber = section.SectionNumber
 	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"data": localitiesJson,
-	})*/
+		"data": responseReport,
+	})
 }
 
 func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {

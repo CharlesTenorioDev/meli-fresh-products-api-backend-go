@@ -72,8 +72,8 @@ func (a *ServerChi) Run() (err error) {
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
-	scRepository := repository.NewRepositorySection()
-	pbRepository := repository.NewRepositoryProductBatchDB(db)
+	scRepository := repository.NewRepositorySectionMysql(db)
+	pbRepository := repository.NewRepositoryProductBatchMysql(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {

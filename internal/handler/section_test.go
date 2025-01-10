@@ -32,14 +32,14 @@ func (m *MockSectionService) FindByID(id int) (internal.Section, error) {
 	return args.Get(0).(internal.Section), args.Error(1)
 }
 
-func (m *MockSectionService) ReportProducts() (prodBatchs []internal.ProductBatch, err error) {
+func (m *MockSectionService) ReportProducts() ([]int, error) {
 	args := m.Called()
-	return args.Get(0).([]internal.ProductBatch), args.Error(1)
+	return args.Get(0).([]int), args.Error(1)
 }
 
-func (m *MockSectionService) ReportProductsByID(id int) (prodBatchs []internal.ProductBatch, err error) {
+func (m *MockSectionService) ReportProductsByID(id int) ([]int, error) {
 	args := m.Called()
-	return args.Get(0).([]internal.ProductBatch), args.Error(1)
+	return args.Get(0).([]int), args.Error(1)
 }
 
 func (m *MockSectionService) Save(section *internal.Section) error {

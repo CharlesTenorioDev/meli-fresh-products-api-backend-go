@@ -52,12 +52,22 @@ func (s *SectionService) FindByID(id int) (internal.Section, error) {
 	return section, nil
 }
 
-func (s *SectionService) ReportProducts() (prodBatchs []internal.ProductBatch, err error) {
-	return
+func (s *SectionService) ReportProducts() ([]int, error) {
+	prodBatchs, err := s.rpS.ReportProducts()
+	if err != nil {
+		return nil, err
+	}
+
+	return prodBatchs, nil
 }
 
-func (s *SectionService) ReportProductsByID(id int) (prodBatchs []internal.ProductBatch, err error) {
-	return
+func (s *SectionService) ReportProductsByID(id int) ([]int, error) {
+	prodBatchs, err := s.rpS.ReportProductsByID(id)
+	if err != nil {
+		return nil, SectionNotFound
+	}
+
+	return prodBatchs, nil
 }
 
 func (s *SectionService) Save(section *internal.Section) error {
@@ -65,8 +75,8 @@ func (s *SectionService) Save(section *internal.Section) error {
 		return SectionUnprocessableEntity
 	}
 
-	err := s.rpS.SectionNumberExists(*section)
-	if err != nil {
+	countExists, err := s.rpS.SectionNumberExists(*section)
+	if err != nil || countExists {
 		return SectionNumberAlreadyInUse
 	}
 
@@ -135,8 +145,8 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 			return internal.Section{}, err
 		}
 
-		err := s.rpS.SectionNumberExists(section)
-		if err != nil {
+		countExists, err := s.rpS.SectionNumberExists(section)
+		if err != nil || countExists {
 			return internal.Section{}, SectionNumberAlreadyInUse
 		}
 	}
