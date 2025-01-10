@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -42,7 +40,6 @@ func (s *PurchaseOrderService) Save(p *internal.PurchaseOrder) (err error) {
 	// Check if the product records exists
 	_, err = s.rpProductRecords.FindByID(p.ProductRecordId)
 	if err != nil {
-		fmt.Println(err)
 		return err
 	}
 

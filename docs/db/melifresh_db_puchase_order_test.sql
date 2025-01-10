@@ -1,7 +1,7 @@
 -- DDL
 DROP DATABASE IF EXISTS `melifresh_purchase_orders_test_db`;
 
-CREATE DATABASE `melifresh_purchase_orders_test_db`;
+CREATE DATABASE IF NOT EXISTS `melifresh_purchase_orders_test_db`;
 
 USE `melifresh_purchase_orders_test_db`;
 
@@ -34,6 +34,17 @@ CREATE TABLE `buyers`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+CREATE TABLE product_records
+(
+    id                int(11) NOT NULL AUTO_INCREMENT,
+	last_update_date  datetime NOT NULL,
+	purchase_price    float NOT NULL,
+	sale_price        float NOT NULL,
+	product_id        int NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products (id),
+	PRIMARY KEY (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 -- table `purchase_orders`
 CREATE TABLE `purchase_orders`
 (
@@ -42,10 +53,12 @@ CREATE TABLE `purchase_orders`
     `order_date` date NOT NULL,
     `tracking_code` varchar(255) NOT NULL,
     `buyer_id` int(11) NULL,
-    `product_record_id` int(11) NOT NULL,
+    `product_record_id` int(11) NULL,
     FOREIGN KEY (`buyer_id`) REFERENCES buyers (id) ON DELETE SET NULL,
+    FOREIGN KEY (`product_record_id`) REFERENCES product_records (id) ON DELETE SET NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 
 INSERT INTO products (product_code, description, height, lenght, width, weight, expiration_rate,
                       freezing_rate, recommended_freezing_temperature, seller_id, product_type_id)
@@ -72,14 +85,17 @@ VALUES ('B1001', 'Alice', 'Brown'),
        ('B1009', 'Betty', 'Lopez'),
        ('B1010', 'Edward', 'Gonzalez');
 
+
+INSERT INTO product_records (id, last_update_date, purchase_price, sale_price, product_id)
+VALUES (1, '2025-01-01 10:00:00', 50.00, 70.00, 1),
+(2, '2025-01-02 11:30:00', 30.00, 45.00, 2),
+(3, '2025-01-03 14:45:00', 100.00, 150.00, 3),
+(4, '2025-01-04 09:15:00', 20.00, 35.00, 4),
+(5, '2025-01-05 16:00:00', 75.00, 110.00, 5);
+
 INSERT INTO purchase_orders (order_number, order_date, tracking_code, buyer_id, product_record_id)
 VALUES  ('PO1001', '2021-01-01', 'T1001', 1, 1),
         ('PO1002', '2021-01-02', 'T1002', 2, 2),
         ('PO1003', '2021-01-03', 'T1003', 3, 3),
         ('PO1004', '2021-01-04', 'T1004', 4, 4),
-        ('PO1005', '2021-01-05', 'T1005', 5, 5),
-        ('PO1006', '2021-01-06', 'T1006', 6, 6),
-        ('PO1007', '2021-01-07', 'T1007', 7, 7),
-        ('PO1008', '2021-01-08', 'T1008', 8, 8),
-        ('PO1009', '2021-01-09', 'T1009', 9, 9),
-        ('PO1010', '2021-01-10', 'T1010', 10, 10);
+        ('PO1005', '2021-01-05', 'T1005', 5, 5);

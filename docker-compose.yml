@@ -9,3 +9,4 @@ services:
       - '3306:3306'
     volumes:
       - ./docs/db/melifresh_db.sql:/docker-entrypoint-initdb.d/script.sql
+      - ./docs/db/melifresh_db_puchase_order_test.sql:/docker-entrypoint-initdb.d/script_purchase_order_test.sql
