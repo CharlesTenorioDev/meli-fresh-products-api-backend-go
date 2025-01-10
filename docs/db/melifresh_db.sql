@@ -45,7 +45,7 @@ CREATE TABLE `warehouses`
 -- table `product_type`
 CREATE TABLE `product_type`
 (
-    `id` int(11) NOT NULL,
+    `id` int(11) NOT NULL AUTO_INCREMENT,
     `description` varchar(255) NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
@@ -55,8 +55,8 @@ CREATE TABLE `sections`
 (
     `id`                  int(11) NOT NULL AUTO_INCREMENT,
     `section_number`      int(11) NOT NULL,
-    `current_temperature` float NOT NULL,
-    `minimum_temperature` float NOT NULL,
+    `current_temperature` decimal(19, 2) NOT NULL,
+    `minimum_temperature` decimal(19, 2) NOT NULL,
     `current_capacity`    int   NOT NULL,
     `minimum_capacity`    int   NOT NULL,
     `maximum_capacity`    int   NOT NULL,
@@ -177,17 +177,17 @@ VALUES ('WH01', '200 Warehouse Rd', '234-567-8901', 100, 0),
        ('WH09', '208 Goods Rd', '234-567-8909', 130, 3),
        ('WH10', '209 Freight St', '234-567-8910', 190, -1);
 
-INSERT INTO product_type (id, description)
-VALUES  (1, 'Dairy'),
-        (2, 'Meat'),
-        (3, 'Vegetables'),
-        (4, 'Fruits'),
-        (5, 'Bakery'),
-        (6, 'Seafood'),
-        (7, 'Beverages'),
-        (8, 'Snacks'),
-        (9, 'Condiments'),
-        (10, 'Frozen Foods');
+INSERT INTO product_type (description)
+VALUES  ('Dairy'),
+        ('Meat'),
+        ('Vegetables'),
+        ('Fruits'),
+        ('Bakery'),
+        ('Seafood'),
+        ('Beverages'),
+        ('Snacks'),
+        ('Condiments'),
+        ('Frozen Foods');
 
 INSERT INTO sections (section_number, current_temperature, minimum_temperature, current_capacity,
                       minimum_capacity, maximum_capacity, warehouse_id, product_type_id)

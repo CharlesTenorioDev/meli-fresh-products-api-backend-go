@@ -10,7 +10,6 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
@@ -101,7 +100,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 
 	if err != nil {
 		log.Println(err)
-		if errors.Is(err, service.ProductBatchNotFound) {
+		if errors.Is(err, internal.ProductBatchNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 			return
 		}

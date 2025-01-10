@@ -8,11 +8,6 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
-var (
-	ProductBatchAlreadyExists = errors.New("product-batch already exists")
-	ProductBatchNotFound      = errors.New("product-batch not found")
-)
-
 func NewProductBatchMysql(db *sql.DB) *ProductBatchDB {
 	return &ProductBatchDB{db}
 }
@@ -56,7 +51,7 @@ func (r *ProductBatchDB) FindByID(id int) (internal.ProductBatch, error) {
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return pb, ProductBatchNotFound
+			return pb, internal.ProductBatchNotFound
 		}
 		return pb, err
 	}
@@ -84,7 +79,7 @@ func (r *ProductBatchDB) Save(prodBatch *internal.ProductBatch) error {
 		if errors.As(err, &mysqlErr) {
 			switch mysqlErr.Number {
 			case 1062:
-				return ProductBatchAlreadyExists
+				return internal.ProductBatchAlreadyExists
 			}
 		}
 		return err
@@ -135,7 +130,7 @@ func (r *ProductBatchDB) ReportProducts() (prodBatches []internal.ProductBatch, 
 
 	rows, err := r.db.Query(query)
 	if err != nil {
-		return nil, ProductBatchNotFound
+		return nil, internal.ProductBatchNotFound
 	}
 	defer rows.Close()
 
@@ -153,13 +148,13 @@ func (r *ProductBatchDB) ReportProducts() (prodBatches []internal.ProductBatch, 
 			&pb.ProductId,
 			&pb.SectionId,
 		); err != nil {
-			return nil, ProductBatchNotFound
+			return nil, internal.ProductBatchNotFound
 		}
 		prodBatches = append(prodBatches, pb)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, ProductBatchNotFound
+		return nil, internal.ProductBatchNotFound
 	}
 
 	return prodBatches, nil
@@ -200,14 +195,13 @@ func (r *ProductBatchDB) ReportProductsByID(id int) (prodBatches []internal.Prod
 		&pb.ManufacturingDate,
 		&pb.ManufacturingHour,
 		&pb.MinumumTemperature,
-		&pb.ProductId, // Se também precisar do ProductId
-		&pb.SectionId, // Se também precisar do SectionId
-		// Adicione aqui mais campos que você precisa retornar
+		&pb.ProductId,
+		&pb.SectionId,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, internal.ErrLocalityNotFound // Ajuste conforme necessário
+			return nil, internal.ProductBatchNotFound
 		}
-		return nil, ProductBatchNotFound
+		return nil, internal.ProductBatchNotFound
 	}
 
 	prodBatches = append(prodBatches, pb)
