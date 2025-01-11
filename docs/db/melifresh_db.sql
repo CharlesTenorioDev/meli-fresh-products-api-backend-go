@@ -140,6 +140,25 @@ CREATE TABLE `product_batches` (
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- table `inbound_orders`
+CREATE TABLE `inbound_orders`
+(
+    `id`               int(11) NOT NULL AUTO_INCREMENT,
+    `order_date`       date NOT NULL,
+    `order_number`     varchar(255) NOT NULL,
+    `employee_id`      int(11) NOT NULL,
+    `product_batch_id` int(11) NOT NULL,
+    `warehouse_id`     int(11) NOT NULL,
+    FOREIGN KEY (`employee_id`) REFERENCES employees (id),
+    FOREIGN KEY (`product_batch_id`) REFERENCES product_batches (id),
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses (id),
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+
+ALTER TABLE employees ADD UNIQUE (card_number_id);
+
+
 -- DML
 INSERT INTO localities (id, name, province_name, country_name)
 VALUES (1, 'New York City', 'New York', 'United States'),
@@ -257,3 +276,15 @@ VALUES  (1, 100, 20.0, '2022-01-08', 150, '2022-01-01', 10, -5.0, 1, 1),
         (8, 600, 10.2, '2022-06-15', 550, '2022-01-08', 5, -4.1, 4, 4),
         (9, 350, 12.3, '2022-07-01', 400, '2022-01-09', 4, -3.2, 5, 1),
         (10, 450, 16.4, '2022-07-15', 250, '2022-01-10', 3, -7.5, 5, 3);
+
+INSERT INTO inbound_orders (order_date, order_number, employee_id, product_batch_id, warehouse_id)
+VALUES ('2025-01-01', 'ORD001', 1, 1, 1),
+       ('2025-01-02', 'ORD002', 2, 2, 2),
+       ('2025-01-03', 'ORD003', 3, 3, 3),
+       ('2025-01-04', 'ORD004', 4, 4, 4),
+       ('2025-01-05', 'ORD005', 5, 5, 5),
+       ('2025-01-06', 'ORD006', 6, 6, 6),
+       ('2025-01-07', 'ORD007', 7, 7, 7),
+       ('2025-01-08', 'ORD008', 8, 8, 8),
+       ('2025-01-09', 'ORD009', 9, 9, 9),
+       ('2025-01-10', 'ORD010', 10, 10, 10);

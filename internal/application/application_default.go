@@ -72,13 +72,15 @@ func (a *ServerChi) Run() (err error) {
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
+	emRepository := repository.NewEmployeeMysql(db)
+	inRepository := repository.NewInboundOrderMysql(db)
 	scRepository := repository.NewSectionMysql(db)
 	pbRepository := repository.NewProductBatchMysql(db)
 	ptRepository := repository.NewProductTypeMysql(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
-			employeeRouter(r, whRepository)
+			employeeRouter(r, whRepository, db)
 		})
 		r.Route("/buyers", buyerRouter)
 		r.Route("/sections", func(r chi.Router) {
@@ -101,6 +103,9 @@ func (a *ServerChi) Run() (err error) {
 		})
 		r.Route("/carries", func(r chi.Router) {
 			carriesRoutes(r, db)
+		})
+		r.Route("/inbound-orders", func(r chi.Router) {
+			inboundOrdersRoutes(r, inRepository, emRepository, pbRepository, whRepository)
 		})
 	})
 
@@ -159,8 +164,8 @@ func productBatchRoutes(r chi.Router, pbRepository internal.ProductBatchReposito
 	r.Post("/", hd.Create)
 }
 
-func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
-	rp := repository.NewEmployeeRepository()
+func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository, db *sql.DB) {
+	rp := repository.NewEmployeeMysql(db)
 	sv := service.NewEmployeeServiceDefault(rp, whRepository)
 	hd := handler.NewEmployeeDefault(sv)
 
@@ -169,6 +174,7 @@ func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+	r.Get("/report-inbound-orders", hd.ReportInboundOrders)
 }
 
 func buyerRouter(r chi.Router) {
@@ -192,6 +198,14 @@ func productRoutes(r chi.Router, pdRepository internal.ProductRepository, slRepo
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+}
+
+func inboundOrdersRoutes(r chi.Router, inRepository internal.InboundOrdersRepository, emRepository internal.EmployeeRepository, pbRepository internal.ProductBatchRepository, whRepository internal.WarehouseRepository) {
+	sv := service.NewInboundOrderService(inRepository, emRepository, pbRepository, whRepository)
+	hd := handler.NewInboundOrdersHandler(sv)
+
+	r.Post("/", hd.Create)
+	r.Get("/", hd.GetAll)
 }
 
 func carriesRoutes(r chi.Router, db *sql.DB) {
