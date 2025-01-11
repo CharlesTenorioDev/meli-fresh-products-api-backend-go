@@ -31,17 +31,17 @@ func (h *InboundOrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lastId, err := h.sv.Create(inbound)
-	if err != nil {
-		response.JSON(w, http.StatusConflict, map[string]any{
-			"error": "conflict", //status code 409
+	if okFields := inbound.ValidateFieldsOk(); !okFields {
+		response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
+			"error": "required fields are missing", //status code 422
 		})
 		return
 	}
 
-	if okFields := inbound.ValidateFieldsOk(); !okFields {
-		response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
-			"error": "required fields are missing", //status code 422
+	lastId, err := h.sv.Create(inbound)
+	if err != nil {
+		response.JSON(w, http.StatusConflict, map[string]any{
+			"error": "conflict", //status code 409
 		})
 		return
 	}
@@ -58,6 +58,7 @@ func (h *InboundOrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *InboundOrdersHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	allInbounds, err := h.sv.FindAll()
 	if err != nil {
+
 		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("failed to fetch inbounds orders"))
 		return
 	}

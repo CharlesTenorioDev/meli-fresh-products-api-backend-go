@@ -133,6 +133,6 @@ func (s *EmployeeDefault) CountInboundOrdersPerEmployee() (io []internal.Inbound
 	return s.rp.CountInboundOrdersPerEmployee()
 }
 
-func (s *EmployeeDefault) ReportInboundOrdersById(employeeId int) (totalInboundOrders int, err error) {
+func (s *EmployeeDefault) ReportInboundOrdersById(employeeId int) (io internal.InboundOrdersPerEmployee, err error) {
 	return s.rp.ReportInboundOrdersById(employeeId)
 }

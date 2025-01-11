@@ -51,9 +51,9 @@ func (m *MockEmployeeService) CountInboundOrdersPerEmployee() ([]internal.Inboun
 	return args.Get(0).([]internal.InboundOrdersPerEmployee), args.Error(1)
 }
 
-func (m *MockEmployeeService) ReportInboundOrdersById(employeeId int) (int, error) {
+func (m *MockEmployeeService) ReportInboundOrdersById(employeeId int) (internal.InboundOrdersPerEmployee, error) {
 	args := m.Called(employeeId)
-	return args.Get(0).(int), args.Error(1)
+	return args.Get(0).(internal.InboundOrdersPerEmployee), args.Error(1)
 }
 
 type EmployeeTestSuite struct {

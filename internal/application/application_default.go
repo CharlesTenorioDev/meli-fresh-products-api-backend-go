@@ -47,7 +47,6 @@ type ServerChi struct {
 	// serverAddress is the address where the server will be listening
 	serverAddress string
 	dsn           string
-	db            *sql.DB
 }
 
 // Run is a method that runs the application
@@ -74,10 +73,11 @@ func (a *ServerChi) Run() (err error) {
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductMap()
 	empRepository := repository.NewEmployeeMysql(db)
+	inbRepository := repository.NewInboundOrderMysql(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
-			employeeRouter(r, whRepository, a)
+			employeeRouter(r, whRepository, db)
 		})
 		r.Route("/buyers", buyerRouter)
 		r.Route("/sections", func(r chi.Router) {
@@ -96,7 +96,7 @@ func (a *ServerChi) Run() (err error) {
 			productRoutes(r, pdRepository, slRepository)
 		})
 		r.Route("/inbound-orders", func(r chi.Router) {
-			inboundOrdersRoutes(r, empRepository, whRepository, a)
+			inboundOrdersRoutes(r, inbRepository, empRepository, whRepository)
 		})
 	})
 
@@ -147,8 +147,8 @@ func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository, ptR
 	r.Delete("/{id}", hd.Delete)
 }
 
-func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository, a *ServerChi) {
-	rp := repository.NewEmployeeMysql(a.db)
+func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository, db *sql.DB) {
+	rp := repository.NewEmployeeMysql(db)
 	sv := service.NewEmployeeServiceDefault(rp, whRepository)
 	hd := handler.NewEmployeeDefault(sv)
 
@@ -184,9 +184,8 @@ func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository
 	r.Delete("/{id}", hd.Delete)
 }
 
-func inboundOrdersRoutes(r chi.Router, empRepository internal.EmployeeRepository, whRepository internal.WarehouseRepository, a *ServerChi) {
-	rp := repository.NewInboundOrderMysql(a.db)
-	sv := service.NewInboundOrderService(rp, empRepository, whRepository)
+func inboundOrdersRoutes(r chi.Router, inbRepository internal.InboundOrdersRepository, empRepository internal.EmployeeRepository, whRepository internal.WarehouseRepository) {
+	sv := service.NewInboundOrderService(inbRepository, empRepository, whRepository)
 	hd := handler.NewInboundOrdersHandler(sv)
 
 	r.Post("/", hd.Create)

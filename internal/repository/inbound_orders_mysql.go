@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	AllInboundsQuery = "SELECT * `id`, `order_date`, `order_number`, `employee_id`, `product_batch_id`, `warehouse_id` FROM `inbound_orders`"
+	AllInboundsQuery = "SELECT `id`, `order_date`, `order_number`, `employee_id`, `product_batch_id`, `warehouse_id` FROM `inbound_orders`;"
 )
 
 // create a new instance of the inbound orders repository
@@ -19,11 +19,7 @@ func NewInboundOrderMysql(db *sql.DB) *InboundOrdersMysql {
 	return &InboundOrdersMysql{db}
 }
 
-func (rp *InboundOrdersMysql) Create(internal.InboundOrders) (int64, error) {
-
-	var io internal.InboundOrders
-	var id int64
-	var err error
+func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err error) {
 
 	res, err := rp.db.Exec(
 		"INSERT INTO `inbound_orders` (`order_date`, `order_number`, `employee_id`, `product_batch_id`, `warehouse_id`) VALUES (?, ?, ?, ?, ?)",

@@ -16,8 +16,7 @@ func NewInboundOrderService(rp internal.InboundOrdersRepository, rpEmployee inte
 	}
 }
 
-func (s *InboundOrderService) Create(internal.InboundOrders) (int64, error) {
-	inboundOrder := internal.InboundOrders{}
+func (s *InboundOrderService) Create(inboundOrder internal.InboundOrders) (int64, error) {
 	return s.rp.Create(inboundOrder)
 }
 

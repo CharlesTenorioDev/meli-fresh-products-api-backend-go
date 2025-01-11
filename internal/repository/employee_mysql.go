@@ -18,10 +18,17 @@ func NewEmployeeMysql(db *sql.DB) *EmployeeMysql {
 
 const (
 	InboundOrdersPerEmployeeQuery = `
-	SELECT COUNT(io.employee_id) inbound_orders_count, io.id, e.first_name, e.last_name, io.warehouse_id
-	FROM inbound_orders io
-	INNER JOIN employees e ON io.employee_id = e.id
-	GROUP BY io.employee_id`
+	SELECT COUNT(i.employee_id) AS inbound_orders_count, i.id, e.first_name, e.last_name, i.warehouse_id
+	FROM inbound_orders i
+	INNER JOIN employees e ON i.employee_id = e.id
+	GROUP BY i.employee_id, i.id;`
+
+	InboundOrdersPerEmployeeByIdQuery = `
+	SELECT COUNT(i.employee_id) AS inbound_orders_count, i.id, e.first_name, e.last_name, i.warehouse_id
+	FROM inbound_orders i
+	INNER JOIN employees e ON i.employee_id = e.id
+	WHERE i.employee_id = ?
+	GROUP BY i.employee_id, i.id;`
 )
 
 func (r *EmployeeMysql) GetAll() (db []internal.Employee, err error) {
@@ -116,16 +123,14 @@ func (r *EmployeeMysql) CountInboundOrdersPerEmployee() (io []internal.InboundOr
 	return
 }
 
-func (r *EmployeeMysql) ReportInboundOrdersById(employeeId int) (totalInboundOrders int, err error) {
+func (r *EmployeeMysql) ReportInboundOrdersById(employeeId int) (io internal.InboundOrdersPerEmployee, err error) {
 
 	row := r.db.QueryRow(
-		"SELECT COUNT(io.employee_id) report_inbound_orders FROM inbound_orders io WHERE employee_id = ?",
+		InboundOrdersPerEmployeeByIdQuery,
 		employeeId,
 	)
 
-	row.Scan(&totalInboundOrders)
-	if totalInboundOrders == 0 {
-		err = sql.ErrNoRows
-	}
+	row.Scan(&io.CountInOrders, &io.Id, &io.FirstName, &io.LastName, &io.WarehouseId)
+
 	return
 }

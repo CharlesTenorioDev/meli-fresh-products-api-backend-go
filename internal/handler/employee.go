@@ -3,8 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
@@ -169,7 +171,8 @@ func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) 
 func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *http.Request) {
 
 	idStr := r.URL.Query().Get("id")
-
+	idStr = strings.TrimSpace(idStr)
+	fmt.Println("id: ", idStr)
 	if idStr == "" {
 		inboundOrders, err := h.sv.CountInboundOrdersPerEmployee()
 		if err != nil {
@@ -192,14 +195,15 @@ func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *h
 
 	if err != nil {
 		if errors.Is(err, service.EmployeeNotFound) {
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("not found inbounds on this employee"+idStr))
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("employee not found"))
 			return
 		}
-
-		response.JSON(w, http.StatusOK, map[string]any{
-			"data": countInboundOrders,
-		})
-
+		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("internal server error"))
+		return
 	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"data": countInboundOrders,
+	})
 
 }
