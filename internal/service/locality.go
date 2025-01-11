@@ -10,7 +10,7 @@ type LocalityDefault struct {
 
 func NewLocalityDefault(rp internal.LocalityRepository) *LocalityDefault {
 	return &LocalityDefault{
-		rp: rp,
+		rp,
 	}
 }
 
@@ -27,10 +27,21 @@ func (l *LocalityDefault) Save(locality *internal.Locality) (err error) {
 	return l.rp.Save(locality)
 }
 
-func (l *LocalityDefault) ReportSellers(id int) (locality internal.Locality, err error) {
-	return l.rp.ReportSellers(id)
+func (l *LocalityDefault) ReportSellers() (localities []internal.Locality, err error) {
+	return l.rp.ReportSellers()
+}
+func (l *LocalityDefault) ReportSellersByID(id int) (localities []internal.Locality, err error) {
+	return l.rp.ReportSellersByID(id)
 }
 
 func (l *LocalityDefault) FindByID(id int) (locality internal.Locality, err error) {
 	return l.rp.FindByID(id)
+}
+
+func (sv *LocalityDefault) ReportCarries(localityId int) (int, error) {
+	return sv.rp.ReportCarries(localityId)
+}
+
+func (sv *LocalityDefault) GetAmountOfCarriesForEveryLocality() ([]internal.CarriesCountPerLocality, error) {
+	return sv.rp.GetAmountOfCarriesForEveryLocality()
 }

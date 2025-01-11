@@ -2,17 +2,23 @@ package main
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/go-sql-driver/mysql"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal/application"
 )
 
 func main() {
+	dbUri := os.Getenv("MYSQL_SPRINT_URI")
+	if dbUri == "" {
+		dbUri = "localhost:3306"
+	}
 	mysqlCfg := mysql.Config{
 		User:      "root",
 		Passwd:    "meli_pass",
 		Net:       "tcp",
-		Addr:      "localhost:3306",
+		Addr:      dbUri,
 		DBName:    "melifresh",
 		ParseTime: true,
 	}

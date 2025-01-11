@@ -41,6 +41,9 @@ func (s *EmployeeDefault) GetById(id int) (emp internal.Employee, err error) {
 
 func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 	employees, err := s.rp.GetAll()
+	if err != nil {
+		return internal.ErrEmployeeNotFound
+	}
 
 	if emp.Id != 0 {
 		err = errors.New("employee already exists")
@@ -55,7 +58,7 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 
 	_, err = s.rpW.FindByID(emp.WarehouseId)
 	if err != nil {
-		return WarehouseNotFound
+		return internal.ErrWarehouseRepositoryNotFound
 	}
 
 	if cardNumberIdInUse(emp.CardNumberId, employees) {

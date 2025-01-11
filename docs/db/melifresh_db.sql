@@ -42,18 +42,28 @@ CREATE TABLE `warehouses`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+-- table `product_type`
+CREATE TABLE `product_type`
+(
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `description` varchar(255) NOT NULL,
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 -- table `sections`
 CREATE TABLE `sections`
 (
     `id`                  int(11) NOT NULL AUTO_INCREMENT,
     `section_number`      int(11) NOT NULL,
-    `current_temperature` float NOT NULL,
-    `minimum_temperature` float NOT NULL,
+    `current_temperature` decimal(19, 2) NOT NULL,
+    `minimum_temperature` decimal(19, 2) NOT NULL,
     `current_capacity`    int   NOT NULL,
     `minimum_capacity`    int   NOT NULL,
     `maximum_capacity`    int   NOT NULL,
     `warehouse_id`        int(11) NOT NULL,
     `product_type_id`     int(11) NOT NULL,
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id),
+    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -72,6 +82,8 @@ CREATE TABLE `products`
     `recommended_freezing_temperature` float       NOT NULL,
     `seller_id`                        int(11) NOT NULL,
     `product_type_id`                  int(11) NOT NULL,
+    FOREIGN KEY (`seller_id`) REFERENCES sellers(id),
+    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -83,6 +95,7 @@ CREATE TABLE `employees`
     `first_name`     varchar(50) NOT NULL,
     `last_name`      varchar(50) NOT NULL,
     `warehouse_id`   int(11) NOT NULL,
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id),
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -95,6 +108,37 @@ CREATE TABLE `buyers`
     `last_name`      varchar(50) NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+-- table `carries`
+CREATE TABLE `carries`
+(
+    `id`             int(11) NOT NULL AUTO_INCREMENT,
+	`cid`            varchar(10) UNIQUE NOT NULL,
+	`company_name`   varchar(100) NOT NULL,
+	`address`        varchar(100) NOT NULL,
+	`phone_number`   varchar(20) NOT NULL,
+	`locality_id`    int(11) NOT NULL,
+    FOREIGN KEY (`locality_id`) REFERENCES localities (id),
+	PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+-- table `product_batches`
+CREATE TABLE `product_batches` (
+    `id`                 INT(11) NOT NULL AUTO_INCREMENT,
+    `batch_number`      INT(11) NOT NULL,
+    `current_quantity`   INT(11) NOT NULL,
+    `current_temperature` FLOAT NOT NULL,
+    `due_date`          DATE NOT NULL,     
+    `initial_quantity`  INT(11) NOT NULL,
+    `manufacturing_date` DATE NOT NULL,                   
+    `manufacturing_hour` INT(11) NOT NULL,                  
+    `minumum_temperature` FLOAT NOT NULL,
+    `product_id`        INT(11) NOT NULL,
+    `section_id`        INT(11) NOT NULL,
+    FOREIGN KEY (`product_id`) REFERENCES products(id),
+    FOREIGN KEY (`section_id`) REFERENCES sections(id),
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 -- table `inbound_orders`
 CREATE TABLE `inbound_orders`
@@ -152,6 +196,18 @@ VALUES ('WH01', '200 Warehouse Rd', '234-567-8901', 100, 0),
        ('WH09', '208 Goods Rd', '234-567-8909', 130, 3),
        ('WH10', '209 Freight St', '234-567-8910', 190, -1);
 
+INSERT INTO product_type (description)
+VALUES  ('Dairy'),
+        ('Meat'),
+        ('Vegetables'),
+        ('Fruits'),
+        ('Bakery'),
+        ('Seafood'),
+        ('Beverages'),
+        ('Snacks'),
+        ('Condiments'),
+        ('Frozen Foods');
+
 INSERT INTO sections (section_number, current_temperature, minimum_temperature, current_capacity,
                       minimum_capacity, maximum_capacity, warehouse_id, product_type_id)
 VALUES (1, 0, -5, 50, 20, 100, 1, 1),
@@ -201,6 +257,25 @@ VALUES ('B1001', 'Alice', 'Brown'),
        ('B1008', 'Steven', 'Clark'),
        ('B1009', 'Betty', 'Lopez'),
        ('B1010', 'Edward', 'Gonzalez');
+
+INSERT INTO carries (cid, company_name, address, phone_number, locality_id)
+VALUES  (1, 'Meli Fresh Logistics', '123 Fresh St', '555-1001', 1),
+        (2, 'Quick Delivery Services', '456 Fast Ave', '555-1002', 2),
+        (3, 'Fresh Express', '789 Speed Blvd', '555-1003', 3),
+        (4, 'Swift Transport Co.', '101 Pine St', '555-1004', 4),
+        (5, 'Rapid Freight Solutions', '202 Oak Dr', '555-1005', 5);
+
+INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minumum_temperature, product_id, section_id)
+VALUES  (1, 100, 20.0, '2022-01-08', 150, '2022-01-01', 10, -5.0, 1, 1),
+        (2, 200, 18.5, '2022-02-04', 250, '2022-01-02', 11, -4.0, 2, 1),
+        (3, 150, 15.0, '2022-03-01', 180, '2022-01-03', 12, -3.0, 1, 2),
+        (4, 300, 22.0, '2022-03-15', 350, '2022-01-04', 9, -6.0, 2, 2),
+        (5, 250, 25.0, '2022-04-10', 300, '2022-01-05', 8, -2.0, 1, 3),
+        (6, 400, 30.0, '2022-05-05', 450, '2022-01-06', 7, -1.0, 3, 2),
+        (7, 500, 5.5,  '2022-06-01', 600, '2022-01-07', 6, -5.0, 3, 3),
+        (8, 600, 10.2, '2022-06-15', 550, '2022-01-08', 5, -4.1, 4, 4),
+        (9, 350, 12.3, '2022-07-01', 400, '2022-01-09', 4, -3.2, 5, 1),
+        (10, 450, 16.4, '2022-07-15', 250, '2022-01-10', 3, -7.5, 5, 3);
 
 INSERT INTO inbound_orders (order_date, order_number, employee_id, product_batch_id, warehouse_id)
 VALUES ('2025-01-01', 'ORD001', 1, 1, 1),

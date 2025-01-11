@@ -11,7 +11,6 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
-	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -30,6 +29,16 @@ func (m *MockSectionService) FindAll() ([]internal.Section, error) {
 func (m *MockSectionService) FindByID(id int) (internal.Section, error) {
 	args := m.Called(id)
 	return args.Get(0).(internal.Section), args.Error(1)
+}
+
+func (m *MockSectionService) ReportProducts() (int, error) {
+	args := m.Called()
+	return args.Get(0).(int), args.Error(1)
+}
+
+func (m *MockSectionService) ReportProductsByID(id int) (int, error) {
+	args := m.Called()
+	return args.Get(0).(int), args.Error(1)
 }
 
 func (m *MockSectionService) Save(section *internal.Section) error {
@@ -139,7 +148,7 @@ func (suite *SectionTestSuite) TestGetSectionById() {
 }
 
 func (suite *SectionTestSuite) TestGetSectionByIdNotFound() {
-	suite.service.On("FindByID", 1).Return(internal.Section{}, service.SectionNotFound)
+	suite.service.On("FindByID", 1).Return(internal.Section{}, internal.SectionNotFound)
 
 	r := httptest.NewRequest(http.MethodGet, "/sections/{id}", nil)
 	rctx := chi.NewRouteContext()
@@ -201,7 +210,7 @@ func (suite *SectionTestSuite) TestSaveSectionError() {
 		WarehouseID:        1,
 		ProductTypeID:      1,
 	}
-	suite.service.On("Save", &section).Return(service.SectionNotFound)
+	suite.service.On("Save", &section).Return(internal.SectionNotFound)
 
 	body, _ := json.Marshal(section)
 	r := httptest.NewRequest(http.MethodPost, "/sections", bytes.NewReader(body))
@@ -270,7 +279,7 @@ func (suite *SectionTestSuite) TestDeleteSection() {
 }
 
 func (suite *SectionTestSuite) TestDeleteSectionNotFound() {
-	suite.service.On("Delete", 1).Return(service.SectionNotFound)
+	suite.service.On("Delete", 1).Return(internal.SectionNotFound)
 
 	r := httptest.NewRequest(http.MethodDelete, "/sections/{id}", nil)
 	rctx := chi.NewRouteContext()

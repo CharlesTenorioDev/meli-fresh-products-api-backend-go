@@ -8,7 +8,7 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal/loader"
 )
 
-func NewRepositoryProductType() *ProductTypeDB {
+func NewProductType() *ProductTypeDB {
 	bdProdTypes := make(map[int]*internal.ProductType)
 
 	prodTypeDBList, err := loader.ReadAllProductsTypeToFile()

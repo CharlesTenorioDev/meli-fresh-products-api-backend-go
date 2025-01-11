@@ -9,3 +9,19 @@ services:
       - '3306:3306'
     volumes:
       - ./docs/db/melifresh_db.sql:/docker-entrypoint-initdb.d/script.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin" , "-p$$MYSQL_ROOT_PASSWORD" ,"ping", "-h", "localhost"]
+      timeout: 15s
+      retries: 5
+  api:
+    image: meli-sprint:latest
+    container_name: sprint-api
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MYSQL_SPRINT_URI: "mysql:3306"
+    build:
+      dockerfile: Dockerfile
+    ports:
+      - '8080:8080'
