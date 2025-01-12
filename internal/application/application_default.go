@@ -73,14 +73,22 @@ func (a *ServerChi) Run() (err error) {
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductSQL(db)
 	prodRecRepository := repository.NewProductRecordsSQL(db)
+	emRepository := repository.NewEmployeeMysql(db)
+	inRepository := repository.NewInboundOrderMysql(db)
+	scRepository := repository.NewSectionMysql(db)
+	pbRepository := repository.NewProductBatchMysql(db)
+	ptRepository := repository.NewProductTypeMysql(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
-			employeeRouter(r, whRepository)
+			employeeRouter(r, whRepository, db)
 		})
 		r.Route("/buyers", buyerRouter)
 		r.Route("/sections", func(r chi.Router) {
-			sectionsRoutes(r, whRepository, pdRepository)
+			sectionsRoutes(r, scRepository, ptRepository, whRepository, pdRepository)
+		})
+		r.Route("/product-batches", func(r chi.Router) {
+			productBatchRoutes(r, pbRepository, scRepository, pdRepository)
 		})
 		r.Route("/warehouses", func(r chi.Router) {
 			warehouseRoute(r, whRepository)
@@ -93,7 +101,7 @@ func (a *ServerChi) Run() (err error) {
 		})
 
 		r.Route("/products", func(r chi.Router) {
-			productRoutes(r, pdRepository, slRepository)
+			productRoutes(r, pdRepository, slRepository, ptRepository)
 		})
 		r.Route("/carries", func(r chi.Router) {
 			carriesRoutes(r, db)
@@ -101,6 +109,8 @@ func (a *ServerChi) Run() (err error) {
 
 		r.Route("/productRecords", func(r chi.Router) {
 			productRecordsRoutes(r, prodRecRepository, pdRepository)
+		r.Route("/inbound-orders", func(r chi.Router) {
+			inboundOrdersRoutes(r, inRepository, emRepository, pbRepository, whRepository)
 		})
 	})
 
@@ -139,21 +149,28 @@ func warehouseRoute(r chi.Router, whRepository internal.WarehouseRepository) {
 	r.Delete("/{id}", warehouseHandler.Delete())
 }
 
-func sectionsRoutes(r chi.Router, whRepository internal.WarehouseRepository, ptRepository internal.ProductRepository) {
-	rpS := repository.NewRepositorySection()
-	rpT := repository.NewRepositoryProductType()
-	sv := service.NewServiceSection(rpS, rpT, ptRepository, whRepository)
+func sectionsRoutes(r chi.Router, scRepository internal.SectionRepository, ptRepository internal.ProductTypeRepository, whRepository internal.WarehouseRepository, pdRepository internal.ProductRepository) {
+	sv := service.NewServiceSection(scRepository, ptRepository, pdRepository, whRepository)
 	hd := handler.NewHandlerSection(sv)
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)
+	r.Get("/report-products", hd.ReportProducts)
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
 }
 
-func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
-	rp := repository.NewEmployeeRepository()
+func productBatchRoutes(r chi.Router, pbRepository internal.ProductBatchRepository, scRepository internal.SectionRepository, ptRepository internal.ProductRepository) {
+	sv := service.NewServiceProductBatch(pbRepository, scRepository, ptRepository)
+	hd := handler.NewHandlerProductBatch(sv)
+
+	r.Get("/{id}", hd.GetByID)
+	r.Post("/", hd.Create)
+}
+
+func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository, db *sql.DB) {
+	rp := repository.NewEmployeeMysql(db)
 	sv := service.NewEmployeeServiceDefault(rp, whRepository)
 	hd := handler.NewEmployeeDefault(sv)
 
@@ -162,6 +179,7 @@ func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository) {
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+	r.Get("/report-inbound-orders", hd.ReportInboundOrders)
 }
 
 func buyerRouter(r chi.Router) {
@@ -176,9 +194,8 @@ func buyerRouter(r chi.Router) {
 	r.Delete("/{id}", hd.Delete)
 }
 
-func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository internal.SellerRepository) {
-	rpT := repository.NewRepositoryProductType()
-	svc := service.NewProductService(ptRepo, slRepository, rpT)
+func productRoutes(r chi.Router, pdRepository internal.ProductRepository, slRepository internal.SellerRepository, ptRepository internal.ProductTypeRepository) {
+	svc := service.NewProductService(pdRepository, slRepository, ptRepository)
 	hd := handler.NewProducHandlerDefault(svc)
 
 	r.Get("/", hd.GetAll)
@@ -187,6 +204,14 @@ func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
 	r.Get("/report-records", hd.ReportProduct)
+}
+
+func inboundOrdersRoutes(r chi.Router, inRepository internal.InboundOrdersRepository, emRepository internal.EmployeeRepository, pbRepository internal.ProductBatchRepository, whRepository internal.WarehouseRepository) {
+	sv := service.NewInboundOrderService(inRepository, emRepository, pbRepository, whRepository)
+	hd := handler.NewInboundOrdersHandler(sv)
+
+	r.Post("/", hd.Create)
+	r.Get("/", hd.GetAll)
 }
 
 func carriesRoutes(r chi.Router, db *sql.DB) {

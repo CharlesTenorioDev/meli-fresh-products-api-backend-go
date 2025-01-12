@@ -1,20 +1,15 @@
 FROM golang:1.22.5-alpine as build
 
 WORKDIR /app
-
-COPY go.mod ./
-COPY go.sum ./
-
-RUN go mod download
-
 COPY . .
 
-RUN go build -o cmd
+RUN go build -o main ./cmd
 
 FROM alpine
 WORKDIR /app
 
 COPY --from=build /app/main .
+COPY --from=build /app/db db
 
 EXPOSE 8080
-ENTRYPOINT ["main"]
+ENTRYPOINT ["./main"]

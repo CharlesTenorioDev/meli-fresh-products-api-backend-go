@@ -188,6 +188,7 @@ func ValidateProduct(product internal.Product) error {
 		product.Width <= 0 ||
 		product.NetWeight <= 0 ||
 		product.ExpirationRate <= 0 ||
+
 		product.RecommendedFreezingTemperature < -273.15 ||
 		product.FreezingRate < -273.15 ||
 		product.ProductTypeId <= 0 ||

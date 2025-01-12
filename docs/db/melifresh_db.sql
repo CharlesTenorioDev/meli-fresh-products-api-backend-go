@@ -42,6 +42,7 @@ CREATE TABLE warehouses
     PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+
 -- table `product_type`
 CREATE TABLE `product_type`
 (
@@ -50,19 +51,21 @@ CREATE TABLE `product_type`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
--- table sections
-CREATE TABLE sections
+-- table `sections`
+CREATE TABLE `sections`
 (
-    id                  int(11) NOT NULL AUTO_INCREMENT,
-    section_number      int(11) NOT NULL,
-    current_temperature float NOT NULL,
-    minimum_temperature float NOT NULL,
-    current_capacity    int   NOT NULL,
-    minimum_capacity    int   NOT NULL,
-    maximum_capacity    int   NOT NULL,
-    warehouse_id        int(11) NOT NULL,
-    product_type_id     int(11) NOT NULL,
-    PRIMARY KEY (id)
+    `id`                  int(11) NOT NULL AUTO_INCREMENT,
+    `section_number`      int(11) NOT NULL,
+    `current_temperature` decimal(19, 2) NOT NULL,
+    `minimum_temperature` decimal(19, 2) NOT NULL,
+    `current_capacity`    int   NOT NULL,
+    `minimum_capacity`    int   NOT NULL,
+    `maximum_capacity`    int   NOT NULL,
+    `warehouse_id`        int(11) NOT NULL,
+    `product_type_id`     int(11) NOT NULL,
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id),
+    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
+    PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 -- table products
@@ -81,17 +84,20 @@ CREATE TABLE products
     seller_id                        int(11) NOT NULL,
     product_type_id                  int(11) NOT NULL,
     PRIMARY KEY (id)
+
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 -- table employees
 CREATE TABLE employees
 (
-    id             int(11) NOT NULL AUTO_INCREMENT,
-    card_number_id varchar(25) NOT NULL,
-    first_name     varchar(50) NOT NULL,
-    last_name      varchar(50) NOT NULL,
-    warehouse_id   int(11) NOT NULL,
-    PRIMARY KEY (id)
+
+    `id`             int(11) NOT NULL AUTO_INCREMENT,
+    `card_number_id` varchar(25) NOT NULL,
+    `first_name`     varchar(50) NOT NULL,
+    `last_name`      varchar(50) NOT NULL,
+    `warehouse_id`   int(11) NOT NULL,
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id),
+    PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 -- table buyers
@@ -105,7 +111,8 @@ CREATE TABLE buyers
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 
-CREATE TABLE carries
+-- table `carries`
+CREATE TABLE `carries`
 (
     id             int(11) NOT NULL AUTO_INCREMENT,
 	cid            int(11) UNIQUE NOT NULL,
@@ -127,6 +134,43 @@ CREATE TABLE product_records
     FOREIGN KEY (product_id) REFERENCES products (id),
 	PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+-- table `product_batches`
+CREATE TABLE `product_batches` (
+    `id`                 INT(11) NOT NULL AUTO_INCREMENT,
+    `batch_number`      INT(11) NOT NULL,
+    `current_quantity`   INT(11) NOT NULL,
+    `current_temperature` FLOAT NOT NULL,
+    `due_date`          DATE NOT NULL,     
+    `initial_quantity`  INT(11) NOT NULL,
+    `manufacturing_date` DATE NOT NULL,                   
+    `manufacturing_hour` INT(11) NOT NULL,                  
+    `minumum_temperature` FLOAT NOT NULL,
+    `product_id`        INT(11) NOT NULL,
+    `section_id`        INT(11) NOT NULL,
+    FOREIGN KEY (`product_id`) REFERENCES products(id),
+    FOREIGN KEY (`section_id`) REFERENCES sections(id),
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- table `inbound_orders`
+CREATE TABLE `inbound_orders`
+(
+    `id`               int(11) NOT NULL AUTO_INCREMENT,
+    `order_date`       date NOT NULL,
+    `order_number`     varchar(255) NOT NULL,
+    `employee_id`      int(11) NOT NULL,
+    `product_batch_id` int(11) NOT NULL,
+    `warehouse_id`     int(11) NOT NULL,
+    FOREIGN KEY (`employee_id`) REFERENCES employees (id),
+    FOREIGN KEY (`product_batch_id`) REFERENCES product_batches (id),
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses (id),
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
+
+ALTER TABLE employees ADD UNIQUE (card_number_id);
+
+
 -- DML
 INSERT INTO localities (id, name, province_name, country_name)
 VALUES (1, 'New York City', 'New York', 'United States'),
@@ -235,11 +279,33 @@ VALUES (1, 'Meli Fresh Logistics', '123 Fresh St', '555-1001', 1),
 (5, 'Rapid Freight Solutions', '202 Oak Dr', '555-1005', 5);
 
 
-INSERT INTO product_records (last_update_date, purchase_price, sale_price, product_id)
-VALUES ('2025-01-01 10:00:00', 50.00, 70.00, 1),
-       ('2025-01-02 11:30:00', 30.00, 45.00, 2),
-       ('2025-01-03 14:45:00', 100.00, 150.00, 3),
-       ('2025-01-04 09:15:00', 20.00, 35.00, 4),
-       ('2025-01-05 16:00:00', 75.00, 110.00, 5);
+INSERT INTO product_records (id, last_update_date, purchase_price, sale_price, product_id)
+VALUES (1, '2025-01-01 10:00:00', 50.00, 70.00, 1),
+(2, '2025-01-02 11:30:00', 30.00, 45.00, 2),
+(3, '2025-01-03 14:45:00', 100.00, 150.00, 3),
+(4, '2025-01-04 09:15:00', 20.00, 35.00, 4),
+(5, '2025-01-05 16:00:00', 75.00, 110.00, 5);
 
+INSERT INTO product_batches (batch_number, current_quantity, current_temperature, due_date, initial_quantity, manufacturing_date, manufacturing_hour, minumum_temperature, product_id, section_id)
+VALUES  (1, 100, 20.0, '2022-01-08', 150, '2022-01-01', 10, -5.0, 1, 1),
+        (2, 200, 18.5, '2022-02-04', 250, '2022-01-02', 11, -4.0, 2, 1),
+        (3, 150, 15.0, '2022-03-01', 180, '2022-01-03', 12, -3.0, 1, 2),
+        (4, 300, 22.0, '2022-03-15', 350, '2022-01-04', 9, -6.0, 2, 2),
+        (5, 250, 25.0, '2022-04-10', 300, '2022-01-05', 8, -2.0, 1, 3),
+        (6, 400, 30.0, '2022-05-05', 450, '2022-01-06', 7, -1.0, 3, 2),
+        (7, 500, 5.5,  '2022-06-01', 600, '2022-01-07', 6, -5.0, 3, 3),
+        (8, 600, 10.2, '2022-06-15', 550, '2022-01-08', 5, -4.1, 4, 4),
+        (9, 350, 12.3, '2022-07-01', 400, '2022-01-09', 4, -3.2, 5, 1),
+        (10, 450, 16.4, '2022-07-15', 250, '2022-01-10', 3, -7.5, 5, 3);
 
+INSERT INTO inbound_orders (order_date, order_number, employee_id, product_batch_id, warehouse_id)
+VALUES ('2025-01-01', 'ORD001', 1, 1, 1),
+       ('2025-01-02', 'ORD002', 2, 2, 2),
+       ('2025-01-03', 'ORD003', 3, 3, 3),
+       ('2025-01-04', 'ORD004', 4, 4, 4),
+       ('2025-01-05', 'ORD005', 5, 5, 5),
+       ('2025-01-06', 'ORD006', 6, 6, 6),
+       ('2025-01-07', 'ORD007', 7, 7, 7),
+       ('2025-01-08', 'ORD008', 8, 8, 8),
+       ('2025-01-09', 'ORD009', 9, 9, 9),
+       ('2025-01-10', 'ORD010', 10, 10, 10);

@@ -21,9 +21,9 @@ type MockEmployeeService struct {
 	mock.Mock
 }
 
-func (m *MockEmployeeService) GetAll() map[int]internal.Employee {
+func (m *MockEmployeeService) GetAll() ([]internal.Employee, error) {
 	args := m.Called()
-	return args.Get(0).(map[int]internal.Employee)
+	return args.Get(0).([]internal.Employee), nil
 }
 
 func (m *MockEmployeeService) GetById(id int) (internal.Employee, error) {
@@ -44,6 +44,16 @@ func (m *MockEmployeeService) Update(employee internal.Employee) error {
 func (m *MockEmployeeService) Delete(id int) error {
 	args := m.Called(id)
 	return args.Error(0)
+}
+
+func (m *MockEmployeeService) CountInboundOrdersPerEmployee() ([]internal.InboundOrdersPerEmployee, error) {
+	args := m.Called()
+	return args.Get(0).([]internal.InboundOrdersPerEmployee), args.Error(1)
+}
+
+func (m *MockEmployeeService) ReportInboundOrdersById(employeeId int) (internal.InboundOrdersPerEmployee, error) {
+	args := m.Called(employeeId)
+	return args.Get(0).(internal.InboundOrdersPerEmployee), args.Error(1)
 }
 
 type EmployeeTestSuite struct {

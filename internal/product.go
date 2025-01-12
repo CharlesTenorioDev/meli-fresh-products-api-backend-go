@@ -1,5 +1,14 @@
 package internal
 
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ProductNotFound = errors.New("product not found")
+)
+
 type Product struct {
 	Id                             int     `json:"id"`
 	ProductCode                    string  `json:"product_code"`
@@ -27,6 +36,7 @@ type ProductJsonPost struct {
 	FreezingRate                   float64 `json:"freezing_rate"`
 	ProductTypeId                  int     `json:"product_type_id"`
 	SellerId                       int     `json:"seller_id"`
+
 }
 
 type ProductService interface {

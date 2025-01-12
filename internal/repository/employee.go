@@ -43,13 +43,6 @@ func NewEmployeeRepository() *EmployeeRepositoryDefault {
 	}
 }
 
-type EmployeeRepository interface {
-	GetAll() (db map[int]internal.Employee)
-	Save(emp *internal.Employee) int
-	Update(id int, employee internal.Employee)
-	Delete(id int)
-}
-
 func (r *EmployeeRepositoryDefault) GetAll() (db map[int]internal.Employee) {
 	db = make(map[int]internal.Employee)
 
