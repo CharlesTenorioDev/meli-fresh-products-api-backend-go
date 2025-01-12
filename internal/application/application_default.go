@@ -109,6 +109,8 @@ func (a *ServerChi) Run() (err error) {
 
 		r.Route("/productRecords", func(r chi.Router) {
 			productRecordsRoutes(r, prodRecRepository, pdRepository)
+		})
+		
 		r.Route("/inbound-orders", func(r chi.Router) {
 			inboundOrdersRoutes(r, inRepository, emRepository, pbRepository, whRepository)
 		})

@@ -2,7 +2,6 @@ package internal
 
 import (
 	"errors"
-	"time"
 )
 
 var (
