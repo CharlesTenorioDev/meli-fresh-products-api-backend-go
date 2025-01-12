@@ -15,6 +15,13 @@ type ProductRecordsJson struct {
 	SalePrice      float32   `json:"sale_price"`
 	ProductID      int       `json:"product_id"`
 }
+
+type ProductRecordsJsonCount struct {
+	ProductID    int    `json:"product_id"`
+	Description  string `json:"description"`
+	RecordsCount int    `json:"records_count"`
+}
+
 type ProductRecordsService interface {
 	GetAll() ([]ProductRecords, error)
 	GetByID(int) (ProductRecords, error)

@@ -5,10 +5,25 @@ type Product struct {
 	ProductCode                    string  `json:"product_code"`
 	Description                    string  `json:"description"`
 	Height                         float64 `json:"height"`
-	Width                          float64 `json:"width"`
+	Length                         float64 `json:"length"`
 	NetWeight                      float64 `json:"net_weight"`
 	ExpirationRate                 float64 `json:"expiration_rate"`
 	RecommendedFreezingTemperature float64 `json:"recommended_freezing_temperature"`
+	Width                          float64 `json:"width"`
+	FreezingRate                   float64 `json:"freezing_rate"`
+	ProductTypeId                  int     `json:"product_type_id"`
+	SellerId                       int     `json:"seller_id"`
+}
+
+type ProductJsonPost struct {
+	ProductCode                    string  `json:"product_code"`
+	Description                    string  `json:"description"`
+	Height                         float64 `json:"height"`
+	Length                         float64 `json:"length"`
+	NetWeight                      float64 `json:"net_weight"`
+	ExpirationRate                 float64 `json:"expiration_rate"`
+	RecommendedFreezingTemperature float64 `json:"recommended_freezing_temperature"`
+	Width                          float64 `json:"width"`
 	FreezingRate                   float64 `json:"freezing_rate"`
 	ProductTypeId                  int     `json:"product_type_id"`
 	SellerId                       int     `json:"seller_id"`
@@ -20,6 +35,8 @@ type ProductService interface {
 	Create(Product) (Product, error)
 	Update(Product) (Product, error)
 	Delete(id int) error
+	GetByIdRecord(int) (ProductRecordsJsonCount, error)
+	GetAllRecord() ([]ProductRecordsJsonCount, error)
 }
 
 type ProductRepository interface {
@@ -28,4 +45,6 @@ type ProductRepository interface {
 	Save(Product) (Product, error)
 	Update(Product) (Product, error)
 	Delete(id int) error
+	FindByIdRecord(int) (ProductRecordsJsonCount, error)
+	FindAllRecord() ([]ProductRecordsJsonCount, error)
 }

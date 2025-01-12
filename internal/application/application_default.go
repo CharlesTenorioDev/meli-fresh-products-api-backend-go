@@ -71,7 +71,7 @@ func (a *ServerChi) Run() (err error) {
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
-	pdRepository := repository.NewProductMap()
+	pdRepository := repository.NewProductSQL(db)
 	prodRecRepository := repository.NewProductRecordsSQL(db)
 
 	rt.Route("/api/v1", func(r chi.Router) {
@@ -186,6 +186,7 @@ func productRoutes(r chi.Router, ptRepo internal.ProductRepository, slRepository
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+	r.Get("/report-records", hd.ReportProduct)
 }
 
 func carriesRoutes(r chi.Router, db *sql.DB) {
@@ -199,6 +200,5 @@ func carriesRoutes(r chi.Router, db *sql.DB) {
 func productRecordsRoutes(r chi.Router, prodRecRepository internal.ProductRecordsRepository, prodRepository internal.ProductRepository) {
 	svc := service.NewProductRecordsDefault(prodRecRepository, prodRepository)
 	hd := handler.NewProductRecordsDefault(svc)
-
 	r.Post("/", hd.Create)
 }

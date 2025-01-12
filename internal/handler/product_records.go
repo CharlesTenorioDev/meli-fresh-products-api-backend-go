@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"strconv"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -53,44 +52,5 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 	// Retorna o registro criado com status 201
 	response.JSON(w, http.StatusCreated, map[string]interface{}{
 		"data": productRecJson,
-	})
-}
-
-// Handler para gerar relatórios de registros por Product
-func (h *ProductRecordsHandlerDefault) GetReportByProduct(w http.ResponseWriter, r *http.Request) {
-	queryParams := r.URL.Query()
-	productIDStr := queryParams.Get("id")
-
-	// Se o parâmetro "id" for fornecido, converte para int
-	if productIDStr != "" {
-		productID, err := strconv.Atoi(productIDStr)
-		if err != nil {
-			response.JSON(w, http.StatusBadRequest, "ID inválido")
-			return
-		}
-
-		// Chama o serviço para buscar o relatório por Product ID
-		report, err := h.pd.GetByID(productID)
-		if err != nil {
-			response.JSON(w, http.StatusNotFound, "Produto não encontrado")
-			return
-		}
-
-		// Retorna o relatório
-		response.JSON(w, http.StatusOK, map[string]interface{}{
-			"data": report,
-		})
-		return
-	}
-
-	// Se nenhum ID for enviado, retorna o relatório de todos os Products
-	allRecords, err := h.pd.GetAll()
-	if err != nil {
-		response.JSON(w, http.StatusInternalServerError, "Erro ao buscar registros")
-		return
-	}
-
-	response.JSON(w, http.StatusOK, map[string]interface{}{
-		"data": allRecords,
 	})
 }
