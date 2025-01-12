@@ -21,10 +21,13 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-const api_po = "/api/v1/purchase-orders"
+var (
+	api_po    = "/api/v1/purchase-orders"
+	txdb_name = "txdb_purchase_order"
+)
 
 type PurchaseOrdersTestSuite struct {
-	// db *sql.DB
+	db *sql.DB
 	hd *handler.PurchaseOrderHandler
 	rp *repository.PurchaseOrderRepository
 	suite.Suite
@@ -39,16 +42,17 @@ func init() {
 		DBName:    "melifresh_purchase_orders_test_db",
 		ParseTime: true,
 	}
-	txdb.Register("txdb", "mysql", cfg.FormatDSN())
+	txdb.Register(txdb_name, "mysql", cfg.FormatDSN())
 }
 
 func (p *PurchaseOrdersTestSuite) SetupTest() {
 	// dependencies
-	db, err := sql.Open("txdb", "melifresh_purchase_orders_test_db")
+	var err error
+	p.db, err = sql.Open(txdb_name, "melifresh_purchase_orders_test_db")
 	require.NoError(p.T(), err)
-	rpPurchaseOrder := repository.NewPurchaseOrderMysqlRepository(db)
-	rpBuyer := repository.NewBuyerMysqlRepository(db)
-	rpProductRecord := repository.NewProductRecordsSQL(db)
+	rpPurchaseOrder := repository.NewPurchaseOrderMysqlRepository(p.db)
+	rpBuyer := repository.NewBuyerMysqlRepository(p.db)
+	rpProductRecord := repository.NewProductRecordsSQL(p.db)
 	svBuyer := service.NewBuyerService(rpBuyer)
 	sv := service.NewPurchaseOrderService(rpPurchaseOrder, rpProductRecord, svBuyer)
 
@@ -57,10 +61,8 @@ func (p *PurchaseOrdersTestSuite) SetupTest() {
 }
 
 func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
+	defer p.db.Close()
 	p.T().Run("case 1: success - creating a purchase order with valid data", func(t *testing.T) {
-		db, err := sql.Open("txdb", "melifresh_purchase_orders_test_db")
-		require.NoError(p.T(), err)
-		defer db.Close()
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
@@ -99,9 +101,6 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 	})
 
 	p.T().Run("case 2: error - creating a purchase order with a duplicated order number", func(t *testing.T) {
-		db, err := sql.Open("txdb", "melifresh_purchase_orders_test_db")
-		require.NoError(p.T(), err)
-		defer db.Close()
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
@@ -137,9 +136,6 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 	})
 
 	p.T().Run("case 3: error - creating a purchase order with an invalid date format", func(t *testing.T) {
-		db, err := sql.Open("txdb", "melifresh_purchase_orders_test_db")
-		require.NoError(p.T(), err)
-		defer db.Close()
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
@@ -180,9 +176,6 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 	})
 
 	p.T().Run("case 4: error - creating a purchase order with an invalid buyer id", func(t *testing.T) {
-		db, err := sql.Open("txdb", "melifresh_purchase_orders_test_db")
-		require.NoError(p.T(), err)
-		defer db.Close()
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
@@ -218,9 +211,6 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 	})
 
 	p.T().Run("case 5: error - creating a purchase order with an invalid product record id", func(t *testing.T) {
-		db, err := sql.Open("txdb", "melifresh_purchase_orders_test_db")
-		require.NoError(p.T(), err)
-		defer db.Close()
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
@@ -256,9 +246,6 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 	})
 
 	p.T().Run("case 6: error - creating a purchase order with empty inputs", func(t *testing.T) {
-		db, err := sql.Open("txdb", "melifresh_purchase_orders_test_db")
-		require.NoError(p.T(), err)
-		defer db.Close()
 		// given
 		request := &http.Request{
 			Method: http.MethodPost,
