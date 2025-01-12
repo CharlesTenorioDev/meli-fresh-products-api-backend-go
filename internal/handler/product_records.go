@@ -39,7 +39,7 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 		if errors.Is(err, service.ProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		}
-		if errors.Is(err, service.ProductNotFound) {
+		if errors.Is(err, service.ProductNotExists) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		}
 		return
