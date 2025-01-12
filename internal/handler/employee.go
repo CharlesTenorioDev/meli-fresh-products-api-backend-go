@@ -3,32 +3,41 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
 type EmployeeHandlerDefault struct {
-	sv service.EmployeeService
+	sv internal.EmployeeService
 }
 
-func NewEmployeeDefault(sv service.EmployeeService) *EmployeeHandlerDefault {
+func NewEmployeeDefault(sv internal.EmployeeService) *EmployeeHandlerDefault {
 	return &EmployeeHandlerDefault{
 		sv: sv,
 	}
 }
 
 func (h *EmployeeHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
-	dataEmployee := h.sv.GetAll()
+	dataEmployee, err := h.sv.GetAll()
+
+	if err != nil {
+		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	response.JSON(w, http.StatusOK, map[string]any{
 		"data": dataEmployee,
 	})
+
 }
 
 func (h *EmployeeHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -157,4 +166,44 @@ func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	response.JSON(w, http.StatusNoContent, nil) //status 204
+}
+
+func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *http.Request) {
+
+	idStr := r.URL.Query().Get("id")
+	idStr = strings.TrimSpace(idStr)
+	fmt.Println("id: ", idStr)
+	if idStr == "" {
+		inboundOrders, err := h.sv.CountInboundOrdersPerEmployee()
+		if err != nil {
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("faleid to fetch inbound orders"))
+			return
+		}
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": inboundOrders,
+		})
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("invalid id format"))
+		return
+	}
+
+	countInboundOrders, err := h.sv.ReportInboundOrdersById(id)
+
+	if err != nil {
+		if errors.Is(err, service.EmployeeNotFound) {
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("employee not found"))
+			return
+		}
+		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("internal server error"))
+		return
+	}
+
+	response.JSON(w, http.StatusOK, map[string]any{
+		"data": countInboundOrders,
+	})
+
 }

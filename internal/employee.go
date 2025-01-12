@@ -3,6 +3,7 @@ package internal
 import "errors"
 
 var ErrEmployeeNotFound = errors.New("employee not found")
+var ErrEmployeeConflict = errors.New("employee already in use")
 
 type Employee struct {
 	Id           int    `json:"id"`
@@ -16,6 +17,15 @@ type EmployeePatch struct {
 	CardNumberId *string `json:"card_number_id,omitempty"`
 	FirstName    *string `json:"first_name,omitempty"`
 	LastName     *string `json:"last_name,omitempty"`
+}
+
+type InboundOrdersPerEmployee struct {
+	Id            int    `json:"id"`
+	CardNumberId  string `json:"card_number_id"`
+	FirstName     string `json:"first_name"`
+	LastName      string `json:"last_name"`
+	WarehouseId   int    `json:"warehouse_id"`
+	CountInOrders int    `json:"inbound_orders_count"`
 }
 
 func (emp *Employee) RequirementsFields() (ok bool) {
@@ -41,4 +51,24 @@ func (emp EmployeePatch) EmployeePatch(empUpdate *Employee) {
 	if emp.LastName != nil {
 		empUpdate.LastName = *emp.LastName
 	}
+}
+
+type EmployeeRepository interface {
+	GetAll() (db []Employee, err error)
+	GetById(id int) (emp Employee, err error)
+	Save(emp *Employee) (int, error)
+	Update(id int, employee Employee) error
+	Delete(id int) error
+	CountInboundOrdersPerEmployee() (io []InboundOrdersPerEmployee, err error)
+	ReportInboundOrdersById(employeeId int) (io InboundOrdersPerEmployee, err error)
+}
+
+type EmployeeService interface {
+	GetAll() (db []Employee, err error)
+	GetById(id int) (emp Employee, err error)
+	Save(emp *Employee) (err error)
+	Update(employees Employee) (err error)
+	Delete(id int) (err error)
+	CountInboundOrdersPerEmployee() (io []InboundOrdersPerEmployee, err error)
+	ReportInboundOrdersById(employeeId int) (io InboundOrdersPerEmployee, err error)
 }
