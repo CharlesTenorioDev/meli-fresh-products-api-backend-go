@@ -1,46 +1,47 @@
 -- DDL
 DROP
-DATABASE IF EXISTS `melifresh`;
+DATABASE IF EXISTS melifresh;
 
 CREATE
-DATABASE `melifresh`;
+DATABASE melifresh;
 
 USE `melifresh`;
 
--- table `localities`
-CREATE TABLE `localities`
+-- table localities
+CREATE TABLE localities
 (
-    `id` int(11) NOT NULL,
-    `name` varchar(255) NOT NULL,
-    `province_name` varchar(255) NOT NULL,
-    `country_name` varchar(255) NOT NULL,
-    PRIMARY KEY (`id`)
+    id int(11) NOT NULL AUTO_INCREMENT,
+    name varchar(255) NOT NULL,
+    province_name varchar(255) NOT NULL,
+    country_name varchar(255) NOT NULL,
+    PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
--- table `sellers`
-CREATE TABLE `sellers`
+-- table sellers
+CREATE TABLE sellers
 (
-    `id`           int(11) NOT NULL AUTO_INCREMENT,
-    `cid`          int(11) NOT NULL,
-    `company_name` varchar(255) NOT NULL,
-    `address`      varchar(255) NOT NULL,
-    `telephone`    varchar(15)  NOT NULL,
-    `locality_id`  int(11) NOT NULL,
-    FOREIGN KEY (`locality_id`) REFERENCES localities (id),
-    PRIMARY KEY (`id`)
+    id           int(11) NOT NULL AUTO_INCREMENT,
+    cid          int(11) NOT NULL,
+    company_name varchar(255) NOT NULL,
+    address      varchar(255) NOT NULL,
+    telephone    varchar(15)  NOT NULL,
+    locality_id  int(11) NOT NULL,
+    FOREIGN KEY (locality_id) REFERENCES localities (id),
+    PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
--- table `warehouses`
-CREATE TABLE `warehouses`
+-- table warehouses
+CREATE TABLE warehouses
 (
-    `id`                  int(11) NOT NULL AUTO_INCREMENT,
-    `warehouse_code`      varchar(25)  NOT NULL,
-    `address`             varchar(255) NOT NULL,
-    `telephone`           varchar(15)  NOT NULL,
-    `minimum_capacity`    int          NOT NULL,
-    `minimum_temperature` float        NOT NULL,
-    PRIMARY KEY (`id`)
+    id                  int(11) NOT NULL AUTO_INCREMENT,
+    warehouse_code      varchar(25)  NOT NULL,
+    address             varchar(255) NOT NULL,
+    telephone           varchar(15)  NOT NULL,
+    minimum_capacity    int          NOT NULL,
+    minimum_temperature float        NOT NULL,
+    PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
+
 
 -- table `product_type`
 CREATE TABLE `product_type`
@@ -67,29 +68,29 @@ CREATE TABLE `sections`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
--- table `products`
-CREATE TABLE `products`
+-- table products
+CREATE TABLE products
 (
-    `id`                               int(11) NOT NULL AUTO_INCREMENT,
-    `product_code`                     varchar(25) NOT NULL,
-    `description`                      text        NOT NULL,
-    `height`                           float       NOT NULL,
-    `lenght`                           float       NOT NULL,
-    `width`                            float       NOT NULL,
-    `weight`                           float       NOT NULL,
-    `expiration_rate`                  float       NOT NULL,
-    `freezing_rate`                    float       NOT NULL,
-    `recommended_freezing_temperature` float       NOT NULL,
-    `seller_id`                        int(11) NOT NULL,
-    `product_type_id`                  int(11) NOT NULL,
-    FOREIGN KEY (`seller_id`) REFERENCES sellers(id),
-    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
-    PRIMARY KEY (`id`)
+    id                               int(11) NOT NULL AUTO_INCREMENT,
+    product_code                     varchar(25) NOT NULL,
+    description                      text        NOT NULL,
+    height                           float       NOT NULL,
+    lenght                           float       NOT NULL,
+    width                            float       NOT NULL,
+    weight                           float       NOT NULL,
+    expiration_rate                  float       NOT NULL,
+    freezing_rate                    float       NOT NULL,
+    recommended_freezing_temperature float       NOT NULL,
+    seller_id                        int(11) NOT NULL,
+    product_type_id                  int(11) NOT NULL,
+    PRIMARY KEY (id)
+
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
--- table `employees`
-CREATE TABLE `employees`
+-- table employees
+CREATE TABLE employees
 (
+
     `id`             int(11) NOT NULL AUTO_INCREMENT,
     `card_number_id` varchar(25) NOT NULL,
     `first_name`     varchar(50) NOT NULL,
@@ -99,8 +100,8 @@ CREATE TABLE `employees`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
--- table `buyers`
-CREATE TABLE `buyers`
+-- table buyers
+CREATE TABLE buyers
 (
     `id`             int(11) NOT NULL AUTO_INCREMENT,
     `card_number_id` varchar(25) NOT NULL,
@@ -109,19 +110,30 @@ CREATE TABLE `buyers`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+
 -- table `carries`
 CREATE TABLE `carries`
 (
-    `id`             int(11) NOT NULL AUTO_INCREMENT,
-	`cid`            varchar(10) UNIQUE NOT NULL,
-	`company_name`   varchar(100) NOT NULL,
-	`address`        varchar(100) NOT NULL,
-	`phone_number`   varchar(20) NOT NULL,
-	`locality_id`    int(11) NOT NULL,
-    FOREIGN KEY (`locality_id`) REFERENCES localities (id),
-	PRIMARY KEY (`id`)
+    id             int(11) NOT NULL AUTO_INCREMENT,
+	cid            int(11) UNIQUE NOT NULL,
+	company_name   varchar(100) NOT NULL,
+	address        varchar(100) NOT NULL,
+	phone_number   varchar(20) NOT NULL,
+	locality_id    int(11) NOT NULL,
+    FOREIGN KEY (locality_id) REFERENCES localities (id),
+	PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
+CREATE TABLE product_records
+(
+    id                int(11) NOT NULL AUTO_INCREMENT,
+	last_update_date  datetime  NOT NULL,
+	purchase_price    float NOT NULL,
+	sale_price        float NOT NULL,
+	product_id        int NOT NULL,
+    FOREIGN KEY (product_id) REFERENCES products (id),
+	PRIMARY KEY (id)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 -- table `product_batches`
 CREATE TABLE `product_batches` (
     `id`                 INT(11) NOT NULL AUTO_INCREMENT,
@@ -259,6 +271,20 @@ VALUES ('B1001', 'Alice', 'Brown'),
        ('B1010', 'Edward', 'Gonzalez');
 
 INSERT INTO carries (cid, company_name, address, phone_number, locality_id)
+VALUES (1, 'Meli Fresh Logistics', '123 Fresh St', '555-1001', 1),
+(2, 'Quick Delivery Services', '456 Fast Ave', '555-1002', 2),
+(3, 'Fresh Express', '789 Speed Blvd', '555-1003', 3),
+(4, 'Swift Transport Co.', '101 Pine St', '555-1004', 4),
+(5, 'Rapid Freight Solutions', '202 Oak Dr', '555-1005', 5);
+
+
+INSERT INTO product_records (id, last_update_date, purchase_price, sale_price, product_id)
+VALUES (1, '2025-01-01 10:00:00', 50.00, 70.00, 1),
+(2, '2025-01-02 11:30:00', 30.00, 45.00, 2),
+(3, '2025-01-03 14:45:00', 100.00, 150.00, 3),
+(4, '2025-01-04 09:15:00', 20.00, 35.00, 4),
+(5, '2025-01-05 16:00:00', 75.00, 110.00, 5);
+
 VALUES  (1, 'Meli Fresh Logistics', '123 Fresh St', '555-1001', 1),
         (2, 'Quick Delivery Services', '456 Fast Ave', '555-1002', 2),
         (3, 'Fresh Express', '789 Speed Blvd', '555-1003', 3),
