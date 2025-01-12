@@ -10,6 +10,7 @@ services:
     volumes:
       - ./docs/db/melifresh_db.sql:/docker-entrypoint-initdb.d/script.sql
       - ./docs/db/melifresh_db_puchase_order_test.sql:/docker-entrypoint-initdb.d/script_purchase_order_test.sql
+      - ./docs/db/melifresh_db_buyer_test.sql:/docker-entrypoint-initdb.d/script_buyer_test.sql
     healthcheck:
       test: ["CMD", "mysqladmin" , "-p$$MYSQL_ROOT_PASSWORD" ,"ping", "-h", "localhost"]
       timeout: 15s
