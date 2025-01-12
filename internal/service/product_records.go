@@ -27,7 +27,7 @@ func (pr *ProductRecordsDefault) Create(productRec internal.ProductRecords) (int
 	product, err := pr.productRepo.FindByID(productRec.ProductID)
 	fmt.Printf("Product found: %+v\n", product)
 	if err != nil {
-		return productRec, ProductNotFound
+		return productRec, ProductNotExists
 	}
 	return pr.productRecRepo.Save(productRec)
 }
