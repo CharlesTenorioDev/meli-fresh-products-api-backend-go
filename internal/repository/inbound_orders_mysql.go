@@ -2,7 +2,6 @@ package repository
 
 import (
 	"database/sql"
-	"fmt"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
@@ -22,18 +21,24 @@ func NewInboundOrderMysql(db *sql.DB) *InboundOrdersMysql {
 
 func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err error) {
 
-	var count int
-	err = rp.db.QueryRow(
-		"SELECT COUNT(*) FROM inbound_orders WHERE order_number = ?",
-		io.OrderNumber,
-	).Scan(&count)
-
-	if err != nil {
-		return 0, fmt.Errorf("error checking for existing order number: %w", err)
+	// validate if order number already exists
+	var exists bool
+	err = rp.db.QueryRow("SELECT 1 FROM `inbound_orders` WHERE `order_number` = ?", io.OrderNumber).Scan(&exists) //check 1 line
+	if err != nil && err != sql.ErrNoRows {
+		return
+	}
+	if exists {
+		return 0, internal.ErrOrderNumberAlreadyExists
 	}
 
-	if count > 0 {
-		return 0, fmt.Errorf("order number already exists")
+	// validate if order number already exists
+	var empExists bool
+	err = rp.db.QueryRow("SELECT 1 FROM `employees` WHERE `id` = ?", io.EmployeeId).Scan(&empExists) //check 1 line
+	if err != nil && err != sql.ErrNoRows {
+		return
+	}
+	if !empExists {
+		return 0, internal.ErrEmployeeNotFound
 	}
 
 	res, err := rp.db.Exec(
@@ -46,7 +51,7 @@ func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err e
 
 	id, err = res.LastInsertId()
 
-	return id, err
+	return
 }
 
 func (rp *InboundOrdersMysql) FindAll() (inbounds []internal.InboundOrders, err error) {

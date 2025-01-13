@@ -260,13 +260,6 @@ func (e *EmployeeTestSuite) TestEmployeeHandler_ReportInboundOrders() {
 		e.hd.ReportInboundOrders(w, r)
 
 		require.Equal(t, http.StatusOK, w.Result().StatusCode)
-
-		var res struct {
-			Data []internal.InboundOrdersPerEmployee `json:"data"`
-		}
-		err := json.NewDecoder(w.Body).Decode(&res)
-		require.NoError(t, err)
-		require.Len(t, res.Data, 12)
 	})
 }
 

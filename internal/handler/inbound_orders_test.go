@@ -119,11 +119,8 @@ func (suite *InboundOrdersTestSuite) TestInboundOrdersHandler_Create() {
 			ProductBatchId: 1,
 			WarehouseId:    1,
 		}
-		b, err := json.Marshal(inbound)
-		require.NoError(t, err)
 
-		_, err = suite.db.Exec("INSERT INTO inbound_orders (order_date, order_number, employee_id, product_batch_id, warehouse_id) VALUES (?, ?, ?, ?, ?)",
-			inbound.OrderDate, inbound.OrderNumber, inbound.EmployeeId, inbound.ProductBatchId, inbound.WarehouseId)
+		b, err := json.Marshal(inbound)
 		require.NoError(t, err)
 
 		r := httptest.NewRequest(http.MethodPost, inboundRoute, bytes.NewReader(b))
@@ -133,14 +130,14 @@ func (suite *InboundOrdersTestSuite) TestInboundOrdersHandler_Create() {
 		require.Equal(t, http.StatusConflict, w.Result().StatusCode)
 	})
 
-	suite.T().Run("create with invalid foreign key reference (warehouse_id)", func(t *testing.T) {
+	suite.T().Run("create with not exists foreign key reference (employee_id)", func(t *testing.T) {
 
 		inbound := internal.InboundOrders{
 			OrderDate:      "2025-01-01",
 			OrderNumber:    "ORD002",
-			EmployeeId:     1,
+			EmployeeId:     999,
 			ProductBatchId: 1,
-			WarehouseId:    999,
+			WarehouseId:    1,
 		}
 		b, err := json.Marshal(inbound)
 		require.NoError(t, err)

@@ -182,11 +182,15 @@ func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *h
 
 	idStr := r.URL.Query().Get("id")
 	idStr = strings.TrimSpace(idStr)
-	fmt.Println("id: ", idStr)
+
 	if idStr == "" {
 		inboundOrders, err := h.sv.CountInboundOrdersPerEmployee()
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("faleid to fetch inbound orders"))
+			response.JSON(
+				w,
+				http.StatusInternalServerError,
+				rest_err.NewInternalServerError("failed to fetch carries"),
+			)
 			return
 		}
 		response.JSON(w, http.StatusOK, map[string]any{
@@ -197,18 +201,21 @@ func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *h
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("invalid id format"))
+		response.JSON(
+			w,
+			http.StatusBadRequest,
+			rest_err.NewBadRequestError("id should be a number"),
+		)
 		return
 	}
 
 	countInboundOrders, err := h.sv.ReportInboundOrdersById(id)
-
 	if err != nil {
-		if errors.Is(err, service.EmployeeNotFound) {
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("employee not found"))
-			return
-		}
-		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("internal server error"))
+		response.JSON(
+			w,
+			http.StatusNotFound,
+			rest_err.NewNotFoundError("no inbound orders on employee "+idStr),
+		)
 		return
 	}
 
