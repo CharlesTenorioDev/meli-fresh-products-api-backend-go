@@ -72,55 +72,40 @@ func (h *SectionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) {
-	var totalQuantity int
-	var err error
-	var section internal.Section
-
 	idStr := r.URL.Query().Get("id")
 
-	switch idStr {
-	case "":
-		totalQuantity, err = h.sv.ReportProducts()
-		section = internal.Section{}
-	default:
-		idSection, err := strconv.Atoi(idStr)
+	if idStr == "" {
+		sections, err := h.sv.ReportProducts()
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
 			return
 		}
 
-		section, err = h.sv.FindByID(idSection)
-		if err != nil {
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-			return
-		}
-
-		totalQuantity, err = h.sv.ReportProductsByID(idSection)
-	}
-
-	if err != nil {
-		log.Println(err)
-		if errors.Is(err, internal.ProductBatchNotFound) {
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-			return
-		}
-		response.JSON(w, http.StatusInternalServerError, nil)
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": sections,
+		})
 		return
 	}
 
-	responseReport := ResponseReportProd{
-		SectionID:     0,
-		SectionNumber: 0,
-		ProductsCount: totalQuantity,
+	idSection, err := strconv.Atoi(idStr)
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		return
 	}
 
-	if section.ID != 0 {
-		responseReport.SectionID = section.ID
-		responseReport.SectionNumber = section.SectionNumber
+	report, err := h.sv.ReportProductsByID(idSection)
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, internal.SectionNotFound) {
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		} else {
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+		}
+		return
 	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"data": responseReport,
+		"data": report,
 	})
 }
 

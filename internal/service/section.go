@@ -41,22 +41,27 @@ func (s *SectionService) FindByID(id int) (internal.Section, error) {
 	return section, nil
 }
 
-func (s *SectionService) ReportProducts() (int, error) {
-	totalQuantity, err := s.rpS.ReportProducts()
+func (s *SectionService) ReportProducts() ([]internal.ReportProduct, error) {
+	reportProducts, err := s.rpS.ReportProducts()
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
-	return totalQuantity, nil
+	return reportProducts, nil
 }
 
-func (s *SectionService) ReportProductsByID(id int) (int, error) {
-	totalQuantity, err := s.rpS.ReportProductsByID(id)
+func (s *SectionService) ReportProductsByID(sectionID int) (internal.ReportProduct, error) {
+	_, err := s.rpS.FindByID(sectionID)
 	if err != nil {
-		return 0, internal.SectionNotFound
+		return internal.ReportProduct{}, internal.SectionNotFound
 	}
 
-	return totalQuantity, nil
+	reportProduct, err := s.rpS.ReportProductsByID(sectionID)
+	if err != nil {
+		return internal.ReportProduct{}, err
+	}
+
+	return reportProduct, nil
 }
 
 func (s *SectionService) Save(section *internal.Section) error {
