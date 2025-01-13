@@ -21,17 +21,23 @@ func (r *PurchaseOrderRepository) FindByID(id int) (purchaseOrder internal.Purch
 		WHERE po.id = ?
 	`
 	row := r.db.QueryRow(query, id)
-	if err := row.Err(); err != nil {
-		return internal.PurchaseOrder{}, err
+	if err = row.Err(); err != nil {
+		return
 	}
 
 	// scanning the row
-	err = row.Scan(&purchaseOrder.ID, &purchaseOrder.OrderNumber, &purchaseOrder.OrderDate, &purchaseOrder.TrackingCode, &purchaseOrder.BuyerID, &purchaseOrder.ProductRecordId)
+	err = row.Scan(
+		&purchaseOrder.ID,
+		&purchaseOrder.OrderNumber,
+		&purchaseOrder.OrderDate,
+		&purchaseOrder.TrackingCode,
+		&purchaseOrder.BuyerID,
+		&purchaseOrder.ProductRecordId)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			err = internal.ErrPurchaseOrderNotFound
 		}
-		return internal.PurchaseOrder{}, err
+		return
 	}
 
 	return
