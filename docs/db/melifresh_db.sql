@@ -62,8 +62,8 @@ CREATE TABLE `sections`
     `maximum_capacity`    int   NOT NULL,
     `warehouse_id`        int(11) NOT NULL,
     `product_type_id`     int(11) NOT NULL,
-    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id),
-    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id) ON DELETE CASCADE,
+    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -135,8 +135,8 @@ CREATE TABLE `product_batches` (
     `minumum_temperature` FLOAT NOT NULL,
     `product_id`        INT(11) NOT NULL,
     `section_id`        INT(11) NOT NULL,
-    FOREIGN KEY (`product_id`) REFERENCES products(id),
-    FOREIGN KEY (`section_id`) REFERENCES sections(id),
+    FOREIGN KEY (`product_id`) REFERENCES products(id) ON DELETE CASCADE,
+    FOREIGN KEY (`section_id`) REFERENCES sections(id) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
