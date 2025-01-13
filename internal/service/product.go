@@ -101,7 +101,7 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	if product.NetWeight == 0 {
 		product.NetWeight = existingProduct.NetWeight
 	}
-	if product.ExpirationRate.IsZero() {
+	if product.ExpirationRate == 0 {
 		product.ExpirationRate = existingProduct.ExpirationRate
 	}
 	if product.RecommendedFreezingTemperature == 0 {
@@ -169,7 +169,8 @@ func ValidateProduct(product internal.Product) error {
 		product.Height <= 0 ||
 		product.Width <= 0 ||
 		product.NetWeight <= 0 ||
-		product.ExpirationRate.IsZero() ||
+		product.ExpirationRate <= 0 ||
+
 		product.RecommendedFreezingTemperature < -273.15 ||
 		product.FreezingRate < -273.15 ||
 		product.ProductTypeId <= 0 ||
