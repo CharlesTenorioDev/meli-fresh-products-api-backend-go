@@ -156,9 +156,6 @@ CREATE TABLE `inbound_orders`
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 
-ALTER TABLE employees ADD UNIQUE (card_number_id);
-
-
 -- DML
 INSERT INTO localities (id, name, province_name, country_name)
 VALUES (1, 'New York City', 'New York', 'United States'),

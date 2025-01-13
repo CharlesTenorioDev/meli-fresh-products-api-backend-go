@@ -82,10 +82,15 @@ func (r *EmployeeMysql) Save(emp *internal.Employee) (int, error) {
 		return 0, err
 	}
 
-	err = r.db.QueryRow(
-		"INSERT INTO employees (card_number_id, first_name, last_name, warehouse_id) VALUES (?, ?, ?, ?) RETURNING id",
-		emp.CardNumberId, emp.FirstName, emp.LastName, emp.WarehouseId).Scan(&emp.Id)
+	_, err = r.db.Exec(
+		"INSERT INTO employees (card_number_id, first_name, last_name, warehouse_id) VALUES (?, ?, ?, ?)",
+		emp.CardNumberId, emp.FirstName, emp.LastName, emp.WarehouseId)
 
+	if err != nil {
+		return 0, err
+	}
+
+	err = r.db.QueryRow("SELECT LAST_INSERT_ID()").Scan(&emp.Id)
 	if err != nil {
 		return 0, err
 	}

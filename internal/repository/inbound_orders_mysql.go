@@ -2,6 +2,7 @@ package repository
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
@@ -20,6 +21,20 @@ func NewInboundOrderMysql(db *sql.DB) *InboundOrdersMysql {
 }
 
 func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err error) {
+
+	var count int
+	err = rp.db.QueryRow(
+		"SELECT COUNT(*) FROM inbound_orders WHERE order_number = ?",
+		io.OrderNumber,
+	).Scan(&count)
+
+	if err != nil {
+		return 0, fmt.Errorf("error checking for existing order number: %w", err)
+	}
+
+	if count > 0 {
+		return 0, fmt.Errorf("order number already exists")
+	}
 
 	res, err := rp.db.Exec(
 		"INSERT INTO `inbound_orders` (`order_date`, `order_number`, `employee_id`, `product_batch_id`, `warehouse_id`) VALUES (?, ?, ?, ?, ?)",

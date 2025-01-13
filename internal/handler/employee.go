@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -81,13 +82,19 @@ func (h *EmployeeHandlerDefault) Create(w http.ResponseWriter, r *http.Request) 
 
 	// checks if card number Id field is already in use, because it's a unique field
 	if err != nil {
-		if errors.Is(err, service.EmployeeInUse) || errors.Is(err, service.CardNumberIdInUse) {
+
+		if errors.Is(err, service.CardNumberIdInUse) {
 			response.JSON(w, http.StatusConflict, map[string]any{
-				"error": "employee already in use",
+				"error": "card number id already in use", // Status 409
+			})
+		} else if errors.Is(err, service.EmployeeInUse) {
+
+			response.JSON(w, http.StatusConflict, map[string]any{
+				"error": "employee already in use", // Status 409
 			})
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
-				"data": err.Error(), //status 422
+				"data": err.Error(), // status 422
 			})
 		}
 		return
@@ -152,20 +159,23 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+	fmt.Println("id: ", id)
 	if err != nil {
+		log.Println(err)
 		response.JSON(w, http.StatusBadRequest, map[string]any{
 			"data": "invalid id format",
 		})
 		return
 	}
 	err = h.sv.Delete(id)
+	log.Println("id: ", id)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, map[string]any{
-			"data": err.Error(),
-		})
+		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		return
 	}
-	response.JSON(w, http.StatusNoContent, nil) //status 204
+	response.JSON(w, http.StatusOK, map[string]any{
+		"message": "employee deleted", //status 204
+	})
 }
 
 func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *http.Request) {
