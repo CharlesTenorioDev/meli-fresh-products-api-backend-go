@@ -26,7 +26,7 @@ type InboundOrdersRepository interface {
 // validate required fields
 func (io *InboundOrders) ValidateFieldsOk() bool {
 
-	if io.OrderDate == "" || io.OrderNumber == "" || io.EmployeeId < 0 || io.ProductBatchId == 0 || io.WarehouseId == 0 {
+	if io.OrderDate == "" || io.OrderNumber == "" || io.EmployeeId == 0 || io.ProductBatchId == 0 || io.WarehouseId == 0 {
 		return false
 	}
 	return true

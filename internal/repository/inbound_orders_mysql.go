@@ -31,7 +31,7 @@ func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err e
 		return 0, internal.ErrOrderNumberAlreadyExists
 	}
 
-	// validate if order number already exists
+	// validate if employee exists
 	var empExists bool
 	err = rp.db.QueryRow("SELECT 1 FROM `employees` WHERE `id` = ?", io.EmployeeId).Scan(&empExists) //check 1 line
 	if err != nil && err != sql.ErrNoRows {

@@ -3,8 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -159,23 +157,21 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
-	fmt.Println("id: ", id)
+
 	if err != nil {
-		log.Println(err)
 		response.JSON(w, http.StatusBadRequest, map[string]any{
 			"data": "invalid id format",
 		})
 		return
 	}
 	err = h.sv.Delete(id)
-	log.Println("id: ", id)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		response.JSON(w, http.StatusNotFound, map[string]any{
+			"data": "employee not found",
+		})
 		return
 	}
-	response.JSON(w, http.StatusOK, map[string]any{
-		"message": "employee deleted", //status 204
-	})
+	response.JSON(w, http.StatusNoContent, nil)
 }
 
 func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *http.Request) {
@@ -183,44 +179,36 @@ func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *h
 	idStr := r.URL.Query().Get("id")
 	idStr = strings.TrimSpace(idStr)
 
-	if idStr == "" {
+	switch {
+
+	case idStr == "":
 		inboundOrders, err := h.sv.CountInboundOrdersPerEmployee()
 		if err != nil {
-			response.JSON(
-				w,
-				http.StatusInternalServerError,
-				rest_err.NewInternalServerError("failed to fetch carries"),
-			)
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("failed to fetch inbound orders"))
 			return
 		}
 		response.JSON(w, http.StatusOK, map[string]any{
 			"data": inboundOrders,
 		})
 		return
+
+	default:
+		id, err := strconv.Atoi(idStr)
+		switch {
+		case err != nil:
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+			return
+		}
+
+		countInboundOrders, err := h.sv.ReportInboundOrdersById(id)
+		switch {
+		case err != nil:
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("employee not found"))
+			return
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": countInboundOrders,
+		})
 	}
-
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		response.JSON(
-			w,
-			http.StatusBadRequest,
-			rest_err.NewBadRequestError("id should be a number"),
-		)
-		return
-	}
-
-	countInboundOrders, err := h.sv.ReportInboundOrdersById(id)
-	if err != nil {
-		response.JSON(
-			w,
-			http.StatusNotFound,
-			rest_err.NewNotFoundError("no inbound orders on employee "+idStr),
-		)
-		return
-	}
-
-	response.JSON(w, http.StatusOK, map[string]any{
-		"data": countInboundOrders,
-	})
-
 }
