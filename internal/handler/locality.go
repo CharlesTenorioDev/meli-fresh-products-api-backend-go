@@ -178,7 +178,7 @@ func (h *LocalityDefault) Save() http.HandlerFunc {
 						Message: cause.Message,
 					})
 				}
-				response.JSON(w, http.StatusInternalServerError, rest_err.NewBadRequestValidationError(domainError.Message, restCauses))
+				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestValidationError(domainError.Message, restCauses))
 				return
 			}
 
