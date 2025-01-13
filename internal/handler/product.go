@@ -70,10 +70,21 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
+	var productJson internal.ProductJsonPost
+	productJson.ProductCode = newProduct.ProductCode
+	productJson.Description = newProduct.Description
+	productJson.Height = newProduct.Height
+	productJson.Length = newProduct.Length
+	productJson.NetWeight = newProduct.NetWeight
+	productJson.ExpirationRate = newProduct.ExpirationRate
+	productJson.RecommendedFreezingTemperature = newProduct.RecommendedFreezingTemperature
+	productJson.Width = newProduct.Width
+	productJson.FreezingRate = newProduct.FreezingRate
+	productJson.ProductTypeId = newProduct.ProductTypeId
+	productJson.SellerId = newProduct.SellerId
+
 	response.JSON(w, http.StatusCreated, map[string]any{
-		"data": map[string]any{
-			"product_id": newProduct.Id,
-		},
+		"data": productJson,
 	})
 }
 
@@ -125,13 +136,46 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	if err := h.s.Delete(id); err != nil {
 
 		if err.Error() == "product not found" {
-            response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("product not found"))
-            return
-        }
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("product not found"))
+			return
+		}
 
 		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
 		return
 	}
 
 	response.JSON(w, http.StatusNoContent, nil)
+}
+
+func (h *ProductHandlerDefault) ReportRecords(w http.ResponseWriter, r *http.Request) {
+	// Extrair o parâmetro "id" da URL
+	id := r.URL.Query().Get("id")
+
+	if id != "" {
+		productID, err := strconv.Atoi(id)
+		if err != nil {
+			response.JSON(w, http.StatusBadRequest, "ID inválido")
+			return
+		}
+
+		report, err := h.s.GetByIdRecord(productID)
+		if err != nil {
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("product not found"))
+			return
+		}
+
+		// Retorna o relatório
+		response.JSON(w, http.StatusOK, map[string]interface{}{
+			"data": report,
+		})
+		return
+	}
+	report, err := h.s.GetAllRecord()
+	if err != nil {
+		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		return
+	}
+	response.JSON(w, http.StatusOK, map[string]interface{}{
+		"data": report,
+	})
 }
