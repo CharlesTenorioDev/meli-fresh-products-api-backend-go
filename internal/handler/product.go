@@ -70,7 +70,7 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	productJson := new(internal.ProductJsonPost)
+	var productJson internal.ProductJsonPost
 	productJson.ProductCode = newProduct.ProductCode
 	productJson.Description = newProduct.Description
 	productJson.Height = newProduct.Height
@@ -147,7 +147,7 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	response.JSON(w, http.StatusNoContent, nil)
 }
 
-func (h *ProductHandlerDefault) ReportProduct(w http.ResponseWriter, r *http.Request) {
+func (h *ProductHandlerDefault) ReportRecords(w http.ResponseWriter, r *http.Request) {
 	// Extrair o parâmetro "id" da URL
 	id := r.URL.Query().Get("id")
 

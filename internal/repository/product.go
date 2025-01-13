@@ -15,27 +15,36 @@ func NewProductSQL(db *sql.DB) *ProductSQL {
 	return &ProductSQL{db}
 }
 
+const (
+	findAllString  = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products"
+	findByIdString = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products WHERE id = ?"
+)
+
 func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
-	rows, err := psql.db.Query("SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products")
+	rows, err := psql.db.Query(findAllString)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 	for rows.Next() {
 		var product internal.Product
-		err := rows.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate, &product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature, &product.Width, &product.ProductTypeId, &product.SellerId)
+		err := rows.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate, 
+			&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature,
+			&product.Width, &product.ProductTypeId, &product.SellerId)
 		if err != nil {
 			return nil, err
 		}
 		products = append(products, product)
 	}
-	return products, nil
+	return
 }
 func (psql *ProductSQL) FindByID(id int) (internal.Product, error) {
 	var product internal.Product
 
-	row := psql.db.QueryRow("SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products WHERE id = ?", id)
-	err := row.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate, &product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature, &product.Width, &product.ProductTypeId, &product.SellerId)
+	row := psql.db.QueryRow(findByIdString, id)
+	err := row.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate,
+		&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature, 
+		&product.Width, &product.ProductTypeId, &product.SellerId)
 	if err != nil {
 		return product, err
 	}
