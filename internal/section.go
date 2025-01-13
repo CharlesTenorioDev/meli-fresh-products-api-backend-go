@@ -21,11 +21,17 @@ type Section struct {
 	ProductTypeID      int     `json:"product_type_id"`
 }
 
+type ReportProduct struct {
+	SectionID     int `json:"section_id"`
+	SectionNumber int `json:"section_number"`
+	ProductsCount int `json:"products_count"`
+}
+
 type SectionRepository interface {
 	FindAll() ([]Section, error)
 	FindByID(id int) (Section, error)
-	ReportProducts() (int, error)
-	ReportProductsByID(id int) (int, error)
+	ReportProducts() ([]ReportProduct, error)
+	ReportProductsByID(sectionID int) (ReportProduct, error)
 	SectionNumberExists(section Section) (bool, error)
 	Save(section *Section) error
 	Update(section *Section) error
@@ -35,8 +41,8 @@ type SectionRepository interface {
 type SectionService interface {
 	FindAll() ([]Section, error)
 	FindByID(id int) (Section, error)
-	ReportProducts() (int, error)
-	ReportProductsByID(id int) (int, error)
+	ReportProducts() ([]ReportProduct, error)
+	ReportProductsByID(sectionID int) (ReportProduct, error)
 	Save(section *Section) error
 	Update(id int, updates map[string]interface{}) (Section, error)
 	Delete(id int) error

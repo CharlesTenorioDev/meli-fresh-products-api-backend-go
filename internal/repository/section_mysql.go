@@ -69,46 +69,67 @@ func (r *SectionMysql) FindByID(id int) (internal.Section, error) {
 	return s, nil
 }
 
-func (r *SectionMysql) ReportProducts() (int, error) {
+func (r *SectionMysql) ReportProducts() ([]internal.ReportProduct, error) {
 	query := `
         SELECT 
-            SUM(pb.current_quantity) 
+            s.id AS section_id,
+            s.section_number,
+            COALESCE(SUM(pb.current_quantity), 0) AS products_count
         FROM 
-            product_batches pb`
+            sections s
+        LEFT JOIN 
+            product_batches pb ON s.id = pb.section_id
+        GROUP BY 
+            s.id, s.section_number;`
 
-	var totalQuantity int
-
-	err := r.db.QueryRow(query).Scan(&totalQuantity)
+	rows, err := r.db.Query(query)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return 0, nil
+		return nil, err
+	}
+	defer rows.Close()
+
+	var report []internal.ReportProduct
+
+	for rows.Next() {
+		var rp internal.ReportProduct
+
+		if err := rows.Scan(&rp.SectionID, &rp.SectionNumber, &rp.ProductsCount); err != nil {
+			return nil, err
 		}
-		return 0, err
+
+		report = append(report, rp)
 	}
 
-	return totalQuantity, nil
+	return report, nil
 }
 
-func (r *SectionMysql) ReportProductsByID(sectionID int) (int, error) {
+func (r *SectionMysql) ReportProductsByID(sectionID int) (internal.ReportProduct, error) {
 	query := `
-        SELECT 
-            SUM(pb.current_quantity) 
-        FROM 
-            product_batches pb
-        WHERE 
-            pb.section_id = ?`
+			SELECT 
+				s.id AS section_id,
+				s.section_number,
+				COALESCE(SUM(pb.current_quantity), 0) AS products_count
+			FROM 
+				sections s
+			LEFT JOIN 
+				product_batches pb ON s.id = pb.section_id
+			WHERE 
+				s.id = ?
+			GROUP BY 
+				s.id, s.section_number;`
 
-	var totalQuantity int
+	var rp internal.ReportProduct
 
-	err := r.db.QueryRow(query, sectionID).Scan(&totalQuantity)
+	err := r.db.QueryRow(query, sectionID).Scan(&rp.SectionID, &rp.SectionNumber, &rp.ProductsCount)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, nil
+			rp.ProductsCount = 0
+			return rp, nil
 		}
-		return 0, err
+		return rp, err
 	}
 
-	return totalQuantity, nil
+	return rp, nil
 }
 
 func (r *SectionMysql) SectionNumberExists(section internal.Section) (bool, error) {
