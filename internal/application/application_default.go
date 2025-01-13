@@ -68,6 +68,7 @@ func (a *ServerChi) Run() (err error) {
 	rt := chi.NewRouter()
 	rt.Use(middleware.Logger)
 
+	buMysqlRepository := repository.NewBuyerMysqlRepository(db)
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
@@ -78,12 +79,16 @@ func (a *ServerChi) Run() (err error) {
 	scRepository := repository.NewSectionMysql(db)
 	pbRepository := repository.NewProductBatchMysql(db)
 	ptRepository := repository.NewProductTypeMysql(db)
+	poMysqlRepository := repository.NewPurchaseOrderMysqlRepository(db)
+	buyerService := service.NewBuyerService(buMysqlRepository)
 
 	rt.Route("/api/v1", func(r chi.Router) {
 		r.Route("/employees", func(r chi.Router) {
 			employeeRouter(r, whRepository, db)
 		})
-		r.Route("/buyers", buyerRouter)
+		r.Route("/buyers", func(r chi.Router) {
+			buyerRouter(r, buMysqlRepository)
+		})
 		r.Route("/sections", func(r chi.Router) {
 			sectionsRoutes(r, scRepository, ptRepository, whRepository, pdRepository)
 		})
@@ -102,6 +107,9 @@ func (a *ServerChi) Run() (err error) {
 
 		r.Route("/products", func(r chi.Router) {
 			productRoutes(r, pdRepository, slRepository, ptRepository)
+		})
+		r.Route("/purchase-orders", func(r chi.Router) {
+			purchaseOrderRouter(r, poMysqlRepository, prodRecRepository, buyerService)
 		})
 		r.Route("/carries", func(r chi.Router) {
 			carriesRoutes(r, db)
@@ -184,9 +192,8 @@ func employeeRouter(r chi.Router, whRepository internal.WarehouseRepository, db 
 	r.Get("/report-inbound-orders", hd.ReportInboundOrders)
 }
 
-func buyerRouter(r chi.Router) {
-	repo := repository.NewBuyerMap("db/buyer.json")
-	svc := service.NewBuyerService(repo)
+func buyerRouter(r chi.Router, buRepository internal.BuyerRepository) {
+	svc := service.NewBuyerService(buRepository)
 	hd := handler.NewBuyerHandlerDefault(svc)
 
 	r.Get("/", hd.GetAll)
@@ -194,6 +201,7 @@ func buyerRouter(r chi.Router) {
 	r.Post("/", hd.Create)
 	r.Patch("/{id}", hd.Update)
 	r.Delete("/{id}", hd.Delete)
+	r.Get("/report-purchase-orders", hd.ReportPurchaseOrders)
 }
 
 func productRoutes(r chi.Router, pdRepository internal.ProductRepository, slRepository internal.SellerRepository, ptRepository internal.ProductTypeRepository) {
@@ -214,6 +222,13 @@ func inboundOrdersRoutes(r chi.Router, inRepository internal.InboundOrdersReposi
 
 	r.Post("/", hd.Create)
 	r.Get("/", hd.GetAll)
+}
+
+func purchaseOrderRouter(r chi.Router, poRepository internal.PurchaseOrderRepository, prodRecRepository internal.ProductRecordsRepository, buyerService internal.BuyerService) {
+	sv := service.NewPurchaseOrderService(poRepository, prodRecRepository, buyerService)
+	hd := handler.NewPurchaseOrderHandler(sv)
+
+	r.Post("/", hd.Create())
 }
 
 func carriesRoutes(r chi.Router, db *sql.DB) {

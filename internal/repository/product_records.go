@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 )
 
 type ProductRecordsSQL struct {
@@ -47,7 +48,7 @@ func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error)
 	err := row.Scan(&productRecord.Id, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 
 	if err != nil {
-		return productRecord, err
+		return productRecord, service.ErrProductRecordsNotFound
 	}
 
 	return productRecord, nil
