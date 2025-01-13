@@ -2,11 +2,9 @@ package repository
 
 import (
 	"database/sql"
-	"errors"
 
-	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 )
 
 type ProductRecordsSQL struct {
@@ -19,26 +17,24 @@ func NewProductRecordsSQL(db *sql.DB) *ProductRecordsSQL {
 }
 
 // Implementação de FindAll
-func (psql *ProductRecordsSQL) FindAll() ([]internal.ProductRecords, error) {
+func (psql *ProductRecordsSQL) FindAll() (productRecords []internal.ProductRecords, err error) {
 	rows, err := psql.db.Query("SELECT `id`, `last_update_date`, `purchase_price`, `sale_price`, `product_id` FROM `product_records`")
 	if err != nil {
-		return nil, rest_err.NewInternalServerError("Erro ao buscar todos os registros de produtos")
+		return nil, err
 	}
 	defer rows.Close()
-
-	var productRecords []internal.ProductRecords
 
 	for rows.Next() {
 		var productRecord internal.ProductRecords
 		err := rows.Scan(&productRecord.Id, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 		if err != nil {
-			return nil, rest_err.NewInternalServerError("Erro ao processar registros de produtos")
+			return nil, err
 		}
 		productRecords = append(productRecords, productRecord)
 	}
 
 	if err = rows.Err(); err != nil {
-		return nil, rest_err.NewInternalServerError("Erro ao iterar pelos registros de produtos")
+		return nil, err
 	}
 
 	return productRecords, nil
@@ -52,10 +48,7 @@ func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error)
 	err := row.Scan(&productRecord.Id, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return productRecord, rest_err.NewNotFoundError("Registro de produto não encontrado")
-		}
-		return productRecord, rest_err.NewInternalServerError("Erro ao buscar registro de produto por ID")
+		return productRecord, service.ErrProductRecordsNotFound
 	}
 
 	return productRecord, nil
@@ -69,15 +62,7 @@ func (psql *ProductRecordsSQL) Save(productRec internal.ProductRecords) (interna
 	)
 
 	if err != nil {
-		var mysqlErr *mysql.MySQLError
-		if errors.As(err, &mysqlErr) {
-			switch mysqlErr.Number {
-			case 1062:
-				return productRec, rest_err.NewBadRequestError("Registro de produto já existe")
-			default:
-				return productRec, rest_err.NewInternalServerError("Erro ao salvar registro de produto")
-			}
-		}
+		return productRec, err
 	}
 
 	return productRec, nil

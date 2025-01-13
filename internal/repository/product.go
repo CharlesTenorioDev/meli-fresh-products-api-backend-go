@@ -1,81 +1,162 @@
 package repository
 
 import (
-	"encoding/json"
+	"database/sql"
 	"errors"
-	"log"
-	"os"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
-func NewProductMap() *ProductMap {
-	var products []internal.Product
-	db := make(map[int]*internal.Product)
-	file, err := os.Open("db/product.json")
+type ProductSQL struct {
+	db *sql.DB
+}
+
+func NewProductSQL(db *sql.DB) *ProductSQL {
+	return &ProductSQL{db}
+}
+
+const (
+	findAllString  = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products"
+	findByIdString = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products WHERE id = ?"
+)
+
+func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
+	rows, err := psql.db.Query(findAllString)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var product internal.Product
+		err := rows.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate, 
+			&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature,
+			&product.Width, &product.ProductTypeId, &product.SellerId)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, product)
+	}
+	return
+}
+func (psql *ProductSQL) FindByID(id int) (internal.Product, error) {
+	var product internal.Product
+
+	row := psql.db.QueryRow(findByIdString, id)
+	err := row.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate,
+		&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature, 
+		&product.Width, &product.ProductTypeId, &product.SellerId)
+	if err != nil {
+		return product, err
+	}
+
+	return product, nil
+}
+
+func (psql *ProductSQL) Save(product internal.Product) (internal.Product, error) {
+	_, err := psql.db.Exec(
+		"INSERT INTO products (id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+		product.Id,
+		product.Description,
+		product.ExpirationRate,
+		product.FreezingRate,
+		product.Height,
+		product.Length,
+		product.NetWeight,
+		product.ProductCode,
+		product.RecommendedFreezingTemperature,
+		product.Width,
+		product.ProductTypeId,
+		product.SellerId,
+	)
+	if err != nil {
+		return product, err
+	}
+
+	return product, nil
+}
+
+func (psql *ProductSQL) Update(product internal.Product) (internal.Product, error) {
+	result, err := psql.db.Exec(
+		`UPDATE product 
+		 SET description = ?, expiration_rate = ?, freezing_rate = ?, 
+		     height = ?, length = ?, net_weight = ?, 
+		     product_code = ?, recommended_freezing_temperature = ?, 
+		     width = ?, product_type_id = ?, seller_id = ?
+		 WHERE id = ?`,
+		product.Description,
+		product.ExpirationRate,
+		product.FreezingRate,
+		product.Height,
+		product.Length,
+		product.NetWeight,
+		product.ProductCode,
+		product.RecommendedFreezingTemperature,
+		product.Width,
+		product.ProductTypeId,
+		product.SellerId,
+		product.Id,
+	)
 
 	if err != nil {
-		log.Fatal(err)
+		return internal.Product{}, err
 	}
-	defer file.Close() 
 
-	err = json.NewDecoder(file).Decode(&products)
+	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		log.Fatal(err)
+		return internal.Product{}, err
 	}
 
-	for _, p := range products {
-		db[p.Id] = &p 
-	}
-	return &ProductMap{db: db}
-}
-
-
-type ProductMap struct {
-	db map[int]*internal.Product
-}
-
-func (r *ProductMap)FindAll() (db []internal.Product, err error){
-	products := make([]internal.Product, 0, len(r.db))
-	for _, p := range r.db {
-		products = append(products, *p) 
-	}
-	return products, nil 
-}
-func (r *ProductMap) FindByID(id int) (internal.Product, error) {
-	product, exists := r.db[id]
-	if !exists {
+	if rowsAffected == 0 {
 		return internal.Product{}, errors.New("product not found")
 	}
-	return *product, nil
+	return product, nil
 }
 
-func (r *ProductMap) Save(product internal.Product) (internal.Product, error) {
-	if _, exists := r.db[product.Id]; exists {
-		return internal.Product{}, errors.New("product with this ID already exists")
+func (psql *ProductSQL) Delete(id int) error {
+	result, err := psql.db.Exec("DELETE FROM product WHERE id = ?", id)
+	if err != nil {
+		return err
 	}
 
-	r.db[product.Id] = &product 
-	return product, nil 
-}
-
-func (r *ProductMap) Update(product internal.Product) (internal.Product, error) {
-	if _, exists := r.db[product.Id]; !exists {
-		return internal.Product{}, errors.New("product not found")
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
 	}
 
-	r.db[product.Id] = &product 
-
-	return product, nil 
-}
-
-func (r *ProductMap) Delete(id int) error {
-	if _, exists := r.db[id]; !exists {
+	if rowsAffected == 0 {
 		return errors.New("product not found")
 	}
-
-	delete(r.db, id)
 
 	return nil
 }
 
+func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJsonCount, error) {
+	var products []internal.ProductRecordsJsonCount
+
+	rows, err := psql.db.Query("SELECT pr.product_id, p.description, COUNT(*) AS records_count FROM product_records pr JOIN products p ON pr.product_id = p.id GROUP BY pr.product_id, p.description;")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var product internal.ProductRecordsJsonCount
+		err := rows.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
+		if err != nil {
+			return nil, err
+		}
+		products = append(products, product)
+	}
+	return products, nil
+}
+
+func (psql *ProductSQL) FindByIdRecord(id int) (internal.ProductRecordsJsonCount, error) {
+	var product internal.ProductRecordsJsonCount
+
+	row := psql.db.QueryRow("SELECT pr.product_id, p.description, COUNT(*) AS records_count FROM product_records pr JOIN products p ON pr.product_id = p.id WHERE p.id = ? GROUP BY pr.product_id, p.description;", id)
+	err := row.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
+	if err != nil {
+		return product, err
+	}
+
+	return product, nil
+}

@@ -68,21 +68,22 @@ CREATE TABLE `sections`
 -- table `products`
 CREATE TABLE `products`
 (
-    `id`                               int(11) NOT NULL AUTO_INCREMENT,
-    `product_code`                     varchar(25) NOT NULL,
-    `description`                      text        NOT NULL,
-    `height`                           float       NOT NULL,
-    `lenght`                           float       NOT NULL,
-    `width`                            float       NOT NULL,
-    `weight`                           float       NOT NULL,
-    `expiration_rate`                  float       NOT NULL,
-    `freezing_rate`                    float       NOT NULL,
-    `recommended_freezing_temperature` float       NOT NULL,
-    `seller_id`                        int(11) NOT NULL,
-    `product_type_id`                  int(11) NOT NULL,
+    id                               int(11) NOT NULL AUTO_INCREMENT,
+    product_code                     varchar(25) NOT NULL,
+    description                      varchar(25) NOT NULL,
+    height                           float       NOT NULL,
+    length                           float       NOT NULL,
+    net_weight                        float       NOT NULL,
+    expiration_rate                  float       NOT NULL,
+    freezing_rate                    float       NOT NULL,
+    recommended_freezing_temperature float       NOT NULL,
+    width                            float       NOT NULL,
+    seller_id                        int(11) NOT NULL,
+    product_type_id                  int(11) NOT NULL,
     FOREIGN KEY (`seller_id`) REFERENCES sellers(id),
     FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
-    PRIMARY KEY (`id`)
+    PRIMARY KEY (id)
+
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
 -- table `employees`
@@ -245,18 +246,19 @@ VALUES (1, 0, -5, 50, 20, 100, 1, 1),
        (9, 4, -7, 130, 100, 180, 9, 9),
        (10, -6, -10, 140, 110, 190, 10, 10);
 
-INSERT INTO products (product_code, description, height, lenght, width, weight, expiration_rate,
+INSERT INTO products (product_code, description, height, length, width, net_weight, expiration_rate,
                       freezing_rate, recommended_freezing_temperature, seller_id, product_type_id)
-VALUES ('P1001', 'Product 1', 10, 5, 8, 2, 0.1, 0.2, -5, 1, 1),
-       ('P1002', 'Product 2', 12, 6, 9, 2.5, 0.15, 0.25, -6, 2, 2),
-       ('P1003', 'Product 3', 14, 7, 10, 3, 0.2, 0.3, -7, 3, 3),
-       ('P1004', 'Product 4', 16, 8, 11, 3.5, 0.25, 0.35, -8, 4, 4),
-       ('P1005', 'Product 5', 18, 9, 12, 4, 0.3, 0.4, -9, 5, 5),
-       ('P1006', 'Product 6', 20, 10, 13, 4.5, 0.35, 0.45, -10, 6, 6),
-       ('P1007', 'Product 7', 22, 11, 14, 5, 0.4, 0.5, -11, 7, 7),
-       ('P1008', 'Product 8', 24, 12, 15, 5.5, 0.45, 0.55, -12, 8, 8),
-       ('P1009', 'Product 9', 26, 13, 16, 6, 0.5, 0.6, -13, 9, 9),
-       ('P1010', 'Product 10', 28, 14, 17, 6.5, 0.55, 0.65, -14, 10, 10);
+VALUES 
+('P1001', 'Product 1', 10, 5, 8, 2, 0.1, 0.2, -5, 1, 1),
+('P1002', 'Product 2', 12, 6, 9, 2.5, 0.15, 0.25, -6, 2, 2),
+('P1003', 'Product 3', 14, 7, 10, 3, 0.2, 0.3, -7, 3, 3),
+('P1004', 'Product 4', 16, 8, 11, 3.5, 0.25, 0.35, -8, 4, 4),
+('P1005', 'Product 5', 18, 9, 12, 4, 0.3, 0.4, -9, 5, 5),
+('P1006', 'Product 6', 20, 10, 13, 4.5, 0.35, 0.45, -10, 6, 6),
+('P1007', 'Product 7', 22, 11, 14, 5, 0.4, 0.5, -11, 7, 7),
+('P1008', 'Product 8', 24, 12, 15, 5.5, 0.45, 0.55, -12, 8, 8),
+('P1009', 'Product 9', 26, 13, 16, 6, 0.5, 0.6, -13, 9, 9),
+('P1010', 'Product 10', 28, 14, 17, 6.5, 0.55, 0.65, -14, 10, 10);
 
 INSERT INTO employees (card_number_id, first_name, last_name, warehouse_id)
 VALUES ('E1001', 'John', 'Doe', 1),

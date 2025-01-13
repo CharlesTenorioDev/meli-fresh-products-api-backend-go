@@ -34,7 +34,7 @@ CREATE TABLE `buyers`
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
--- table `purchase_orders`
+-- table `product_records`
 CREATE TABLE product_records
 (
     id                int(11) NOT NULL AUTO_INCREMENT,

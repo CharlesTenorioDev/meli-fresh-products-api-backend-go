@@ -95,7 +95,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 				response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewBadRequestValidationError(domainError.Message, restCauses))
 			case errors.Is(err, internal.ErrPurchaseOrderConflict):
 				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
-			case err.Error() == "Registro de produto não encontrado":
+			case errors.Is(err, service.ErrProductRecordsNotFound):
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 			case errors.Is(err, service.BuyerNotFound):
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -11,6 +12,10 @@ type ProductRecordsDefault struct {
 	productRecRepo internal.ProductRecordsRepository
 	productRepo    internal.ProductRepository
 }
+
+var (
+	ErrProductRecordsNotFound = errors.New("Product Records not found")
+)
 
 func NewProductRecordsDefault(prodRecRepo internal.ProductRecordsRepository, prodRepo internal.ProductRepository) *ProductRecordsDefault {
 	return &ProductRecordsDefault{
