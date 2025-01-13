@@ -98,10 +98,13 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	if product.Width == 0 {
 		product.Width = existingProduct.Width
 	}
+	if product.Length == 0 {
+		product.Length = existingProduct.Length
+	}
 	if product.NetWeight == 0 {
 		product.NetWeight = existingProduct.NetWeight
 	}
-	if product.ExpirationRate.IsZero() {
+	if product.ExpirationRate == 0 {
 		product.ExpirationRate = existingProduct.ExpirationRate
 	}
 	if product.RecommendedFreezingTemperature == 0 {
@@ -146,6 +149,18 @@ func (s *ProductDefault) Delete(id int) error {
 	return nil
 }
 
+func (s *ProductDefault) GetAllRecord() (v []internal.ProductRecordsJsonCount, err error) {
+	v, err = s.productRepo.FindAllRecord()
+	return
+}
+
+func (s *ProductDefault) GetByIdRecord(id int) (internal.ProductRecordsJsonCount, error) {
+	product, err := s.productRepo.FindByIdRecord(id)
+	if err != nil {
+		return internal.ProductRecordsJsonCount{}, err
+	}
+	return product, nil
+}
 func GenerateNewID(existingProducts []internal.Product) int {
 	maxID := 0
 	for _, p := range existingProducts {
@@ -155,6 +170,7 @@ func GenerateNewID(existingProducts []internal.Product) int {
 	}
 	return maxID + 1
 }
+
 func IsProductCodeExists(existingProducts []internal.Product, productCode string) bool {
 	for _, p := range existingProducts {
 		if p.ProductCode == productCode {
@@ -163,13 +179,16 @@ func IsProductCodeExists(existingProducts []internal.Product, productCode string
 	}
 	return false
 }
+
 func ValidateProduct(product internal.Product) error {
 	if product.ProductCode == "" ||
 		product.Description == "" ||
 		product.Height <= 0 ||
+		product.Length <= 0 ||
 		product.Width <= 0 ||
 		product.NetWeight <= 0 ||
-		product.ExpirationRate.IsZero() ||
+		product.ExpirationRate <= 0 ||
+
 		product.RecommendedFreezingTemperature < -273.15 ||
 		product.FreezingRate < -273.15 ||
 		product.ProductTypeId <= 0 ||

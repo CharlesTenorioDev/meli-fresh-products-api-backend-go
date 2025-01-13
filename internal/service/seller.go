@@ -42,13 +42,13 @@ func (s *SellerServiceDefault) Save(seller *internal.Seller) error {
 		return err
 	}
 
+	if seller.CID == sellerCid.CID {
+		return internal.ErrSellerCIDAlreadyExists
+	}
+
 	_, err = s.locality.FindByID(seller.Locality)
 	if err != nil {
 		return err
-	}
-
-	if seller.CID == sellerCid.CID {
-		return internal.ErrSellerCIDAlreadyExists
 	}
 
 	err = s.rp.Save(seller)

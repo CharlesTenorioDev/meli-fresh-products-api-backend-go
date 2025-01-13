@@ -3,12 +3,13 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"go.uber.org/zap"
 	"net/http"
 	"strconv"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"github.com/meli-fresh-products-api-backend-t1/utils/logger"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
@@ -103,9 +104,9 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 		case "":
 			localities, err = h.sv.ReportSellers()
 		default:
-			id, err := strconv.Atoi(idStr)
+			id, parseErr := strconv.Atoi(idStr)
 
-			if err != nil {
+			if parseErr != nil {
 				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
 				return
 			}
@@ -114,7 +115,9 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 		}
 
 		if err != nil {
-			log.Println(err)
+			logger.Error(err.Error(), err,
+				zap.String("id", idStr),
+			)
 			if errors.Is(err, internal.ErrLocalityNotFound) {
 				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 				return
@@ -175,7 +178,7 @@ func (h *LocalityDefault) Save() http.HandlerFunc {
 						Message: cause.Message,
 					})
 				}
-				response.JSON(w, http.StatusInternalServerError, rest_err.NewBadRequestValidationError(domainError.Message, restCauses))
+				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestValidationError(domainError.Message, restCauses))
 				return
 			}
 
