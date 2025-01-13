@@ -1,5 +1,9 @@
 package internal
 
+import "errors"
+
+var ErrOrderNumberAlreadyExists = errors.New("order number already exists")
+
 type InboundOrders struct {
 	Id             int    `json:"id"`
 	OrderDate      string `json:"order_date"`

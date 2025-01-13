@@ -1,6 +1,8 @@
 package service
 
-import "github.com/meli-fresh-products-api-backend-t1/internal"
+import (
+	"github.com/meli-fresh-products-api-backend-t1/internal"
+)
 
 type InboundOrderService struct {
 	rp  internal.InboundOrdersRepository

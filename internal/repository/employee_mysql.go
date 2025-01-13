@@ -18,13 +18,13 @@ func NewEmployeeMysql(db *sql.DB) *EmployeeMysql {
 
 const (
 	InboundOrdersPerEmployeeQuery = `
-	SELECT COUNT(i.employee_id) AS inbound_orders_count, i.id, e.first_name, e.last_name, i.warehouse_id
+	SELECT COUNT(i.employee_id) AS inbound_orders_count, e.id, e.card_number_id, e.first_name, e.last_name, i.warehouse_id
 	FROM inbound_orders i
 	INNER JOIN employees e ON i.employee_id = e.id
 	GROUP BY i.employee_id, i.id;`
 
 	InboundOrdersPerEmployeeByIdQuery = `
-	SELECT COUNT(i.employee_id) AS inbound_orders_count, i.id, e.first_name, e.last_name, i.warehouse_id
+	SELECT COUNT(i.employee_id) AS inbound_orders_count, i.id, e.card_number_id, e.first_name, e.last_name, i.warehouse_id
 	FROM inbound_orders i
 	INNER JOIN employees e ON i.employee_id = e.id
 	WHERE i.employee_id = ?
@@ -82,10 +82,15 @@ func (r *EmployeeMysql) Save(emp *internal.Employee) (int, error) {
 		return 0, err
 	}
 
-	err = r.db.QueryRow(
-		"INSERT INTO employees (card_number_id, first_name, last_name, warehouse_id) VALUES (?, ?, ?, ?) RETURNING id",
-		emp.CardNumberId, emp.FirstName, emp.LastName, emp.WarehouseId).Scan(&emp.Id)
+	_, err = r.db.Exec(
+		"INSERT INTO employees (card_number_id, first_name, last_name, warehouse_id) VALUES (?, ?, ?, ?)",
+		emp.CardNumberId, emp.FirstName, emp.LastName, emp.WarehouseId)
 
+	if err != nil {
+		return 0, err
+	}
+
+	err = r.db.QueryRow("SELECT LAST_INSERT_ID()").Scan(&emp.Id)
 	if err != nil {
 		return 0, err
 	}
@@ -116,7 +121,7 @@ func (r *EmployeeMysql) CountInboundOrdersPerEmployee() (io []internal.InboundOr
 
 	for row.Next() {
 		var countInboundPerEmployee internal.InboundOrdersPerEmployee
-		row.Scan(&countInboundPerEmployee.CountInOrders, &countInboundPerEmployee.Id, &countInboundPerEmployee.FirstName, &countInboundPerEmployee.LastName, &countInboundPerEmployee.WarehouseId)
+		row.Scan(&countInboundPerEmployee.CountInOrders, &countInboundPerEmployee.Id, &countInboundPerEmployee.CardNumberId, &countInboundPerEmployee.FirstName, &countInboundPerEmployee.LastName, &countInboundPerEmployee.WarehouseId)
 
 		io = append(io, countInboundPerEmployee)
 	}
@@ -130,7 +135,12 @@ func (r *EmployeeMysql) ReportInboundOrdersById(employeeId int) (io internal.Inb
 		employeeId,
 	)
 
-	row.Scan(&io.CountInOrders, &io.Id, &io.FirstName, &io.LastName, &io.WarehouseId)
+	err = row.Scan(&io.CountInOrders, &io.Id, &io.CardNumberId, &io.FirstName, &io.LastName, &io.WarehouseId)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrEmployeeNotFound
+		}
+	}
 
 	return
 }

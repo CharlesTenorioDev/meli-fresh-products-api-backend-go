@@ -170,7 +170,7 @@ CREATE TABLE `inbound_orders`
 (
     `id`               int(11) NOT NULL AUTO_INCREMENT,
     `order_date`       date NOT NULL,
-    `order_number`     varchar(255) NOT NULL,
+    `order_number`     varchar(255) UNIQUE NOT NULL,
     `employee_id`      int(11) NOT NULL,
     `product_batch_id` int(11) NOT NULL,
     `warehouse_id`     int(11) NOT NULL,
@@ -179,9 +179,6 @@ CREATE TABLE `inbound_orders`
     FOREIGN KEY (`warehouse_id`) REFERENCES warehouses (id),
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
-
-
-ALTER TABLE employees ADD UNIQUE (card_number_id);
 
 
 -- DML

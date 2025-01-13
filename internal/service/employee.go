@@ -50,20 +50,20 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 		return
 	}
 
+	if cardNumberIdInUse(emp.CardNumberId, employees) {
+		err = CardNumberIdInUse
+		return err
+	}
+
 	validate := emp.RequirementsFields()
 	if !validate {
 		err = errors.New("invalid entity data")
-		return
+		return err
 	}
 
 	_, err = s.rpW.FindByID(emp.WarehouseId)
 	if err != nil {
 		return internal.ErrWarehouseRepositoryNotFound
-	}
-
-	if cardNumberIdInUse(emp.CardNumberId, employees) {
-		err = CardNumberIdInUse
-		return
 	}
 
 	_, err = s.rp.Save(emp)
@@ -129,6 +129,13 @@ func (s *EmployeeDefault) Update(emp internal.Employee) (err error) {
 }
 
 func (s *EmployeeDefault) Delete(id int) (err error) {
+	_, err = s.rp.GetById(id)
+	if err != nil {
+		if err == internal.ErrEmployeeNotFound {
+			return EmployeeNotFound
+		}
+		return err
+	}
 	return s.rp.Delete(id)
 }
 

@@ -40,10 +40,18 @@ func (h *InboundOrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	lastId, err := h.sv.Create(inbound)
 	if err != nil {
-		response.JSON(w, http.StatusConflict, map[string]any{
-			"error": "conflict", //status code 409
-		})
-		return
+		if err == internal.ErrOrderNumberAlreadyExists {
+			response.JSON(w, http.StatusConflict, map[string]any{
+				"error": "order number already exists", //status code 409
+			})
+			return
+		}
+		if err == internal.ErrEmployeeNotFound {
+			response.JSON(w, http.StatusConflict, map[string]any{
+				"error": "employee not exists", //status code 409
+			})
+			return
+		}
 	}
 
 	response.JSON(w, http.StatusCreated, map[string]any{
