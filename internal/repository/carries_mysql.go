@@ -2,12 +2,19 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
 const (
 	GetAllCarriesQuery = "SELECT * FROM carries"
+)
+
+var (
+	CidAlreadyExists = errors.New("carry with this cid already exists")
+	NoSuchLocalityId = errors.New("there's no such locality id")
 )
 
 type CarriesMysql struct {
@@ -50,6 +57,15 @@ func (r *CarriesMysql) Create(carry internal.Carries) (lastId int64, e error) {
 		carry.Cid, carry.CompanyName, carry.Address, carry.PhoneNumber, carry.LocalityId,
 	)
 	if e != nil {
+		mysqlErr, ok := e.(*mysql.MySQLError)
+		if ok {
+			switch mysqlErr.Number {
+			case 1062:
+				e = CidAlreadyExists
+			case 1452:
+				e = NoSuchLocalityId
+			}
+		}
 		return
 	}
 
