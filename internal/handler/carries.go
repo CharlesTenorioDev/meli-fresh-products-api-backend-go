@@ -44,7 +44,7 @@ func (h *CarriesHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 
 	lastId, err := h.sv.Create(carry)
 	if err != nil {
-		response.JSON(w, http.StatusConflict, rest_err.NewConflictError("carry with this cid already exists"))
+		response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		return
 	}
 
