@@ -5,30 +5,38 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
+	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
 type EmployeeHandlerDefault struct {
-	sv service.EmployeeService
+	sv internal.EmployeeService
 }
 
-func NewEmployeeDefault(sv service.EmployeeService) *EmployeeHandlerDefault {
+func NewEmployeeDefault(sv internal.EmployeeService) *EmployeeHandlerDefault {
 	return &EmployeeHandlerDefault{
 		sv: sv,
 	}
 }
 
 func (h *EmployeeHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
-	dataEmployee := h.sv.GetAll()
+	dataEmployee, err := h.sv.GetAll()
+
+	if err != nil {
+		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+		return
+	}
 
 	w.Header().Set("Content-Type", "application/json")
 	response.JSON(w, http.StatusOK, map[string]any{
 		"data": dataEmployee,
 	})
+
 }
 
 func (h *EmployeeHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -72,13 +80,19 @@ func (h *EmployeeHandlerDefault) Create(w http.ResponseWriter, r *http.Request) 
 
 	// checks if card number Id field is already in use, because it's a unique field
 	if err != nil {
-		if errors.Is(err, service.EmployeeInUse) || errors.Is(err, service.CardNumberIdInUse) {
+
+		if errors.Is(err, service.CardNumberIdInUse) {
 			response.JSON(w, http.StatusConflict, map[string]any{
-				"error": "employee already in use",
+				"error": "card number id already in use", // Status 409
+			})
+		} else if errors.Is(err, service.EmployeeInUse) {
+
+			response.JSON(w, http.StatusConflict, map[string]any{
+				"error": "employee already in use", // Status 409
 			})
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, map[string]any{
-				"data": err.Error(), //status 422
+				"data": err.Error(), // status 422
 			})
 		}
 		return
@@ -143,6 +157,7 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
+
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, map[string]any{
 			"data": "invalid id format",
@@ -152,9 +167,48 @@ func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) 
 	err = h.sv.Delete(id)
 	if err != nil {
 		response.JSON(w, http.StatusNotFound, map[string]any{
-			"data": err.Error(),
+			"data": "employee not found",
 		})
 		return
 	}
-	response.JSON(w, http.StatusNoContent, nil) //status 204
+	response.JSON(w, http.StatusNoContent, nil)
+}
+
+func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *http.Request) {
+
+	idStr := r.URL.Query().Get("id")
+	idStr = strings.TrimSpace(idStr)
+
+	switch {
+
+	case idStr == "":
+		inboundOrders, err := h.sv.CountInboundOrdersPerEmployee()
+		if err != nil {
+			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("failed to fetch inbound orders"))
+			return
+		}
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": inboundOrders,
+		})
+		return
+
+	default:
+		id, err := strconv.Atoi(idStr)
+		switch {
+		case err != nil:
+			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+			return
+		}
+
+		countInboundOrders, err := h.sv.ReportInboundOrdersById(id)
+		switch {
+		case err != nil:
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("employee not found"))
+			return
+		}
+
+		response.JSON(w, http.StatusOK, map[string]any{
+			"data": countInboundOrders,
+		})
+	}
 }
