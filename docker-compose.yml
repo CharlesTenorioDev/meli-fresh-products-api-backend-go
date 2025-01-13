@@ -14,16 +14,15 @@ services:
       timeout: 15s
       retries: 5
   api:
-    image: meli-sprint:latest
-    container_name: sprint-api
+    image: cosmtrek/air
+    container_name: api
+    working_dir: /meli-api
     depends_on:
       mysql:
         condition: service_healthy
     environment:
       MYSQL_SPRINT_URI: "mysql:3306"
-    build:
-      dockerfile: Dockerfile
     ports:
       - '8080:8080'
     volumes:
-      - ./:/app
+      - ./:/meli-api
