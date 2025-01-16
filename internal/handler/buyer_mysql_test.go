@@ -79,6 +79,13 @@ func (b *BuyerTestSuite) TestReportPurchaseOrders() {
 					"first_name": "Mark",
 					"last_name": "Jones",
 					"purchase_orders_count": 1
+				}, 
+				{
+					"id": 3,
+					"card_number_id": "B1003",
+					"first_name": "Linda",
+					"last_name": "Garcia",
+					"purchase_orders_count": 0
 				}
 			]
 		}`
@@ -111,7 +118,32 @@ func (b *BuyerTestSuite) TestReportPurchaseOrders() {
 		require.JSONEq(t, expectedBody, response.Body.String())
 	})
 
-	b.T().Run("case 3 - error - Purchase order reports by buyer id that doesn't exists", func(t *testing.T) {
+	b.T().Run("case 3 - success - Purchase order reports by buyer id that doesn't have purchase orders", func(t *testing.T) {
+		// given
+		request := httptest.NewRequest(http.MethodGet, api_buyer+"?id=3", nil)
+		response := httptest.NewRecorder()
+
+		// when
+		b.hd.ReportPurchaseOrders(response, request)
+
+		// then
+		expectedCode := http.StatusOK
+		expectedBody := `{
+			"data": [
+				{
+					"id": 3,
+					"card_number_id": "B1003",
+					"first_name": "Linda",
+					"last_name": "Garcia",
+					"purchase_orders_count": 0
+				}
+			]
+		}`
+		require.Equal(t, expectedCode, response.Code)
+		require.JSONEq(t, expectedBody, response.Body.String())
+	})
+
+	b.T().Run("case 4 - error - Purchase order reports by buyer id that doesn't exists", func(t *testing.T) {
 		// given
 		request := httptest.NewRequest(http.MethodGet, api_buyer+"?id=4", nil)
 		response := httptest.NewRecorder()
@@ -131,23 +163,23 @@ func (b *BuyerTestSuite) TestReportPurchaseOrders() {
 		require.JSONEq(t, expectedBody, response.Body.String())
 	})
 
-	b.T().Run("case 4 - error - Purchase order reports that doesn't exists for the given buyer", func(t *testing.T) {
-		// given
-		request := httptest.NewRequest(http.MethodGet, api_buyer+"?id=3", nil)
-		response := httptest.NewRecorder()
+	// b.T().Run("case 4 - error - Purchase order reports that doesn't exists for the given buyer", func(t *testing.T) {
+	// 	// given
+	// 	request := httptest.NewRequest(http.MethodGet, api_buyer+"?id=3", nil)
+	// 	response := httptest.NewRecorder()
 
-		// when
-		b.hd.ReportPurchaseOrders(response, request)
+	// 	// when
+	// 	b.hd.ReportPurchaseOrders(response, request)
 
-		// then
-		expectedCode := http.StatusNotFound
-		expectedBody := `{
-				"message": "purchase orders not found for the given buyer",
-				"error": "not_found",
-				"code": 404,
-				"causes": null
-			}`
-		require.Equal(t, expectedCode, response.Code)
-		require.JSONEq(t, expectedBody, response.Body.String())
-	})
+	// 	// then
+	// 	expectedCode := http.StatusNotFound
+	// 	expectedBody := `{
+	// 			"message": "purchase orders not found for the given buyer",
+	// 			"error": "not_found",
+	// 			"code": 404,
+	// 			"causes": null
+	// 		}`
+	// 	require.Equal(t, expectedCode, response.Code)
+	// 	require.JSONEq(t, expectedBody, response.Body.String())
+	// })
 }

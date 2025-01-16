@@ -138,10 +138,6 @@ func (h *BuyerHandlerDefault) ReportPurchaseOrders(w http.ResponseWriter, r *htt
 		switch {
 		case errors.Is(err, service.BuyerNotFound):
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-		case errors.Is(err, service.ErrPurchaseOrdersNotFound):
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-		case errors.Is(err, service.ErrPurchaseOrdersByBuyerNotFound):
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		default:
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
 		}
