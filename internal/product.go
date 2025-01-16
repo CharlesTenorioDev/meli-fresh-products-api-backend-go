@@ -5,7 +5,12 @@ import (
 )
 
 var (
-	ProductNotFound = errors.New("product not found")
+	ErrProductNotFound            = errors.New("product not found")
+	ErroProductConflit            = errors.New("product conflict")
+	ErrProductTypeIdNotFound      = errors.New("product-type ID not found")
+	ErrSellerIdNotFound           = errors.New("seller ID not found")
+	ErrProductCodeAlreadyExists   = errors.New("product-type already exists")
+	ErrProductUnprocessableEntity = errors.New("all fields must be valid and filled")
 )
 
 type Product struct {
@@ -35,7 +40,6 @@ type ProductJsonPost struct {
 	FreezingRate                   float64 `json:"freezing_rate"`
 	ProductTypeId                  int     `json:"product_type_id"`
 	SellerId                       int     `json:"seller_id"`
-
 }
 
 type ProductService interface {

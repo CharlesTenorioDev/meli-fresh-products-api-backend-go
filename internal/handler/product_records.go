@@ -7,18 +7,17 @@ import (
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
 type ProductRecordsHandlerDefault struct {
-	pd internal.ProductRecordsService
+	s internal.ProductRecordsService
 }
 
 // Construtor do handler
 func NewProductRecordsDefault(pd internal.ProductRecordsService) *ProductRecordsHandlerDefault {
 	return &ProductRecordsHandlerDefault{
-		pd: pd,
+		s: pd,
 	}
 }
 
@@ -28,17 +27,17 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 
 	// Decodifica o corpo da requisição JSON
 	if err := json.NewDecoder(r.Body).Decode(&productRec); err != nil {
-		response.JSON(w, http.StatusUnprocessableEntity, "JSON inválido")
+		response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		return
 	}
 
 	// Chama o serviço para criar o registro
-	createdProductRec, err := h.pd.Create(productRec)
+	createdProductRec, err := h.s.Create(productRec)
 	if err != nil {
-		if errors.Is(err, service.ProductUnprocessableEntity) {
+		if errors.Is(err, internal.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		}
-		if errors.Is(err, service.ProductNotExists) {
+		if errors.Is(err, internal.ErrProductIdNotFound) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		}
 		return

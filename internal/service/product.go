@@ -6,14 +6,6 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
-var (
-	ProductUnprocessableEntity = errors.New("all fields must be valid and filled")
-	ProductCodeAlreadyExists   = errors.New("product code already exists")
-	ProductNotExists           = errors.New("Error ID doesn't exists")
-	SellerNotExists            = errors.New("Error fetching seller")
-	ProductTypeNotExists       = errors.New("Error fetching product type")
-)
-
 func NewProductService(prRepo internal.ProductRepository, slRepo internal.SellerRepository, ptRepo internal.ProductTypeRepository) *ProductDefault {
 	return &ProductDefault{
 		productRepo:     prRepo,
@@ -52,21 +44,18 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 	}
 
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
-		return product, ProductCodeAlreadyExists
+		return product, internal.ErrProductCodeAlreadyExists
 	}
 
 	_, err = s.sellerRepo.FindByID(product.SellerId)
 	if err != nil {
-		return product, SellerNotExists
+		return product, internal.ErrSellerIdNotFound
 	}
 	_, err = s.productTypeRepo.FindByID(product.ProductTypeId)
 	if err != nil {
-		return product, ProductTypeNotExists
+		return product, internal.ErrProductTypeIdNotFound
 	}
-	// Gera um novo ID para o produto
-	product.Id = GenerateNewID(existingProducts)
 
-	// Salva o novo produto no repositório
 	product, err = s.productRepo.Save(product)
 	if err != nil {
 		return internal.Product{}, err
@@ -83,7 +72,7 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 
 	existingProduct, err := s.productRepo.FindByID(product.Id)
 	if err != nil {
-		return product, ProductNotExists
+		return product, internal.ErrProductNotFound
 	}
 
 	if product.ProductCode == "" {
@@ -121,16 +110,16 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	}
 
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
-		return product, ProductCodeAlreadyExists
+		return product, internal.ErrProductCodeAlreadyExists
 	}
 
 	_, err = s.sellerRepo.FindByID(product.SellerId)
 	if err != nil {
-		return product, SellerNotExists
+		return product, internal.ErrSellerIdNotFound
 	}
 	_, err = s.productTypeRepo.FindByID(product.ProductTypeId)
 	if err != nil {
-		return product, ProductTypeNotExists
+		return product, internal.ErrProductTypeNotFound
 	}
 
 	productUpdate, err := s.productRepo.Update(product)
@@ -144,6 +133,7 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 func (s *ProductDefault) Delete(id int) error {
 	err := s.productRepo.Delete(id)
 	if err != nil {
+		print(err)
 		return err
 	}
 	return nil
@@ -181,19 +171,38 @@ func IsProductCodeExists(existingProducts []internal.Product, productCode string
 }
 
 func ValidateProduct(product internal.Product) error {
-	if product.ProductCode == "" ||
-		product.Description == "" ||
-		product.Height <= 0 ||
-		product.Length <= 0 ||
-		product.Width <= 0 ||
-		product.NetWeight <= 0 ||
-		product.ExpirationRate <= 0 ||
-
-		product.RecommendedFreezingTemperature < -273.15 ||
-		product.FreezingRate < -273.15 ||
-		product.ProductTypeId <= 0 ||
-		product.SellerId <= 0 {
-		return ProductUnprocessableEntity
+	if product.ProductCode == "" {
+		return errors.New("ProductCode is empty.")
+	}
+	if product.Description == "" {
+		return errors.New("Description is empty.")
+	}
+	if product.Height <= 0 {
+		return errors.New("Height is empty.")
+	}
+	if product.Length <= 0 {
+		return errors.New("Length is empty.")
+	}
+	if product.Width <= 0 {
+		return errors.New("Width is empty.")
+	}
+	if product.NetWeight <= 0 {
+		return errors.New("NetWeight is empty.")
+	}
+	if product.ExpirationRate <= 0 {
+		return errors.New("ExpirationRate is empty.")
+	}
+	if product.RecommendedFreezingTemperature < -273.15 {
+		return errors.New("RecommendedFreezingTemperature is empty.")
+	}
+	if product.FreezingRate < -273.15 {
+		return errors.New("FreezingRate is empty.")
+	}
+	if product.ProductTypeId <= 0 {
+		return errors.New("ProductTypeId is empty.")
+	}
+	if product.SellerId <= 0 {
+		return errors.New("SellerId is empty.")
 	}
 	return nil
 }

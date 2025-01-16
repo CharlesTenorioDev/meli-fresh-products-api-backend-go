@@ -9,7 +9,6 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
 )
 
@@ -59,30 +58,30 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	newProduct, err := h.s.Create(product)
 	if err != nil {
-		if errors.Is(err, service.SellerNotExists) || errors.Is(err, service.ProductTypeNotExists) {
+		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIdNotFound) || errors.Is(err, internal.ErrProductNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-		} else if errors.Is(err, service.ProductCodeAlreadyExists) {
+		} else if errors.Is(err, internal.ErrProductCodeAlreadyExists) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
-		} else if errors.Is(err, service.ProductUnprocessableEntity) {
+		} else if errors.Is(err, internal.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
 		}
 		return
 	}
-	var productJson internal.ProductJsonPost
-	productJson.ProductCode = newProduct.ProductCode
-	productJson.Description = newProduct.Description
-	productJson.Height = newProduct.Height
-	productJson.Length = newProduct.Length
-	productJson.NetWeight = newProduct.NetWeight
-	productJson.ExpirationRate = newProduct.ExpirationRate
-	productJson.RecommendedFreezingTemperature = newProduct.RecommendedFreezingTemperature
-	productJson.Width = newProduct.Width
-	productJson.FreezingRate = newProduct.FreezingRate
-	productJson.ProductTypeId = newProduct.ProductTypeId
-	productJson.SellerId = newProduct.SellerId
-
+	productJson := internal.ProductJsonPost{
+		ProductCode: newProduct.ProductCode,
+		Description: newProduct.Description,
+		Height: newProduct.Height,
+		Length: newProduct.Length,
+		NetWeight: newProduct.NetWeight,
+		ExpirationRate: newProduct.ExpirationRate,
+		RecommendedFreezingTemperature: newProduct.RecommendedFreezingTemperature,
+		Width: newProduct.Width,
+		FreezingRate: newProduct.FreezingRate,
+		ProductTypeId: newProduct.ProductTypeId,
+		SellerId: newProduct.SellerId,
+	}
 	response.JSON(w, http.StatusCreated, map[string]any{
 		"data": productJson,
 	})
@@ -107,11 +106,11 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 	updatedProduct, err := h.s.Update(product)
 	if err != nil {
-		if errors.Is(err, service.SellerNotExists) || errors.Is(err, service.ProductTypeNotExists) || errors.Is(err, service.ProductNotExists) {
+		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIdNotFound) || errors.Is(err, internal.ErrProductNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-		} else if errors.Is(err, service.ProductCodeAlreadyExists) {
+		} else if errors.Is(err, internal.ErrProductCodeAlreadyExists) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
-		} else if errors.Is(err, service.ProductUnprocessableEntity) {
+		} else if errors.Is(err, internal.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
@@ -164,7 +163,6 @@ func (h *ProductHandlerDefault) ReportRecords(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		// Retorna o relatório
 		response.JSON(w, http.StatusOK, map[string]interface{}{
 			"data": report,
 		})

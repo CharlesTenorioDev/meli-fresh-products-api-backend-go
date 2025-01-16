@@ -81,7 +81,7 @@ func (s *SectionService) Save(section *internal.Section) error {
 
 	_, err = s.rpT.FindByID(section.ProductTypeID)
 	if err != nil {
-		return internal.ProductTypeNotFound
+		return internal.ErrProductTypeNotFound
 	}
 
 	err = s.rpS.Save(section)
@@ -183,7 +183,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 
 		_, err = s.rpT.FindByID(section.ProductTypeID)
 		if err != nil {
-			return internal.Section{}, internal.ProductTypeNotFound
+			return internal.Section{}, internal.ErrProductTypeNotFound
 		}
 	}
 

@@ -39,7 +39,7 @@ func (s *ProductBatchService) Save(prodBatch *internal.ProductBatch) error {
 
 	_, err = s.rpP.FindByID(prodBatch.ProductId)
 	if err != nil {
-		return internal.ProductNotFound
+		return internal.ErrProductNotFound
 	}
 
 	_, err = s.rpS.FindByID(prodBatch.SectionId)
