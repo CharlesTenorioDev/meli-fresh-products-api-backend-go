@@ -2,23 +2,29 @@ package repository
 
 import (
 	"database/sql"
+	"errors"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 )
 
 type ProductRecordsSQL struct {
 	db *sql.DB
 }
 
-// Construtor para criar uma nova instância do repositório
 func NewProductRecordsSQL(db *sql.DB) *ProductRecordsSQL {
 	return &ProductRecordsSQL{db}
 }
 
+const (
+	FindAllProductRecords  = "SELECT `id`, `last_update_date`, `purchase_price`, `sale_price`, `product_id` FROM `product_records`"
+	FindByIdProductRecords = "SELECT `id`, `last_update_date`, `purchase_price`, `sale_price`, `product_id` FROM `product_records` WHERE `id` = ?"
+	SaveProductRecords     = "INSERT INTO `product_records` (`last_update_date`, `purchase_price`, `sale_price`, `product_id`) VALUES (?, ?, ?, ?)"
+)
+
 // Implementação de FindAll
 func (psql *ProductRecordsSQL) FindAll() (productRecords []internal.ProductRecords, err error) {
-	rows, err := psql.db.Query("SELECT `id`, `last_update_date`, `purchase_price`, `sale_price`, `product_id` FROM `product_records`")
+	rows, err := psql.db.Query(FindAllProductRecords)
 	if err != nil {
 		return nil, err
 	}
@@ -28,27 +34,29 @@ func (psql *ProductRecordsSQL) FindAll() (productRecords []internal.ProductRecor
 		var productRecord internal.ProductRecords
 		err := rows.Scan(&productRecord.Id, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 		if err != nil {
-			return nil, err
+			if errors.Is(err, sql.ErrNoRows) {
+				err = internal.ErrProductNotFound
+			}
+			return productRecords, err
 		}
 		productRecords = append(productRecords, productRecord)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return productRecords, nil
+	return
 }
 
 // Implementação de FindByID
 func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error) {
 	var productRecord internal.ProductRecords
 
-	row := psql.db.QueryRow("SELECT `id`, `last_update_date`, `purchase_price`, `sale_price`, `product_id` FROM `product_records` WHERE `id` = ?", id)
+	row := psql.db.QueryRow(FindByIdProductRecords, id)
 	err := row.Scan(&productRecord.Id, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 
 	if err != nil {
-		return productRecord, service.ErrProductRecordsNotFound
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrProductReordsNotFound
+		}
+		return productRecord, err
 	}
 
 	return productRecord, nil
@@ -57,11 +65,18 @@ func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error)
 // Implementação de Save
 func (psql *ProductRecordsSQL) Save(productRec internal.ProductRecords) (internal.ProductRecords, error) {
 	_, err := psql.db.Exec(
-		"INSERT INTO `product_records` (`last_update_date`, `purchase_price`, `sale_price`, `product_id`) VALUES (?, ?, ?, ?)",
+		SaveProductRecords,
 		productRec.LastUpdateDate, productRec.PurchasePrice, productRec.SalePrice, productRec.ProductID,
 	)
 
 	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) {
+			switch mysqlErr.Number {
+			case 1062:
+				err = internal.ErrProductReordsConflict
+			}
+		}
 		return productRec, err
 	}
 

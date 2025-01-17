@@ -50,6 +50,7 @@ func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
 			if errors.Is(err, sql.ErrNoRows) {
 				err = internal.ErrProductNotFound
 			}
+			return products, err
 		}
 		products = append(products, product)
 	}

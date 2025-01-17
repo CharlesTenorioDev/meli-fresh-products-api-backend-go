@@ -344,6 +344,7 @@ func TestProductMysql_FinAByIDRecords_ok(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 1, productRecords.ProductID)
 }
+
 func TestProductMysql_FinAByIDRecords_not_found(t *testing.T) {
 	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
