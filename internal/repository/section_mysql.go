@@ -61,7 +61,7 @@ func (r *SectionMysql) FindByID(id int) (internal.Section, error) {
 	err := r.db.QueryRow(query, id).Scan(&s.ID, &s.SectionNumber, &s.CurrentTemperature, &s.MinimumTemperature, &s.CurrentCapacity, &s.MinimumCapacity, &s.MaximumCapacity, &s.WarehouseID, &s.ProductTypeID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return s, internal.SectionNotFound
+			return s, internal.ErrSectionNotFound
 		}
 		return s, err
 	}

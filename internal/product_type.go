@@ -3,8 +3,8 @@ package internal
 import "errors"
 
 var (
-	ProductTypeAlreadyExists = errors.New("product-type already exists")
-	ProductTypeNotFound      = errors.New("product-type not found")
+	ErrProductTypeAlreadyExists = errors.New("product-type already exists")
+	ErrProductTypeNotFound      = errors.New("product-type not found")
 )
 
 type ProductType struct {

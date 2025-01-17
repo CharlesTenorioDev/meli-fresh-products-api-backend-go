@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	EmployeeInUse       = errors.New("employee already in use")
-	CardNumberIdInUse   = errors.New("card number id already in use")
-	EmployeeNotFound    = errors.New("employee not found")
-	UnprocessableEntity = errors.New("couldn't parse employee")
-	ConflictInEmployee  = errors.New("conflict in employee")
+	ErrEmployeeInUse       = errors.New("employee already in use")
+	ErrCardNumberIdInUse   = errors.New("card number id already in use")
+	ErrEmployeeNotFound    = errors.New("employee not found")
+	ErrUnprocessableEntity = errors.New("couldn't parse employee")
+	ErrConflictInEmployee  = errors.New("conflict in employee")
 )
 
 func NewEmployeeServiceDefault(rp internal.EmployeeRepository, rpWarehouse internal.WarehouseRepository) *EmployeeDefault {
@@ -51,7 +51,7 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 	}
 
 	if cardNumberIdInUse(emp.CardNumberId, employees) {
-		err = CardNumberIdInUse
+		err = ErrCardNumberIdInUse
 		return err
 	}
 
@@ -101,12 +101,12 @@ func (s *EmployeeDefault) Update(emp internal.Employee) (err error) {
 	}
 
 	if existingEmployee == nil {
-		err = EmployeeNotFound
+		err = ErrEmployeeNotFound
 		return
 	}
 
 	if cardNumberIdInUse(emp.CardNumberId, data) && existingEmployee.CardNumberId != emp.CardNumberId {
-		err = CardNumberIdInUse
+		err = ErrCardNumberIdInUse
 		return
 	}
 
@@ -117,7 +117,7 @@ func (s *EmployeeDefault) Update(emp internal.Employee) (err error) {
 
 	_, err = s.rpW.FindByID(emp.WarehouseId)
 	if err != nil {
-		return ConflictInEmployee
+		return ErrConflictInEmployee
 	}
 
 	err = s.rp.Update(emp.Id, emp)
@@ -132,7 +132,7 @@ func (s *EmployeeDefault) Delete(id int) (err error) {
 	_, err = s.rp.GetById(id)
 	if err != nil {
 		if err == internal.ErrEmployeeNotFound {
-			return EmployeeNotFound
+			return ErrEmployeeNotFound
 		}
 		return err
 	}

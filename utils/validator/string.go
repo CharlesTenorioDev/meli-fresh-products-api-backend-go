@@ -15,7 +15,7 @@ func BlankString(str string) bool {
 }
 
 func IsCep(cep string) bool {
-	cepRegex := regexp.MustCompile("^\\d{5}-\\d{3}")
+	cepRegex := regexp.MustCompile(`^\d{5}-\d{3}`)
 	return cepRegex.MatchString(cep)
 }
 
