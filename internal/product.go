@@ -5,7 +5,7 @@ import (
 )
 
 var (
-	ProductNotFound = errors.New("product not found")
+	ErrProductNotFound = errors.New("product not found")
 )
 
 type Product struct {
@@ -35,7 +35,6 @@ type ProductJsonPost struct {
 	FreezingRate                   float64 `json:"freezing_rate"`
 	ProductTypeId                  int     `json:"product_type_id"`
 	SellerId                       int     `json:"seller_id"`
-
 }
 
 type ProductService interface {

@@ -6,6 +6,10 @@ import (
 	"database/sql"
 	"encoding/json"
 	"errors"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/DATA-DOG/go-txdb"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-sql-driver/mysql"
@@ -18,9 +22,6 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 const (
@@ -67,7 +68,6 @@ func (m *MockLocalityService) FindByID(id int) (locality internal.Locality, err 
 
 type LocalityTestSuite struct {
 	db *sql.DB
-	rt chi.Router
 	hd *handler.LocalityDefault
 	suite.Suite
 }

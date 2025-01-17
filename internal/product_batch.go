@@ -3,10 +3,10 @@ package internal
 import "errors"
 
 var (
-	ProductBatchNotFound            = errors.New("product-batch not found")
-	ProductBatchAlreadyExists       = errors.New("product-batch already exists")
-	ProductBatchNumberAlreadyInUse  = errors.New("product-batch with given product-batch number already registered")
-	ProductBatchUnprocessableEntity = errors.New("couldn't parse product-batch")
+	ErrProductBatchNotFound            = errors.New("product-batch not found")
+	ErrProductBatchAlreadyExists       = errors.New("product-batch already exists")
+	ErrProductBatchNumberAlreadyInUse  = errors.New("product-batch with given product-batch number already registered")
+	ErrProductBatchUnprocessableEntity = errors.New("couldn't parse product-batch")
 )
 
 type ProductBatch struct {

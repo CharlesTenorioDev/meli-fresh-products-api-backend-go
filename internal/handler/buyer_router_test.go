@@ -233,6 +233,7 @@ func (s *BuyerRouterSuite) TestCreateBuyer() {
 			Data internal.Buyer
 		}
 		err = json.NewDecoder(w.Body).Decode(&resBuyer)
+		require.NoError(s.T(), err)
 		ok = s.Run("the entries match", func() {
 			require.Equal(s.T(), buyer.FirstName, resBuyer.Data.FirstName)
 			require.Equal(s.T(), buyer.LastName, resBuyer.Data.LastName)
@@ -359,6 +360,7 @@ func (s *BuyerRouterSuite) TestPatchBuyer() {
 			Data internal.BuyerPatch
 		}
 		err = json.NewDecoder(w.Body).Decode(&resBuyer)
+		require.NoError(s.T(), err)
 		ok = s.Run("the entries match", func() {
 			require.Equal(s.T(), *buyer.FirstName, *resBuyer.Data.FirstName)
 			require.Equal(s.T(), *buyer.LastName, *resBuyer.Data.LastName)

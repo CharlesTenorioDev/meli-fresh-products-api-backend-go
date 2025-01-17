@@ -13,8 +13,8 @@ const (
 )
 
 var (
-	CidAlreadyExists = errors.New("carry with this cid already exists")
-	NoSuchLocalityId = errors.New("there's no such locality id")
+	ErrCidAlreadyExists = errors.New("carry with this cid already exists")
+	ErrNoSuchLocalityId = errors.New("there's no such locality id")
 )
 
 type CarriesMysql struct {
@@ -61,9 +61,9 @@ func (r *CarriesMysql) Create(carry internal.Carries) (lastId int64, e error) {
 		if ok {
 			switch mysqlErr.Number {
 			case 1062:
-				e = CidAlreadyExists
+				e = ErrCidAlreadyExists
 			case 1452:
-				e = NoSuchLocalityId
+				e = ErrNoSuchLocalityId
 			}
 		}
 		return

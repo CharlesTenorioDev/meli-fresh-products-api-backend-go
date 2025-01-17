@@ -7,10 +7,10 @@ import (
 )
 
 var (
-	BuyerNotFound                    = errors.New("buyer not found")
-	BuyerAlreadyExists               = errors.New("buyer already exists")
-	CardNumberAlreadyInUse           = errors.New("buyer with given card number already registered")
-	BuyerUnprocessableEntity         = errors.New("couldn't parse buyer")
+	ErrBuyerNotFound                 = errors.New("buyer not found")
+	ErrBuyerAlreadyExists            = errors.New("buyer already exists")
+	ErrCardNumberAlreadyInUse        = errors.New("buyer with given card number already registered")
+	ErrBuyerUnprocessableEntity      = errors.New("couldn't parse buyer")
 	ErrPurchaseOrdersByBuyerNotFound = errors.New("purchase orders not found for the given buyer")
 	ErrPurchaseOrdersNotFound        = errors.New("purchase orders not found for any buyer")
 )
@@ -44,7 +44,7 @@ func (s *BuyerServiceDefault) FindByID(id int) (b internal.Buyer, err error) {
 	all := s.repo.GetAll()
 	b, ok := all[id]
 	if !ok {
-		err = BuyerNotFound
+		err = ErrBuyerNotFound
 	}
 
 	return
@@ -54,12 +54,12 @@ func (s *BuyerServiceDefault) Save(buyer *internal.Buyer) (err error) {
 	all := s.repo.GetAll()
 	ok := buyer.Parse()
 	if !ok {
-		err = BuyerUnprocessableEntity
+		err = ErrBuyerUnprocessableEntity
 		return
 	}
 
 	if cardNumberIdAlreadyInUse(buyer.CardNumberId, all) {
-		err = CardNumberAlreadyInUse
+		err = ErrCardNumberAlreadyInUse
 		return
 	}
 
@@ -71,12 +71,12 @@ func (s *BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (er
 	all := s.repo.GetAll()
 	_, ok := all[id]
 	if !ok {
-		err = BuyerNotFound
+		err = ErrBuyerNotFound
 		return
 	}
 
 	if cardNumberIdAlreadyInUse(*buyerPatch.CardNumberId, all) {
-		err = CardNumberAlreadyInUse
+		err = ErrCardNumberAlreadyInUse
 		return
 	}
 
@@ -88,7 +88,7 @@ func (s *BuyerServiceDefault) Delete(id int) (err error) {
 	all := s.repo.GetAll()
 	_, ok := all[id]
 	if !ok {
-		err = BuyerNotFound
+		err = ErrBuyerNotFound
 		return
 	}
 

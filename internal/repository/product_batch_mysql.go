@@ -51,7 +51,7 @@ func (r *ProductBatchMysql) FindByID(id int) (internal.ProductBatch, error) {
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return pb, internal.ProductBatchNotFound
+			return pb, internal.ErrProductBatchNotFound
 		}
 		return pb, err
 	}
@@ -79,7 +79,7 @@ func (r *ProductBatchMysql) Save(prodBatch *internal.ProductBatch) error {
 		if errors.As(err, &mysqlErr) {
 			switch mysqlErr.Number {
 			case 1062:
-				return internal.ProductBatchAlreadyExists
+				return internal.ErrProductBatchAlreadyExists
 			}
 		}
 		return err
@@ -129,7 +129,7 @@ func (r *ProductBatchMysql) ReportProducts() (prodBatches []internal.ProductBatc
 
 	rows, err := r.db.Query(query)
 	if err != nil {
-		return nil, internal.ProductBatchNotFound
+		return nil, internal.ErrProductBatchNotFound
 	}
 	defer rows.Close()
 
@@ -147,13 +147,13 @@ func (r *ProductBatchMysql) ReportProducts() (prodBatches []internal.ProductBatc
 			&pb.ProductId,
 			&pb.SectionId,
 		); err != nil {
-			return nil, internal.ProductBatchNotFound
+			return nil, internal.ErrProductBatchNotFound
 		}
 		prodBatches = append(prodBatches, pb)
 	}
 
 	if err := rows.Err(); err != nil {
-		return nil, internal.ProductBatchNotFound
+		return nil, internal.ErrProductBatchNotFound
 	}
 
 	return prodBatches, nil
@@ -198,9 +198,9 @@ func (r *ProductBatchMysql) ReportProductsByID(id int) (prodBatches []internal.P
 		&pb.SectionId,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, internal.ProductBatchNotFound
+			return nil, internal.ErrProductBatchNotFound
 		}
-		return nil, internal.ProductBatchNotFound
+		return nil, internal.ErrProductBatchNotFound
 	}
 
 	prodBatches = append(prodBatches, pb)

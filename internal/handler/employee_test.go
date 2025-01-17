@@ -30,7 +30,6 @@ const (
 
 type EmployeeTestSuite struct {
 	db *sql.DB
-	rt chi.Router
 	hd *handler.EmployeeHandlerDefault
 	suite.Suite
 }

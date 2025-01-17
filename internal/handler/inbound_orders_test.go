@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/DATA-DOG/go-txdb"
-	"github.com/go-chi/chi/v5"
 	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
@@ -25,7 +24,6 @@ const inboundRoute = "/api/v1/inbound-orders"
 
 type InboundOrdersTestSuite struct {
 	hd *handler.InboundOrdersHandler
-	rt chi.Router
 	db *sql.DB
 	suite.Suite
 }

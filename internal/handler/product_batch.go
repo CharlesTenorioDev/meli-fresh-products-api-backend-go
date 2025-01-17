@@ -76,7 +76,7 @@ func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := h.sv.Save(&prodBatch)
 	if err != nil {
-		if errors.Is(err, internal.ProductBatchNumberAlreadyInUse) {
+		if errors.Is(err, internal.ErrProductBatchNumberAlreadyInUse) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))

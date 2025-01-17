@@ -59,11 +59,11 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	}
 	newProduct, err := h.s.Create(product)
 	if err != nil {
-		if errors.Is(err, service.SellerNotExists) || errors.Is(err, service.ProductTypeNotExists) {
+		if errors.Is(err, service.ErrSellerNotExists) || errors.Is(err, service.ErrProductTypeNotExists) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-		} else if errors.Is(err, service.ProductCodeAlreadyExists) {
+		} else if errors.Is(err, service.ErrProductCodeAlreadyExists) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
-		} else if errors.Is(err, service.ProductUnprocessableEntity) {
+		} else if errors.Is(err, service.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
@@ -107,11 +107,11 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 	updatedProduct, err := h.s.Update(product)
 	if err != nil {
-		if errors.Is(err, service.SellerNotExists) || errors.Is(err, service.ProductTypeNotExists) || errors.Is(err, service.ProductNotExists) {
+		if errors.Is(err, service.ErrSellerNotExists) || errors.Is(err, service.ErrProductTypeNotExists) || errors.Is(err, service.ErrProductNotExists) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-		} else if errors.Is(err, service.ProductCodeAlreadyExists) {
+		} else if errors.Is(err, service.ErrProductCodeAlreadyExists) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
-		} else if errors.Is(err, service.ProductUnprocessableEntity) {
+		} else if errors.Is(err, service.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))

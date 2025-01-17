@@ -7,11 +7,11 @@ import (
 )
 
 var (
-	ProductUnprocessableEntity = errors.New("all fields must be valid and filled")
-	ProductCodeAlreadyExists   = errors.New("product code already exists")
-	ProductNotExists           = errors.New("Error ID doesn't exists")
-	SellerNotExists            = errors.New("Error fetching seller")
-	ProductTypeNotExists       = errors.New("Error fetching product type")
+	ErrProductUnprocessableEntity = errors.New("all fields must be valid and filled")
+	ErrProductCodeAlreadyExists   = errors.New("product code already exists")
+	ErrProductNotExists           = errors.New("error ID doesn't exists")
+	ErrSellerNotExists            = errors.New("error fetching seller")
+	ErrProductTypeNotExists       = errors.New("error fetching product type")
 )
 
 func NewProductService(prRepo internal.ProductRepository, slRepo internal.SellerRepository, ptRepo internal.ProductTypeRepository) *ProductDefault {
@@ -52,16 +52,16 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 	}
 
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
-		return product, ProductCodeAlreadyExists
+		return product, ErrProductCodeAlreadyExists
 	}
 
 	_, err = s.sellerRepo.FindByID(product.SellerId)
 	if err != nil {
-		return product, SellerNotExists
+		return product, ErrSellerNotExists
 	}
 	_, err = s.productTypeRepo.FindByID(product.ProductTypeId)
 	if err != nil {
-		return product, ProductTypeNotExists
+		return product, ErrProductTypeNotExists
 	}
 	// Gera um novo ID para o produto
 	product.Id = GenerateNewID(existingProducts)
@@ -83,7 +83,7 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 
 	existingProduct, err := s.productRepo.FindByID(product.Id)
 	if err != nil {
-		return product, ProductNotExists
+		return product, ErrProductNotExists
 	}
 
 	if product.ProductCode == "" {
@@ -121,16 +121,16 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	}
 
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
-		return product, ProductCodeAlreadyExists
+		return product, ErrProductCodeAlreadyExists
 	}
 
 	_, err = s.sellerRepo.FindByID(product.SellerId)
 	if err != nil {
-		return product, SellerNotExists
+		return product, ErrSellerNotExists
 	}
 	_, err = s.productTypeRepo.FindByID(product.ProductTypeId)
 	if err != nil {
-		return product, ProductTypeNotExists
+		return product, ErrProductTypeNotExists
 	}
 
 	productUpdate, err := s.productRepo.Update(product)
@@ -193,7 +193,7 @@ func ValidateProduct(product internal.Product) error {
 		product.FreezingRate < -273.15 ||
 		product.ProductTypeId <= 0 ||
 		product.SellerId <= 0 {
-		return ProductUnprocessableEntity
+		return ErrProductUnprocessableEntity
 	}
 	return nil
 }
