@@ -162,24 +162,4 @@ func (b *BuyerTestSuite) TestReportPurchaseOrders() {
 		require.Equal(t, expectedCode, response.Code)
 		require.JSONEq(t, expectedBody, response.Body.String())
 	})
-
-	// b.T().Run("case 4 - error - Purchase order reports that doesn't exists for the given buyer", func(t *testing.T) {
-	// 	// given
-	// 	request := httptest.NewRequest(http.MethodGet, api_buyer+"?id=3", nil)
-	// 	response := httptest.NewRecorder()
-
-	// 	// when
-	// 	b.hd.ReportPurchaseOrders(response, request)
-
-	// 	// then
-	// 	expectedCode := http.StatusNotFound
-	// 	expectedBody := `{
-	// 			"message": "purchase orders not found for the given buyer",
-	// 			"error": "not_found",
-	// 			"code": 404,
-	// 			"causes": null
-	// 		}`
-	// 	require.Equal(t, expectedCode, response.Code)
-	// 	require.JSONEq(t, expectedBody, response.Body.String())
-	// })
 }
