@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type ProductRecordsDefault struct {
@@ -41,7 +41,7 @@ func (pr *ProductRecordsDefault) Create(productRec internal.ProductRecords) (int
 func (pr *ProductRecordsDefault) GetAll() ([]internal.ProductRecords, error) {
 	productRecords, err := pr.productRecRepo.FindAll()
 	if err != nil {
-		return nil, rest_err.NewInternalServerError("Erro ao buscar todos os registros de produtos")
+		return nil, resterr.NewInternalServerError("Erro ao buscar todos os registros de produtos")
 	}
 	return productRecords, nil
 }
@@ -49,7 +49,7 @@ func (pr *ProductRecordsDefault) GetAll() ([]internal.ProductRecords, error) {
 // Implementação da função GetByID
 func (pr *ProductRecordsDefault) GetByID(id int) (internal.ProductRecords, error) {
 	if id <= 0 {
-		return internal.ProductRecords{}, rest_err.NewBadRequestError("O ID deve ser válido e maior que zero")
+		return internal.ProductRecords{}, resterr.NewBadRequestError("O ID deve ser válido e maior que zero")
 	}
 
 	productRecord, err := pr.productRecRepo.FindByID(id)

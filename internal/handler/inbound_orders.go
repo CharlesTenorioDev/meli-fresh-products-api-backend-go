@@ -6,7 +6,7 @@ import (
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type InboundOrdersHandler struct {
@@ -67,7 +67,7 @@ func (h *InboundOrdersHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	allInbounds, err := h.sv.FindAll()
 	if err != nil {
 
-		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("failed to fetch inbounds orders"))
+		response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError("failed to fetch inbounds orders"))
 		return
 	}
 

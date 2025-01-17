@@ -3,14 +3,15 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"go.uber.org/zap"
 	"net/http"
 	"strconv"
+
+	"go.uber.org/zap"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/utils/logger"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 // NewLocalityDefault creates a new instance of the seller handler
@@ -51,7 +52,7 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 				response.JSON(
 					w,
 					http.StatusInternalServerError,
-					rest_err.NewInternalServerError("failed to fetch carries"),
+					resterr.NewInternalServerError("failed to fetch carries"),
 				)
 				return
 			}
@@ -67,7 +68,7 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 			response.JSON(
 				w,
 				http.StatusBadRequest,
-				rest_err.NewBadRequestError("id should be a number"),
+				resterr.NewBadRequestError("id should be a number"),
 			)
 			return
 		}
@@ -77,7 +78,7 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 			response.JSON(
 				w,
 				http.StatusNotFound,
-				rest_err.NewNotFoundError("not carries on locality_id "+idStr),
+				resterr.NewNotFoundError("not carries on locality_id "+idStr),
 			)
 			return
 		}
@@ -107,7 +108,7 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 			id, parseErr := strconv.Atoi(idStr)
 
 			if parseErr != nil {
-				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("id should be a number"))
 				return
 			}
 
@@ -119,7 +120,7 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 				zap.String("id", idStr),
 			)
 			if errors.Is(err, internal.ErrLocalityNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 				return
 			}
 			response.JSON(w, http.StatusInternalServerError, nil)
@@ -164,21 +165,21 @@ func (h *LocalityDefault) Save() http.HandlerFunc {
 		err = h.sv.Save(locality)
 		if err != nil {
 			if errors.Is(err, internal.ErrLocalityConflict) {
-				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 				return
 			}
 
 			if errors.As(err, &internal.DomainError{}) {
 				var domainError internal.DomainError
 				errors.As(err, &domainError)
-				var restCauses []rest_err.Causes
+				var restCauses []resterr.Causes
 				for _, cause := range domainError.Causes {
-					restCauses = append(restCauses, rest_err.Causes{
+					restCauses = append(restCauses, resterr.Causes{
 						Field:   cause.Field,
 						Message: cause.Message,
 					})
 				}
-				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestValidationError(domainError.Message, restCauses))
+				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
 				return
 			}
 

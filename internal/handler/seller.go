@@ -10,7 +10,7 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 // NewSellerDefault creates a new instance of the seller handler
@@ -57,7 +57,7 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 		all, err := h.sv.FindAll()
 		if err != nil {
 			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("sellers not found"))
+				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("sellers not found"))
 				return
 			}
 			response.JSON(w, http.StatusInternalServerError, nil)
@@ -96,7 +96,7 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 		seller, err := h.sv.FindByID(id)
 		if err != nil {
 			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 				return
 			}
 			response.JSON(w, http.StatusInternalServerError, nil)
@@ -139,7 +139,7 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 
 		err = sl.Validate()
 		if err != nil {
-			restErr := rest_err.NewUnprocessableEntityError(err.Error())
+			restErr := resterr.NewUnprocessableEntityError(err.Error())
 			response.JSON(w, restErr.Code, restErr)
 			return
 		}
@@ -149,12 +149,12 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 			log.Println(err)
 
 			if errors.Is(err, internal.ErrSellerConflict) || errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
-				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 				return
 			}
 
 			if errors.Is(err, internal.ErrSellerNotFound) || errors.Is(err, internal.ErrLocalityNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 				return
 			}
 
@@ -200,18 +200,18 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 		seller, err := h.sv.Update(id, slPatch)
 		if err != nil {
 			if errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
-				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 				return
 			}
 
 			if errors.Is(err, internal.ErrSellerInvalidFields) {
-				restErr := rest_err.NewBadRequestError(err.Error())
+				restErr := resterr.NewBadRequestError(err.Error())
 				response.JSON(w, restErr.Code, restErr)
 				return
 			}
 
 			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 				return
 			}
 
@@ -248,7 +248,7 @@ func (h *SellerDefault) Delete() http.HandlerFunc {
 		err = h.sv.Delete(id)
 		if err != nil {
 			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 				return
 			}
 			response.JSON(w, http.StatusInternalServerError, nil)

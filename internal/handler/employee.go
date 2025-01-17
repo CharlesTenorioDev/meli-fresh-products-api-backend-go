@@ -11,7 +11,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type EmployeeHandlerDefault struct {
@@ -28,7 +28,7 @@ func (h *EmployeeHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) 
 	dataEmployee, err := h.sv.GetAll()
 
 	if err != nil {
-		response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+		response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(err.Error()))
 		return
 	}
 
@@ -184,7 +184,7 @@ func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *h
 	case idStr == "":
 		inboundOrders, err := h.sv.CountInboundOrdersPerEmployee()
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("failed to fetch inbound orders"))
+			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError("failed to fetch inbound orders"))
 			return
 		}
 		response.JSON(w, http.StatusOK, map[string]any{
@@ -196,14 +196,14 @@ func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *h
 		id, err := strconv.Atoi(idStr)
 		switch {
 		case err != nil:
-			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("id should be a number"))
 			return
 		}
 
 		countInboundOrders, err := h.sv.ReportInboundOrdersById(id)
 		switch {
 		case err != nil:
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("employee not found"))
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("employee not found"))
 			return
 		}
 

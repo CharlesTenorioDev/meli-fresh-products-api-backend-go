@@ -8,7 +8,7 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type ProductRecordsHandlerDefault struct {
@@ -36,10 +36,10 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 	createdProductRec, err := h.pd.Create(productRec)
 	if err != nil {
 		if errors.Is(err, service.ErrProductUnprocessableEntity) {
-			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
 		if errors.Is(err, service.ErrProductNotExists) {
-			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}
 		return
 	}
