@@ -32,7 +32,7 @@ func (r *ProductTypeMysql) FindByID(id int) (internal.ProductType, error) {
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return pt, internal.ProductTypeNotFound
+			return pt, internal.ErrProductTypeNotFound
 		}
 		return pt, err
 	}

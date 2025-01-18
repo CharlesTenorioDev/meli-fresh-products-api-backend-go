@@ -81,11 +81,11 @@ func (h *EmployeeHandlerDefault) Create(w http.ResponseWriter, r *http.Request) 
 	// checks if card number Id field is already in use, because it's a unique field
 	if err != nil {
 
-		if errors.Is(err, service.CardNumberIdInUse) {
+		if errors.Is(err, service.ErrCardNumberIdInUse) {
 			response.JSON(w, http.StatusConflict, map[string]any{
 				"error": "card number id already in use", // Status 409
 			})
-		} else if errors.Is(err, service.EmployeeInUse) {
+		} else if errors.Is(err, service.ErrEmployeeInUse) {
 
 			response.JSON(w, http.StatusConflict, map[string]any{
 				"error": "employee already in use", // Status 409
@@ -128,7 +128,7 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 	err = h.sv.Update(employee)
 
 	if err != nil {
-		if errors.Is(err, service.EmployeeNotFound) {
+		if errors.Is(err, service.ErrEmployeeNotFound) {
 			response.JSON(w, http.StatusNotFound, map[string]any{
 				"data": err.Error(),
 			})

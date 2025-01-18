@@ -59,7 +59,7 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 
 	err = h.s.Save(&buyer)
 	if err != nil {
-		if errors.Is(err, service.BuyerAlreadyExists) || errors.Is(err, service.CardNumberAlreadyInUse) {
+		if errors.Is(err, service.ErrBuyerAlreadyExists) || errors.Is(err, service.ErrCardNumberAlreadyInUse) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
@@ -88,7 +88,7 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 	err = h.s.Update(id, buyer)
 	if err != nil {
-		if errors.Is(err, service.BuyerNotFound) {
+		if errors.Is(err, service.ErrBuyerNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
@@ -136,7 +136,7 @@ func (h *BuyerHandlerDefault) ReportPurchaseOrders(w http.ResponseWriter, r *htt
 
 	if err != nil {
 		switch {
-		case errors.Is(err, service.BuyerNotFound):
+		case errors.Is(err, service.ErrBuyerNotFound):
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		default:
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))

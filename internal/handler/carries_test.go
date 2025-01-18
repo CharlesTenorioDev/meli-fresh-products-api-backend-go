@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-txdb"
-	"github.com/go-chi/chi/v5"
 	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
@@ -23,7 +22,6 @@ const api = "/api/v1/carries"
 
 type CarriesTestSuite struct {
 	hd *handler.CarriesHandlerDefault
-	rt chi.Router
 	db *sql.DB
 	suite.Suite
 }

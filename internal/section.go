@@ -3,10 +3,10 @@ package internal
 import "errors"
 
 var (
-	SectionNotFound            = errors.New("section not found")
-	SectionAlreadyExists       = errors.New("section already exists")
-	SectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
-	SectionUnprocessableEntity = errors.New("couldn't parse section")
+	ErrSectionNotFound            = errors.New("section not found")
+	ErrSectionAlreadyExists       = errors.New("section already exists")
+	ErrSectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
+	ErrSectionUnprocessableEntity = errors.New("couldn't parse section")
 )
 
 type Section struct {

@@ -14,7 +14,7 @@ type ProductRecordsDefault struct {
 }
 
 var (
-	ErrProductRecordsNotFound = errors.New("Product Records not found")
+	ErrProductRecordsNotFound = errors.New("product records not found")
 )
 
 func NewProductRecordsDefault(prodRecRepo internal.ProductRecordsRepository, prodRepo internal.ProductRepository) *ProductRecordsDefault {
@@ -32,7 +32,7 @@ func (pr *ProductRecordsDefault) Create(productRec internal.ProductRecords) (int
 	product, err := pr.productRepo.FindByID(productRec.ProductID)
 	fmt.Printf("Product found: %+v\n", product)
 	if err != nil {
-		return productRec, ProductNotExists
+		return productRec, ErrProductNotExists
 	}
 	return pr.productRecRepo.Save(productRec)
 }
@@ -64,7 +64,7 @@ func ValidateProductRec(productRec internal.ProductRecords) error {
 	if productRec.LastUpdateDate.IsZero() ||
 		productRec.PurchasePrice <= 0 ||
 		productRec.SalePrice <= 0 {
-		return ProductUnprocessableEntity
+		return ErrProductUnprocessableEntity
 	}
 	return nil
 }

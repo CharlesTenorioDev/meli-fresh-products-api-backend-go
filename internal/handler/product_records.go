@@ -35,10 +35,10 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 	// Chama o serviço para criar o registro
 	createdProductRec, err := h.pd.Create(productRec)
 	if err != nil {
-		if errors.Is(err, service.ProductUnprocessableEntity) {
+		if errors.Is(err, service.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 		}
-		if errors.Is(err, service.ProductNotExists) {
+		if errors.Is(err, service.ErrProductNotExists) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		}
 		return

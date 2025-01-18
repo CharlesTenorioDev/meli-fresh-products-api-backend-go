@@ -96,7 +96,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 	report, err := h.sv.ReportProductsByID(idSection)
 	if err != nil {
 		log.Println(err)
-		if errors.Is(err, internal.SectionNotFound) {
+		if errors.Is(err, internal.ErrSectionNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
@@ -129,7 +129,7 @@ func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	err := h.sv.Save(&section)
 	if err != nil {
-		if errors.Is(err, internal.SectionAlreadyExists) || errors.Is(err, internal.SectionNumberAlreadyInUse) {
+		if errors.Is(err, internal.ErrSectionAlreadyExists) || errors.Is(err, internal.ErrSectionNumberAlreadyInUse) {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
@@ -157,7 +157,7 @@ func (h *SectionHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	section, err := h.sv.Update(id, updates)
 	if err != nil {
-		if errors.Is(err, internal.SectionNotFound) {
+		if errors.Is(err, internal.ErrSectionNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
@@ -180,7 +180,7 @@ func (h *SectionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	err = h.sv.Delete(id)
 	if err != nil {
 		switch {
-		case errors.Is(err, internal.SectionNotFound):
+		case errors.Is(err, internal.ErrSectionNotFound):
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 		default:
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
