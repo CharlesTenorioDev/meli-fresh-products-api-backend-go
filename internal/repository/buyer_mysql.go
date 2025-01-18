@@ -101,7 +101,7 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrders() (purchaseOrders []internal
 			b.id, b.card_number_id, b.first_name, b.last_name, COUNT(po.id) as purchase_orders_count
 		FROM
 			buyers as b
-		INNER JOIN
+		LEFT JOIN
 			purchase_orders as po ON po.buyer_id = b.id
 		GROUP BY
 			b.id;
@@ -137,7 +137,7 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrdersById(id int) (purchaseOrders 
 			b.id, b.card_number_id, b.first_name, b.last_name, COUNT(po.id) as purchase_orders_count
 		FROM
 			buyers as b
-		INNER JOIN
+		LEFT JOIN
 			purchase_orders as po ON po.buyer_id = b.id
 		GROUP BY
 			b.id
