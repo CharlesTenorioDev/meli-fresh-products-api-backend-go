@@ -59,7 +59,7 @@ type EmployeeRepository interface {
 	Update(id int, employee Employee) error
 	Delete(id int) error
 	CountInboundOrdersPerEmployee() (io []InboundOrdersPerEmployee, err error)
-	ReportInboundOrdersById(employeeID int) (io InboundOrdersPerEmployee, err error)
+	ReportInboundOrdersByID(employeeID int) (io InboundOrdersPerEmployee, err error)
 }
 
 type EmployeeService interface {

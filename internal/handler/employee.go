@@ -50,7 +50,7 @@ func (h *EmployeeHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	emp, err := h.sv.GetById(id)
+	emp, err := h.sv.GetByID(id)
 	if err != nil {
 		response.JSON(w, http.StatusNotFound, map[string]any{
 			"data": "employee not found", //status 404
@@ -81,7 +81,7 @@ func (h *EmployeeHandlerDefault) Create(w http.ResponseWriter, r *http.Request) 
 	// checks if card number Id field is already in use, because it's a unique field
 	if err != nil {
 
-		if errors.Is(err, service.ErrCardNumberIdInUse) {
+		if errors.Is(err, service.ErrCardNumberIDInUse) {
 			response.JSON(w, http.StatusConflict, map[string]any{
 				"error": "card number id already in use", // Status 409
 			})
@@ -124,7 +124,7 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	employee.Id = id
+	employee.ID = id
 	err = h.sv.Update(employee)
 
 	if err != nil {
@@ -141,7 +141,7 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	updatedEmployee, err := h.sv.GetById(employee.Id)
+	updatedEmployee, err := h.sv.GetByID(employee.ID)
 	if err != nil {
 		response.JSON(w, http.StatusInternalServerError, map[string]any{
 			"data": "error retrieving updated employee",
@@ -200,7 +200,7 @@ func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *h
 			return
 		}
 
-		countInboundOrders, err := h.sv.ReportInboundOrdersById(id)
+		countInboundOrders, err := h.sv.ReportInboundOrdersByID(id)
 		switch {
 		case err != nil:
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("employee not found"))

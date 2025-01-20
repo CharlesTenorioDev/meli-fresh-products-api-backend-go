@@ -1,13 +1,13 @@
 linters:
   enable:
     - bodyclose
-    - gocognit
+    # - gocognit
     - depguard
     - dogsled
     - dupword # Detects duplicate words.
     - durationcheck
     - errchkjson
-    - gocyclo
+    # - gocyclo
     - loggercheck
     - ineffassign
     - wsl

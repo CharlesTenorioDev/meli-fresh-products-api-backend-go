@@ -43,7 +43,7 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 		}
 		return
 	}
-	productRecJson := internal.ProductRecordsJson{
+	productRecJson := internal.ProductRecordsJSON{
 		LastUpdateDate: createdProductRec.LastUpdateDate,
 		PurchasePrice:  createdProductRec.PurchasePrice,
 		SalePrice:      createdProductRec.SalePrice,

@@ -141,5 +141,5 @@ func (s *EmployeeDefault) CountInboundOrdersPerEmployee() (io []internal.Inbound
 }
 
 func (s *EmployeeDefault) ReportInboundOrdersByID(employeeID int) (io internal.InboundOrdersPerEmployee, err error) {
-	return s.rp.ReportInboundOrdersById(employeeID)
+	return s.rp.ReportInboundOrdersByID(employeeID)
 }

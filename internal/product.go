@@ -43,7 +43,7 @@ type ProductService interface {
 	Create(Product) (Product, error)
 	Update(Product) (Product, error)
 	Delete(id int) error
-	GetByIdRecord(int) (ProductRecordsJSONCount, error)
+	GetByIDRecord(int) (ProductRecordsJSONCount, error)
 	GetAllRecord() ([]ProductRecordsJSONCount, error)
 }
 
@@ -53,6 +53,6 @@ type ProductRepository interface {
 	Save(Product) (Product, error)
 	Update(Product) (Product, error)
 	Delete(id int) error
-	FindByIdRecord(int) (ProductRecordsJSONCount, error)
+	FindByIDRecord(int) (ProductRecordsJSONCount, error)
 	FindAllRecord() ([]ProductRecordsJSONCount, error)
 }

@@ -123,7 +123,7 @@ func (s *BuyerServiceDefault) ReportPurchaseOrdersByID(id int) (po []internal.Pu
 		return nil, err
 	}
 	// Get the purchase orders of the given buyer
-	po, err = s.repo.ReportPurchaseOrdersById(id)
+	po, err = s.repo.ReportPurchaseOrdersByID(id)
 	// Check if there is no records for the given buyer
 	if len(po) == 0 {
 		return nil, ErrPurchaseOrdersByBuyerNotFound

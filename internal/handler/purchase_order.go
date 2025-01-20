@@ -75,7 +75,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			OrderDate:       orderDate,
 			TrackingCode:    requestInput.TrackingCode,
 			BuyerID:         requestInput.BuyerID,
-			ProductRecordId: requestInput.ProductRecordId,
+			ProductRecordID: requestInput.ProductRecordId,
 		}
 
 		// saving the purchase order
@@ -113,7 +113,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			OrderDate:       purchaseOrder.OrderDate.Format(time.DateOnly),
 			TrackingCode:    purchaseOrder.TrackingCode,
 			BuyerID:         purchaseOrder.BuyerID,
-			ProductRecordId: purchaseOrder.ProductRecordId,
+			ProductRecordId: purchaseOrder.ProductRecordID,
 		}
 
 		// sending the response

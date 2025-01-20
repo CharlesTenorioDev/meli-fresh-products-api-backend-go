@@ -129,7 +129,7 @@ func (h *BuyerHandlerDefault) ReportPurchaseOrders(w http.ResponseWriter, r *htt
 			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("failed to parse id"))
 			return
 		}
-		purchaseOrdersByBuyer, err = h.s.ReportPurchaseOrdersById(idInt)
+		purchaseOrdersByBuyer, err = h.s.ReportPurchaseOrdersByID(idInt)
 	} else {
 		purchaseOrdersByBuyer, err = h.s.ReportPurchaseOrders()
 	}

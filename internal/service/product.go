@@ -169,7 +169,7 @@ func (s *ProductDefault) GetAllRecord() (v []internal.ProductRecordsJSONCount, e
 }
 
 func (s *ProductDefault) GetByIDRecord(id int) (internal.ProductRecordsJSONCount, error) {
-	product, err := s.productRepo.FindByIdRecord(id)
+	product, err := s.productRepo.FindByIDRecord(id)
 	if err != nil {
 		return internal.ProductRecordsJSONCount{}, err
 	}

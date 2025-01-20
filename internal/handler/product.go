@@ -70,7 +70,7 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		}
 		return
 	}
-	var productJson internal.ProductJsonPost
+	var productJson internal.ProductJSONPost
 	productJson.ProductCode = newProduct.ProductCode
 	productJson.Description = newProduct.Description
 	productJson.Height = newProduct.Height
@@ -80,8 +80,8 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	productJson.RecommendedFreezingTemperature = newProduct.RecommendedFreezingTemperature
 	productJson.Width = newProduct.Width
 	productJson.FreezingRate = newProduct.FreezingRate
-	productJson.ProductTypeId = newProduct.ProductTypeId
-	productJson.SellerId = newProduct.SellerId
+	productJson.ProductTypeID = newProduct.ProductTypeID
+	productJson.SellerID = newProduct.SellerID
 
 	response.JSON(w, http.StatusCreated, map[string]any{
 		"data": productJson,
@@ -103,7 +103,7 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	product.Id = id
+	product.ID = id
 
 	updatedProduct, err := h.s.Update(product)
 	if err != nil {
@@ -158,7 +158,7 @@ func (h *ProductHandlerDefault) ReportRecords(w http.ResponseWriter, r *http.Req
 			return
 		}
 
-		report, err := h.s.GetByIdRecord(productID)
+		report, err := h.s.GetByIDRecord(productID)
 		if err != nil {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("product not found"))
 			return

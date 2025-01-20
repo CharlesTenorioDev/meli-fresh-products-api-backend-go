@@ -27,7 +27,7 @@ type BuyerRepository interface {
 	Update(id int, buyer BuyerPatch)
 	Delete(id int)
 	ReportPurchaseOrders() (purchaseOrders []PurchaseOrdersByBuyer, err error)
-	ReportPurchaseOrdersById(id int) (purchaseOrders []PurchaseOrdersByBuyer, err error)
+	ReportPurchaseOrdersByID(id int) (purchaseOrders []PurchaseOrdersByBuyer, err error)
 }
 
 type BuyerService interface {
@@ -37,7 +37,7 @@ type BuyerService interface {
 	Update(id int, buyerPatch BuyerPatch) (err error)
 	Delete(id int) (err error)
 	ReportPurchaseOrders() (purchaseOrders []PurchaseOrdersByBuyer, err error)
-	ReportPurchaseOrdersById(id int) (purchaseOrders []PurchaseOrdersByBuyer, err error)
+	ReportPurchaseOrdersByID(id int) (purchaseOrders []PurchaseOrdersByBuyer, err error)
 }
 
 func (b *Buyer) Parse() (ok bool) {

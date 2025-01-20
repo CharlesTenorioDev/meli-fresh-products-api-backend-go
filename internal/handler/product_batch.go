@@ -70,8 +70,8 @@ func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 		ManufacturingDate:  prodBatchJSON.ManufacturingDate,
 		ManufacturingHour:  prodBatchJSON.ManufacturingHour,
 		MinumumTemperature: prodBatchJSON.MinumumTemperature,
-		ProductId:          prodBatchJSON.ProductId,
-		SectionId:          prodBatchJSON.SectionId,
+		ProductID:          prodBatchJSON.ProductId,
+		SectionID:          prodBatchJSON.SectionId,
 	}
 
 	err := h.sv.Save(&prodBatch)
