@@ -6,42 +6,41 @@ var ErrEmployeeNotFound = errors.New("employee not found")
 var ErrEmployeeConflict = errors.New("employee already in use")
 
 type Employee struct {
-	Id           int    `json:"id"`
-	CardNumberId string `json:"card_number_id"`
+	ID           int    `json:"id"`
+	CardNumberID string `json:"card_number_id"`
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
-	WarehouseId  int    `json:"warehouse_id"`
+	WarehouseID  int    `json:"warehouse_id"`
 }
 
 type EmployeePatch struct {
-	CardNumberId *string `json:"card_number_id,omitempty"`
+	CardNumberID *string `json:"card_number_id,omitempty"`
 	FirstName    *string `json:"first_name,omitempty"`
 	LastName     *string `json:"last_name,omitempty"`
 }
 
 type InboundOrdersPerEmployee struct {
-	Id            int    `json:"id"`
-	CardNumberId  string `json:"card_number_id"`
+	ID            int    `json:"id"`
+	CardNumberID  string `json:"card_number_id"`
 	FirstName     string `json:"first_name"`
 	LastName      string `json:"last_name"`
-	WarehouseId   int    `json:"warehouse_id"`
+	WarehouseID   int    `json:"warehouse_id"`
 	CountInOrders int    `json:"inbound_orders_count"`
 }
 
 func (emp *Employee) RequirementsFields() (ok bool) {
 	ok = true
-
-	if emp.CardNumberId == "" || emp.FirstName == "" || emp.LastName == "" || emp.WarehouseId == 0 {
+	if emp.CardNumberID == "" || emp.FirstName == "" || emp.LastName == "" || emp.WarehouseID == 0 {
 		ok = false
 	}
+
 	return
 }
 
-// function to update employee data in repository
+// EmployeePatch function to update employee data in repository
 func (emp EmployeePatch) EmployeePatch(empUpdate *Employee) {
-
-	if emp.CardNumberId != nil {
-		empUpdate.CardNumberId = *emp.CardNumberId
+	if emp.CardNumberID != nil {
+		empUpdate.CardNumberID = *emp.CardNumberID
 	}
 
 	if emp.FirstName != nil {
@@ -60,7 +59,7 @@ type EmployeeRepository interface {
 	Update(id int, employee Employee) error
 	Delete(id int) error
 	CountInboundOrdersPerEmployee() (io []InboundOrdersPerEmployee, err error)
-	ReportInboundOrdersById(employeeId int) (io InboundOrdersPerEmployee, err error)
+	ReportInboundOrdersById(employeeID int) (io InboundOrdersPerEmployee, err error)
 }
 
 type EmployeeService interface {
@@ -70,5 +69,5 @@ type EmployeeService interface {
 	Update(employees Employee) (err error)
 	Delete(id int) (err error)
 	CountInboundOrdersPerEmployee() (io []InboundOrdersPerEmployee, err error)
-	ReportInboundOrdersById(employeeId int) (io InboundOrdersPerEmployee, err error)
+	ReportInboundOrdersById(employeeID int) (io InboundOrdersPerEmployee, err error)
 }

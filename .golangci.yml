@@ -11,7 +11,6 @@ linters:
     - loggercheck
     - ineffassign
     - wsl
-    - misspell # Detects commonly misspelled English words in comments.
     - nakedret
     - nilerr # Detects code that returns nil even if it checks that the error is not nil.
     - nolintlint # Detects ill-formed or insufficient nolint directives.

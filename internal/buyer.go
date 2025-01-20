@@ -2,20 +2,20 @@ package internal
 
 type Buyer struct {
 	ID           int    `json:"id"`
-	CardNumberId string `json:"card_number_id"`
+	CardNumberID string `json:"card_number_id"`
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
 }
 
 type BuyerPatch struct {
-	CardNumberId *string `json:"card_number_id,omitempty"`
+	CardNumberID *string `json:"card_number_id,omitempty"`
 	FirstName    *string `json:"first_name,omitempty"`
 	LastName     *string `json:"last_name,omitempty"`
 }
 
 type PurchaseOrdersByBuyer struct {
 	BuyerID             int    `json:"id"`
-	CardNumberId        string `json:"card_number_id"`
+	CardNumberID        string `json:"card_number_id"`
 	FirstName           string `json:"first_name"`
 	LastName            string `json:"last_name"`
 	PurchaseOrdersCount int    `json:"purchase_orders_count"`
@@ -42,15 +42,16 @@ type BuyerService interface {
 
 func (b *Buyer) Parse() (ok bool) {
 	ok = true
-	if b.CardNumberId == "" || b.LastName == "" || b.FirstName == "" {
+	if b.CardNumberID == "" || b.LastName == "" || b.FirstName == "" {
 		ok = false
 	}
+
 	return
 }
 
 func (b BuyerPatch) Patch(buyerToUpdate *Buyer) {
-	if b.CardNumberId != nil {
-		buyerToUpdate.CardNumberId = *b.CardNumberId
+	if b.CardNumberID != nil {
+		buyerToUpdate.CardNumberID = *b.CardNumberID
 	}
 
 	if b.FirstName != nil {

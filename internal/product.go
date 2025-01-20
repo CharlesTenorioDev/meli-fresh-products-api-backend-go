@@ -9,7 +9,7 @@ var (
 )
 
 type Product struct {
-	Id                             int     `json:"id"`
+	ID                             int     `json:"id"`
 	ProductCode                    string  `json:"product_code"`
 	Description                    string  `json:"description"`
 	Height                         float64 `json:"height"`
@@ -19,11 +19,11 @@ type Product struct {
 	RecommendedFreezingTemperature float64 `json:"recommended_freezing_temperature"`
 	Width                          float64 `json:"width"`
 	FreezingRate                   float64 `json:"freezing_rate"`
-	ProductTypeId                  int     `json:"product_type_id"`
-	SellerId                       int     `json:"seller_id"`
+	ProductTypeID                  int     `json:"product_type_id"`
+	SellerID                       int     `json:"seller_id"`
 }
 
-type ProductJsonPost struct {
+type ProductJSONPost struct {
 	ProductCode                    string  `json:"product_code"`
 	Description                    string  `json:"description"`
 	Height                         float64 `json:"height"`
@@ -33,8 +33,8 @@ type ProductJsonPost struct {
 	RecommendedFreezingTemperature float64 `json:"recommended_freezing_temperature"`
 	Width                          float64 `json:"width"`
 	FreezingRate                   float64 `json:"freezing_rate"`
-	ProductTypeId                  int     `json:"product_type_id"`
-	SellerId                       int     `json:"seller_id"`
+	ProductTypeID                  int     `json:"product_type_id"`
+	SellerID                       int     `json:"seller_id"`
 }
 
 type ProductService interface {
@@ -43,8 +43,8 @@ type ProductService interface {
 	Create(Product) (Product, error)
 	Update(Product) (Product, error)
 	Delete(id int) error
-	GetByIdRecord(int) (ProductRecordsJsonCount, error)
-	GetAllRecord() ([]ProductRecordsJsonCount, error)
+	GetByIdRecord(int) (ProductRecordsJSONCount, error)
+	GetAllRecord() ([]ProductRecordsJSONCount, error)
 }
 
 type ProductRepository interface {
@@ -53,6 +53,6 @@ type ProductRepository interface {
 	Save(Product) (Product, error)
 	Update(Product) (Product, error)
 	Delete(id int) error
-	FindByIdRecord(int) (ProductRecordsJsonCount, error)
-	FindAllRecord() ([]ProductRecordsJsonCount, error)
+	FindByIdRecord(int) (ProductRecordsJSONCount, error)
+	FindAllRecord() ([]ProductRecordsJSONCount, error)
 }
