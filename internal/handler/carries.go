@@ -21,6 +21,7 @@ func (h *CarriesHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	all, err := h.sv.FindAll()
 	if err != nil {
 		response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError("failed to fetch carries"))
+
 		return
 	}
 
@@ -31,9 +32,11 @@ func (h *CarriesHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 
 func (h *CarriesHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var carry internal.Carries
+
 	err := json.NewDecoder(r.Body).Decode(&carry)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("failed to parse body"))
+
 		return
 	}
 
@@ -42,17 +45,18 @@ func (h *CarriesHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	lastId, err := h.sv.Create(carry)
+	lastID, err := h.sv.Create(carry)
 	if err != nil {
 		response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
+
 		return
 	}
 
 	response.JSON(w, http.StatusCreated, map[string]any{
 		"data": struct {
-			Id int64 `json:"id"`
+			ID int64 `json:"id"`
 		}{
-			Id: lastId,
+			ID: lastID,
 		},
 	})
 }

@@ -25,10 +25,11 @@ func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := h.s.GetAll()
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
-	response.JSON(w, http.StatusOK, map[string]interface{}{
+	response.JSON(w, http.StatusOK, map[string]any{
 		"data": products,
 	})
 }
@@ -39,13 +40,17 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
+
 	product, err := h.s.GetByID(id)
 	if err != nil {
 		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
 		return
 	}
+
 	response.JSON(w, http.StatusOK, map[string]any{
 		"data": product,
 	})
@@ -55,8 +60,10 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var product internal.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
+
 	newProduct, err := h.s.Create(product)
 	if err != nil {
 		if errors.Is(err, service.ErrSellerNotExists) || errors.Is(err, service.ErrProductTypeNotExists) {
@@ -68,23 +75,25 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		} else {
 			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(err.Error()))
 		}
+
 		return
 	}
-	var productJson internal.ProductJSONPost
-	productJson.ProductCode = newProduct.ProductCode
-	productJson.Description = newProduct.Description
-	productJson.Height = newProduct.Height
-	productJson.Length = newProduct.Length
-	productJson.NetWeight = newProduct.NetWeight
-	productJson.ExpirationRate = newProduct.ExpirationRate
-	productJson.RecommendedFreezingTemperature = newProduct.RecommendedFreezingTemperature
-	productJson.Width = newProduct.Width
-	productJson.FreezingRate = newProduct.FreezingRate
-	productJson.ProductTypeID = newProduct.ProductTypeID
-	productJson.SellerID = newProduct.SellerID
+
+	var productJSON internal.ProductJSONPost
+	productJSON.ProductCode = newProduct.ProductCode
+	productJSON.Description = newProduct.Description
+	productJSON.Height = newProduct.Height
+	productJSON.Length = newProduct.Length
+	productJSON.NetWeight = newProduct.NetWeight
+	productJSON.ExpirationRate = newProduct.ExpirationRate
+	productJSON.RecommendedFreezingTemperature = newProduct.RecommendedFreezingTemperature
+	productJSON.Width = newProduct.Width
+	productJSON.FreezingRate = newProduct.FreezingRate
+	productJSON.ProductTypeID = newProduct.ProductTypeID
+	productJSON.SellerID = newProduct.SellerID
 
 	response.JSON(w, http.StatusCreated, map[string]any{
-		"data": productJson,
+		"data": productJSON,
 	})
 }
 
@@ -94,12 +103,14 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
 	var product internal.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
@@ -116,31 +127,34 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 		} else {
 			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(err.Error()))
 		}
+
 		return
 	}
+
 	response.JSON(w, http.StatusOK, map[string]any{
 		"data": updatedProduct,
 	})
 }
 
 func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
-
 	idStr := chi.URLParam(r, "id")
-	id, err := strconv.Atoi(idStr)
 
+	id, err := strconv.Atoi(idStr)
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
 	if err := h.s.Delete(id); err != nil {
-
 		if err.Error() == "product not found" {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("product not found"))
+
 			return
 		}
 
 		response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(err.Error()))
+
 		return
 	}
 
@@ -155,27 +169,33 @@ func (h *ProductHandlerDefault) ReportRecords(w http.ResponseWriter, r *http.Req
 		productID, err := strconv.Atoi(id)
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, "ID inválido")
+
 			return
 		}
 
 		report, err := h.s.GetByIDRecord(productID)
 		if err != nil {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("product not found"))
+
 			return
 		}
 
 		// Retorna o relatório
-		response.JSON(w, http.StatusOK, map[string]interface{}{
+		response.JSON(w, http.StatusOK, map[string]any{
 			"data": report,
 		})
+
 		return
 	}
+
 	report, err := h.s.GetAllRecord()
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
-	response.JSON(w, http.StatusOK, map[string]interface{}{
+
+	response.JSON(w, http.StatusOK, map[string]any{
 		"data": report,
 	})
 }

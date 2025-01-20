@@ -60,6 +60,7 @@ func (h *SectionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var section internal.Section
+
 	section, err = h.sv.FindByID(id)
 	if err != nil {
 		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
@@ -84,6 +85,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 		response.JSON(w, http.StatusOK, map[string]any{
 			"data": sections,
 		})
+
 		return
 	}
 
@@ -96,11 +98,13 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 	report, err := h.sv.ReportProductsByID(idSection)
 	if err != nil {
 		log.Println(err)
+
 		if errors.Is(err, internal.ErrSectionNotFound) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(err.Error()))
 		}
+
 		return
 	}
 
@@ -134,6 +138,7 @@ func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
+
 		return
 	}
 
@@ -149,7 +154,7 @@ func (h *SectionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var updates map[string]interface{}
+	var updates map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
@@ -162,6 +167,7 @@ func (h *SectionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		} else {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}
+
 		return
 	}
 
@@ -185,6 +191,7 @@ func (h *SectionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 		default:
 			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 		}
+
 		return
 	}
 

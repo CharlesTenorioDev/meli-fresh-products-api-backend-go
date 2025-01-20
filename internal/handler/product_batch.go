@@ -31,21 +31,24 @@ type RequestProductBatchJSON struct {
 	ManufacturingDate  string  `json:"manufacturing_date"`
 	ManufacturingHour  int     `json:"manufacturing_hour"`
 	MinumumTemperature float64 `json:"minumum_temperature"`
-	ProductId          int     `json:"product_id"`
-	SectionId          int     `json:"section_id"`
+	ProductID          int     `json:"product_id"`
+	SectionID          int     `json:"section_id"`
 }
 
 func (h *ProductBatchHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
 	var prodBatch internal.ProductBatch
+
 	prodBatch, err = h.sv.FindByID(id)
 	if err != nil {
 		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
 		return
 	}
 
@@ -58,6 +61,7 @@ func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var prodBatchJSON RequestProductBatchJSON
 	if err := json.NewDecoder(r.Body).Decode(&prodBatchJSON); err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
@@ -70,8 +74,8 @@ func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 		ManufacturingDate:  prodBatchJSON.ManufacturingDate,
 		ManufacturingHour:  prodBatchJSON.ManufacturingHour,
 		MinumumTemperature: prodBatchJSON.MinumumTemperature,
-		ProductID:          prodBatchJSON.ProductId,
-		SectionID:          prodBatchJSON.SectionId,
+		ProductID:          prodBatchJSON.ProductID,
+		SectionID:          prodBatchJSON.SectionID,
 	}
 
 	err := h.sv.Save(&prodBatch)
@@ -81,6 +85,7 @@ func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
+
 		return
 	}
 

@@ -17,7 +17,7 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -111,27 +111,27 @@ func (l *LocalityTestSuite) TestLocalityDefault_ReportCarries() {
 		expectedCarriesCountPerLocality := []internal.CarriesCountPerLocality{
 			{
 				CarriesCount: 1,
-				LocalityId:   1,
+				LocalityID:   1,
 				LocalityName: "New York City",
 			},
 			{
 				CarriesCount: 1,
-				LocalityId:   2,
+				LocalityID:   2,
 				LocalityName: "Los Angeles",
 			},
 			{
 				CarriesCount: 1,
-				LocalityId:   3,
+				LocalityID:   3,
 				LocalityName: "Chicago",
 			},
 			{
 				CarriesCount: 1,
-				LocalityId:   4,
+				LocalityID:   4,
 				LocalityName: "Houston",
 			},
 			{
 				CarriesCount: 1,
-				LocalityId:   5,
+				LocalityID:   5,
 				LocalityName: "Phoenix",
 			},
 		}
@@ -189,7 +189,7 @@ func TestLocalityDefault_ReportSellers(t *testing.T) {
 			id:                 "",
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": []handler.LocalityGetJson{
+				"data": []handler.LocalityGetJSON{
 					{
 						ID:           1,
 						LocalityName: "Test Locality 1",
@@ -224,7 +224,7 @@ func TestLocalityDefault_ReportSellers(t *testing.T) {
 			id:                 "1",
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": []handler.LocalityGetJson{
+				"data": []handler.LocalityGetJSON{
 					{
 						ID:           1,
 						LocalityName: "Test Locality 1",
@@ -242,7 +242,7 @@ func TestLocalityDefault_ReportSellers(t *testing.T) {
 			},
 			id:                 "",
 			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   *rest_err.NewNotFoundError("locality not found"),
+			expectedResponse:   *resterr.NewNotFoundError("locality not found"),
 		},
 		{
 			name: "should return not found error by ID",
@@ -251,7 +251,7 @@ func TestLocalityDefault_ReportSellers(t *testing.T) {
 			},
 			id:                 "1",
 			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   *rest_err.NewNotFoundError("locality not found"),
+			expectedResponse:   *resterr.NewNotFoundError("locality not found"),
 		},
 		{
 			name: "should return internal server error",
@@ -276,7 +276,7 @@ func TestLocalityDefault_ReportSellers(t *testing.T) {
 			mockSetup:          func(m *MockLocalityService) {},
 			id:                 "invalid_id",
 			expectedStatusCode: http.StatusBadRequest,
-			expectedResponse:   *rest_err.NewBadRequestError("id should be a number"),
+			expectedResponse:   *resterr.NewBadRequestError("id should be a number"),
 		},
 	}
 
@@ -306,15 +306,15 @@ func TestLocalityDefault_ReportSellers(t *testing.T) {
 				switch response := tt.expectedResponse.(type) {
 				case map[string]interface{}:
 					var actualResponse struct {
-						Data []handler.LocalityGetJson `json:"data"`
+						Data []handler.LocalityGetJSON `json:"data"`
 					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
 					}
 					assert.Equal(t, response["data"], actualResponse.Data)
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
@@ -341,7 +341,7 @@ func TestLocalityDefault_Save(t *testing.T) {
 			mockSetup: func(m *MockLocalityService) {
 				m.On("Save", mock.Anything).Return(nil)
 			},
-			requestBody: handler.LocalityPostJson{
+			requestBody: handler.LocalityPostJSON{
 				LocalityID:   123,
 				LocalityName: "Test Locality",
 				ProvinceName: "Test Province",
@@ -349,7 +349,7 @@ func TestLocalityDefault_Save(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": handler.LocalityPostJson{
+				"data": handler.LocalityPostJSON{
 					LocalityID:   123,
 					LocalityName: "Test Locality",
 					ProvinceName: "Test Province",
@@ -362,21 +362,21 @@ func TestLocalityDefault_Save(t *testing.T) {
 			mockSetup: func(m *MockLocalityService) {
 				m.On("Save", mock.Anything).Return(internal.ErrLocalityConflict)
 			},
-			requestBody: handler.LocalityPostJson{
+			requestBody: handler.LocalityPostJSON{
 				LocalityID:   123,
 				LocalityName: "Test Locality",
 				ProvinceName: "Test Province",
 				CountryName:  "Test Country",
 			},
 			expectedStatusCode: http.StatusConflict,
-			expectedResponse:   *rest_err.NewConflictError("locality conflict"),
+			expectedResponse:   *resterr.NewConflictError("locality conflict"),
 		},
 		{
 			name: "should return internal server error",
 			mockSetup: func(m *MockLocalityService) {
 				m.On("Save", mock.Anything).Return(errors.New("internal server error"))
 			},
-			requestBody: handler.LocalityPostJson{
+			requestBody: handler.LocalityPostJSON{
 				LocalityID:   123,
 				LocalityName: "Test Locality",
 				ProvinceName: "Test Province",
@@ -395,14 +395,14 @@ func TestLocalityDefault_Save(t *testing.T) {
 					},
 				})
 			},
-			requestBody: handler.LocalityPostJson{
+			requestBody: handler.LocalityPostJSON{
 				LocalityID:   123,
 				LocalityName: "",
 				ProvinceName: "Test Province",
 				CountryName:  "Test Country",
 			},
 			expectedStatusCode: http.StatusInternalServerError,
-			expectedResponse: *rest_err.NewBadRequestValidationError("locality validation error", []rest_err.Causes{
+			expectedResponse: *resterr.NewBadRequestValidationError("locality validation error", []resterr.Causes{
 				{Field: "LocalityName", Message: "locality name is required"},
 			}),
 		},
@@ -436,15 +436,15 @@ func TestLocalityDefault_Save(t *testing.T) {
 				switch response := tt.expectedResponse.(type) {
 				case map[string]interface{}:
 					var actualResponse = struct {
-						Data handler.LocalityPostJson `json:"data"`
+						Data handler.LocalityPostJSON `json:"data"`
 					}{}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
 					}
 					assert.Equal(t, response["data"], actualResponse.Data)
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)

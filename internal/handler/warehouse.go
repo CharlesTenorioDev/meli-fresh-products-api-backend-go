@@ -12,7 +12,7 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
-// Structure to represent the warehouse in JSON format
+// WarehouseJSON represents the warehouse in JSON format.
 type WarehouseJSON struct {
 	ID                 int     `json:"id"`
 	WarehouseCode      string  `json:"warehouse_code"`
@@ -83,6 +83,7 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
+
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(ErrInvalidID))
 			return
@@ -96,10 +97,11 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 			default:
 				response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 			}
+
 			return
 		}
 
-		warehouseJson := WarehouseJSON{
+		warehouseJSON := WarehouseJSON{
 			ID:                 warehouse.ID,
 			WarehouseCode:      warehouse.WarehouseCode,
 			Address:            warehouse.Address,
@@ -109,7 +111,7 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": warehouseJson,
+			"data": warehouseJSON,
 		})
 	}
 }
@@ -150,11 +152,12 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			default:
 				response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 			}
+
 			return
 		}
 
 		// return the warehouse
-		warehouseJson := WarehouseJSON{
+		warehouseJSON := WarehouseJSON{
 			ID:                 warehouse.ID,
 			WarehouseCode:      warehouse.WarehouseCode,
 			Address:            warehouse.Address,
@@ -164,7 +167,7 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusCreated, map[string]any{
-			"data": warehouseJson,
+			"data": warehouseJSON,
 		})
 	}
 }
@@ -174,6 +177,7 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
+
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(ErrInvalidID))
 			return
@@ -197,11 +201,12 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 			default:
 				response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 			}
+
 			return
 		}
 
 		// Returning the updated warehouse
-		warehouseJson := WarehouseJSON{
+		warehouseJSON := WarehouseJSON{
 			ID:                 warehouse.ID,
 			WarehouseCode:      warehouse.WarehouseCode,
 			Address:            warehouse.Address,
@@ -211,9 +216,8 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": warehouseJson,
+			"data": warehouseJSON,
 		})
-
 	}
 }
 
@@ -222,6 +226,7 @@ func (h *WarehouseDefault) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		id := chi.URLParam(r, "id")
 		idInt, err := strconv.Atoi(id)
+
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(ErrInvalidID))
 			return
@@ -235,6 +240,7 @@ func (h *WarehouseDefault) Delete() http.HandlerFunc {
 			default:
 				response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 			}
+
 			return
 		}
 

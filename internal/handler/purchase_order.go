@@ -19,7 +19,7 @@ type PurchaseOrderJSON struct {
 	OrderDate       string `json:"order_date"`
 	TrackingCode    string `json:"tracking_code"`
 	BuyerID         int    `json:"buyer_id"`
-	ProductRecordId int    `json:"product_record_id"`
+	ProductRecordID int    `json:"product_record_id"`
 }
 
 // PurchaseOrderCreateRequest is a struct that represents a purchase order create request
@@ -28,7 +28,7 @@ type PurchaseOrderCreateRequest struct {
 	OrderDate       string `json:"order_date"`
 	TrackingCode    string `json:"tracking_code"`
 	BuyerID         int    `json:"buyer_id"`
-	ProductRecordId int    `json:"product_record_id"`
+	ProductRecordID int    `json:"product_record_id"`
 }
 
 // NewPurchaseOrderHandler creates a new instance of the purchase order handler
@@ -51,6 +51,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 		// decoding the request
 		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
 			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 			return
 		}
 
@@ -65,6 +66,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			})
 
 			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(ErrInvalidData, causes))
+
 			return
 		}
 
@@ -75,7 +77,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			OrderDate:       orderDate,
 			TrackingCode:    requestInput.TrackingCode,
 			BuyerID:         requestInput.BuyerID,
-			ProductRecordID: requestInput.ProductRecordId,
+			ProductRecordID: requestInput.ProductRecordID,
 		}
 
 		// saving the purchase order
@@ -83,6 +85,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			switch {
 			case errors.As(err, &internal.DomainError{}):
 				var domainError internal.DomainError
+
 				errors.As(err, &domainError)
 
 				var restCauses []resterr.Causes
@@ -92,6 +95,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 						Message: cause.Message,
 					})
 				}
+
 				response.JSON(w, http.StatusUnprocessableEntity, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
 			case errors.Is(err, internal.ErrPurchaseOrderConflict):
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
@@ -113,7 +117,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			OrderDate:       purchaseOrder.OrderDate.Format(time.DateOnly),
 			TrackingCode:    purchaseOrder.TrackingCode,
 			BuyerID:         purchaseOrder.BuyerID,
-			ProductRecordId: purchaseOrder.ProductRecordID,
+			ProductRecordID: purchaseOrder.ProductRecordID,
 		}
 
 		// sending the response

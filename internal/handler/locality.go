@@ -27,7 +27,7 @@ type LocalityDefault struct {
 	sv internal.LocalityService
 }
 
-type LocalityGetJson struct {
+type LocalityGetJSON struct {
 	ID           int    `json:"id"`
 	LocalityName string `json:"locality_name"`
 	ProvinceName string `json:"province_name"`
@@ -35,7 +35,7 @@ type LocalityGetJson struct {
 	SellersCount int    `json:"sellers_count"`
 }
 
-type LocalityPostJson struct {
+type LocalityPostJSON struct {
 	LocalityID   int    `json:"locality_id"`
 	LocalityName string `json:"locality_name"`
 	ProvinceName string `json:"province_name"`
@@ -54,12 +54,14 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 					http.StatusInternalServerError,
 					resterr.NewInternalServerError("failed to fetch carries"),
 				)
+
 				return
 			}
 
 			response.JSON(w, http.StatusOK, map[string]any{
 				"data": carries,
 			})
+
 			return
 		}
 
@@ -70,6 +72,7 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 				http.StatusBadRequest,
 				resterr.NewBadRequestError("id should be a number"),
 			)
+
 			return
 		}
 
@@ -80,6 +83,7 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 				http.StatusNotFound,
 				resterr.NewNotFoundError("not carries on locality_id "+idStr),
 			)
+
 			return
 		}
 
@@ -97,10 +101,10 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var localities []internal.Locality
+
 		var err error
 
 		idStr := r.URL.Query().Get("id")
-
 		switch idStr {
 		case "":
 			localities, err = h.sv.ReportSellers()
@@ -109,6 +113,7 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 
 			if parseErr != nil {
 				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("id should be a number"))
+
 				return
 			}
 
@@ -119,17 +124,21 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 			logger.Error(err.Error(), err,
 				zap.String("id", idStr),
 			)
+
 			if errors.Is(err, internal.ErrLocalityNotFound) {
 				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
 				return
 			}
+
 			response.JSON(w, http.StatusInternalServerError, nil)
+
 			return
 		}
 
-		var localitiesJson []LocalityGetJson
+		var localitiesJSON []LocalityGetJSON
 		for _, locality := range localities {
-			localitiesJson = append(localitiesJson, LocalityGetJson{
+			localitiesJSON = append(localitiesJSON, LocalityGetJSON{
 				ID:           locality.ID,
 				LocalityName: locality.LocalityName,
 				ProvinceName: locality.ProvinceName,
@@ -139,39 +148,43 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": localitiesJson,
+			"data": localitiesJSON,
 		})
 	}
-
 }
 
 // Save method save the locality
 func (h *LocalityDefault) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var localityJson LocalityPostJson
-		err := json.NewDecoder(r.Body).Decode(&localityJson)
+		var localityJSON LocalityPostJSON
+
+		err := json.NewDecoder(r.Body).Decode(&localityJSON)
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, nil)
+
 			return
 		}
 
 		locality := &internal.Locality{
-			ID:           localityJson.LocalityID,
-			LocalityName: localityJson.LocalityName,
-			ProvinceName: localityJson.ProvinceName,
-			CountryName:  localityJson.CountryName,
+			ID:           localityJSON.LocalityID,
+			LocalityName: localityJSON.LocalityName,
+			ProvinceName: localityJSON.ProvinceName,
+			CountryName:  localityJSON.CountryName,
 		}
 
 		err = h.sv.Save(locality)
 		if err != nil {
 			if errors.Is(err, internal.ErrLocalityConflict) {
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
+
 				return
 			}
 
 			if errors.As(err, &internal.DomainError{}) {
 				var domainError internal.DomainError
+
 				errors.As(err, &domainError)
+
 				var restCauses []resterr.Causes
 				for _, cause := range domainError.Causes {
 					restCauses = append(restCauses, resterr.Causes{
@@ -179,16 +192,19 @@ func (h *LocalityDefault) Save() http.HandlerFunc {
 						Message: cause.Message,
 					})
 				}
+
 				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
+
 				return
 			}
 
 			response.JSON(w, http.StatusInternalServerError, nil)
+
 			return
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": localityJson,
+			"data": localityJSON,
 		})
 	}
 }
