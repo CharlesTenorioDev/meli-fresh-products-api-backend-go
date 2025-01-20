@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/loader"
@@ -13,7 +12,6 @@ func NewRepositorySection() *SectionDB {
 
 	sectionList, err := loader.ReadAllSectionsToFile()
 	if err != nil {
-		fmt.Println(err.Error())
 		return &SectionDB{
 			DB: bdSections,
 		}
@@ -56,6 +54,7 @@ func (r *SectionDB) FindAll() ([]internal.Section, error) {
 	for _, section := range r.DB {
 		sections = append(sections, *section)
 	}
+
 	return sections, nil
 }
 
@@ -64,14 +63,15 @@ func (r *SectionDB) FindByID(id int) (internal.Section, error) {
 	if !exists {
 		return internal.Section{}, errors.New("section not found")
 	}
+
 	return *section, nil
 }
 
-func (s *SectionDB) ReportProducts() (int, error) {
+func (r *SectionDB) ReportProducts() (int, error) {
 	return 0, nil
 }
 
-func (s *SectionDB) ReportProductsByID(id int) (int, error) {
+func (r *SectionDB) ReportProductsByID(id int) (int, error) {
 	return 0, nil
 }
 
@@ -94,6 +94,7 @@ func (r *SectionDB) Save(section *internal.Section) error {
 	}
 
 	r.DB[section.ID] = section
+
 	return nil
 }
 
@@ -103,6 +104,7 @@ func (r *SectionDB) Update(section *internal.Section) error {
 	}
 
 	r.DB[section.ID] = section
+
 	return nil
 }
 
@@ -112,5 +114,6 @@ func (r *SectionDB) Delete(id int) error {
 	}
 
 	delete(r.DB, id)
+
 	return nil
 }

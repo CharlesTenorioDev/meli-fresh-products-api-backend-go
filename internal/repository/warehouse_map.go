@@ -21,7 +21,7 @@ type RepositoryWarehouseMap struct {
 	lastID int
 }
 
-// RepositoryWarehouseMap Builder that reads a JSON file and returns a map of warehouses
+// NewRepositoryWarehouse builder that reads a JSON file and returns a map of warehouses
 func NewRepositoryWarehouse(db map[int]WarehouseAttributesMap, filePath string) *RepositoryWarehouseMap {
 	// If the db is not nil, return the map
 	if db != nil {
@@ -38,6 +38,7 @@ func NewRepositoryWarehouse(db map[int]WarehouseAttributesMap, filePath string) 
 
 	// Decoding JSON file
 	var fileData []WarehouseAttributesMap
+
 	err = json.NewDecoder(file).Decode(&fileData)
 	if err != nil {
 		fmt.Println(err)
@@ -55,6 +56,7 @@ func NewRepositoryWarehouse(db map[int]WarehouseAttributesMap, filePath string) 
 			MinimumTemperature: value.MinimumTemperature,
 		}
 	}
+
 	return &RepositoryWarehouseMap{db: db, lastID: len(db)}
 }
 
@@ -81,6 +83,7 @@ func (r *RepositoryWarehouseMap) FindAll() (w []internal.Warehouse, err error) {
 			}
 		}
 	}
+
 	return w, nil
 }
 
@@ -127,7 +130,6 @@ func (r *RepositoryWarehouseMap) Save(warehouse *internal.Warehouse) (err error)
 
 // Update is a method that updates a Warehouse
 func (r *RepositoryWarehouseMap) Update(warehouse *internal.Warehouse) (err error) {
-
 	wh := WarehouseAttributesMap{
 		WarehouseCode:      warehouse.WarehouseCode,
 		Address:            warehouse.Address,

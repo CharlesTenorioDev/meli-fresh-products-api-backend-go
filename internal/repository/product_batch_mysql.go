@@ -36,6 +36,7 @@ func (r *ProductBatchMysql) FindByID(id int) (internal.ProductBatch, error) {
 		id = ?`
 
 	var pb internal.ProductBatch
+
 	err := r.db.QueryRow(query, id).Scan(
 		&pb.ID,
 		&pb.BatchNumber,
@@ -46,13 +47,14 @@ func (r *ProductBatchMysql) FindByID(id int) (internal.ProductBatch, error) {
 		&pb.ManufacturingDate,
 		&pb.ManufacturingHour,
 		&pb.MinumumTemperature,
-		&pb.ProductId,
-		&pb.SectionId,
+		&pb.ProductID,
+		&pb.SectionID,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return pb, internal.ErrProductBatchNotFound
 		}
+
 		return pb, err
 	}
 
@@ -70,8 +72,8 @@ func (r *ProductBatchMysql) Save(prodBatch *internal.ProductBatch) error {
 		prodBatch.ManufacturingDate,
 		prodBatch.ManufacturingHour,
 		prodBatch.MinumumTemperature,
-		prodBatch.ProductId,
-		prodBatch.SectionId,
+		prodBatch.ProductID,
+		prodBatch.SectionID,
 	)
 
 	if err != nil {
@@ -82,6 +84,7 @@ func (r *ProductBatchMysql) Save(prodBatch *internal.ProductBatch) error {
 				return internal.ErrProductBatchAlreadyExists
 			}
 		}
+
 		return err
 	}
 
@@ -91,6 +94,7 @@ func (r *ProductBatchMysql) Save(prodBatch *internal.ProductBatch) error {
 	}
 
 	prodBatch.ID = int(id)
+
 	return nil
 }
 
@@ -98,6 +102,7 @@ func (r *ProductBatchMysql) ProductBatchNumberExists(batchNumber int) (bool, err
 	query := "SELECT COUNT(*) FROM product_batches WHERE batch_number = ?"
 
 	var count int
+
 	err := r.db.QueryRow(query, batchNumber).Scan(&count)
 	if err != nil {
 		return false, err
@@ -144,11 +149,12 @@ func (r *ProductBatchMysql) ReportProducts() (prodBatches []internal.ProductBatc
 			&pb.ManufacturingDate,
 			&pb.ManufacturingHour,
 			&pb.MinumumTemperature,
-			&pb.ProductId,
-			&pb.SectionId,
+			&pb.ProductID,
+			&pb.SectionID,
 		); err != nil {
 			return nil, internal.ErrProductBatchNotFound
 		}
+
 		prodBatches = append(prodBatches, pb)
 	}
 
@@ -194,15 +200,17 @@ func (r *ProductBatchMysql) ReportProductsByID(id int) (prodBatches []internal.P
 		&pb.ManufacturingDate,
 		&pb.ManufacturingHour,
 		&pb.MinumumTemperature,
-		&pb.ProductId,
-		&pb.SectionId,
+		&pb.ProductID,
+		&pb.SectionID,
 	); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, internal.ErrProductBatchNotFound
 		}
+
 		return nil, internal.ErrProductBatchNotFound
 	}
 
 	prodBatches = append(prodBatches, pb)
+
 	return prodBatches, nil
 }
