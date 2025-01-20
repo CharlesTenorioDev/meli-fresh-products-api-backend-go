@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -23,7 +24,11 @@ func NewProducHandlerDefault(phd internal.ProductService) *ProductHandlerDefault
 func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := h.s.GetAll()
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		if errors.Is(err, internal.ErrProductNotFound) {
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+			return
+		}
+		response.JSON(w, http.StatusInternalServerError, nil)
 		return
 	}
 
@@ -37,6 +42,7 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 	id, err := strconv.Atoi(idStr)
 
 	if err != nil {
+		err = internal.ErrProductBadRequest
 		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
 	}
@@ -56,31 +62,38 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 		return
 	}
-	newProduct, err := h.s.Create(product)
+	product, err := h.s.Create(product)
+	fmt.Print(product)
 	if err != nil {
-		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIdNotFound) || errors.Is(err, internal.ErrProductNotFound) {
+		switch {
+		case errors.Is(err, internal.ErrSellerIdNotFound),
+			errors.Is(err, internal.ErrProductTypeIdNotFound),
+			errors.Is(err, internal.ErrProductNotFound):
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
-		} else if errors.Is(err, internal.ErrProductCodeAlreadyExists) {
+
+		case errors.Is(err, internal.ErrProductCodeAlreadyExists):
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
-		} else if errors.Is(err, internal.ErrProductUnprocessableEntity) {
+
+		case errors.Is(err, internal.ErrProductUnprocessableEntity):
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
-		} else {
+
+		default:
 			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
 		}
 		return
 	}
 	productJson := internal.ProductJsonPost{
-		ProductCode: newProduct.ProductCode,
-		Description: newProduct.Description,
-		Height: newProduct.Height,
-		Length: newProduct.Length,
-		NetWeight: newProduct.NetWeight,
-		ExpirationRate: newProduct.ExpirationRate,
-		RecommendedFreezingTemperature: newProduct.RecommendedFreezingTemperature,
-		Width: newProduct.Width,
-		FreezingRate: newProduct.FreezingRate,
-		ProductTypeId: newProduct.ProductTypeId,
-		SellerId: newProduct.SellerId,
+		ProductCode:                    product.ProductCode,
+		Description:                    product.Description,
+		Height:                         product.Height,
+		Length:                         product.Length,
+		NetWeight:                      product.NetWeight,
+		ExpirationRate:                 product.ExpirationRate,
+		RecommendedFreezingTemperature: product.RecommendedFreezingTemperature,
+		Width:                          product.Width,
+		FreezingRate:                   product.FreezingRate,
+		ProductTypeId:                  product.ProductTypeId,
+		SellerId:                       product.SellerId,
 	}
 	response.JSON(w, http.StatusCreated, map[string]any{
 		"data": productJson,
@@ -103,8 +116,10 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product.Id = id
+	fmt.Print(product)
 
 	updatedProduct, err := h.s.Update(product)
+	fmt.Print(updatedProduct)
 	if err != nil {
 		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIdNotFound) || errors.Is(err, internal.ErrProductNotFound) {
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
@@ -132,10 +147,15 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if err := h.s.Delete(id); err != nil {
-
-		if err.Error() == "product not found" {
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError("product not found"))
+	err = h.s.Delete(id)
+	fmt.Printf("erro do handler %v", err)
+	if err != nil {
+		if errors.Is(err, internal.ErroProductConflit) || errors.Is(err, internal.ErroProductConflitEntity) {
+			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			return
+		}
+		if errors.Is(err, internal.ErrProductNotFound) {
+			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 			return
 		}
 

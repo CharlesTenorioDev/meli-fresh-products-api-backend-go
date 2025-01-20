@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -69,7 +68,6 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	if err != nil {
 		return product, err
 	}
-
 	existingProduct, err := s.productRepo.FindByID(product.Id)
 	if err != nil {
 		return product, internal.ErrProductNotFound
@@ -122,12 +120,12 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 		return product, internal.ErrProductTypeNotFound
 	}
 
-	productUpdate, err := s.productRepo.Update(product)
+	_, err = s.productRepo.Update(product)
 	if err != nil {
 		return internal.Product{}, err
 	}
 
-	return productUpdate, nil
+	return product, nil
 }
 
 func (s *ProductDefault) Delete(id int) error {

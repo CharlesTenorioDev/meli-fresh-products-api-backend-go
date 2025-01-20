@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -20,7 +21,7 @@ const (
 	FindAllString  = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products"
 	FindByIdString = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products WHERE id = ?"
 	SaveString     = "INSERT INTO products (id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	UpdateString   = `UPDATE product 
+	UpdateString   = `UPDATE products 
 		 SET description = ?, expiration_rate = ?, freezing_rate = ?, 
 		     height = ?, length = ?, net_weight = ?, 
 		     product_code = ?, recommended_freezing_temperature = ?, 
@@ -100,12 +101,12 @@ func (psql *ProductSQL) Save(product internal.Product) (p internal.Product, err 
 			}
 		}
 	}
-
+	p = product
 	return
 }
 
 func (psql *ProductSQL) Update(product internal.Product) (internal.Product, error) {
-	_, err := psql.db.Exec(
+	result, err := psql.db.Exec(
 		UpdateString,
 		product.Description,
 		product.ExpirationRate,
@@ -133,6 +134,14 @@ func (psql *ProductSQL) Update(product internal.Product) (internal.Product, erro
 		}
 		return product, err
 	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return product, err
+	}
+
+	if rowsAffected == 0 {
+		return product, internal.ErrProductNotFound
+	}
 
 	return product, nil
 }
@@ -140,8 +149,19 @@ func (psql *ProductSQL) Update(product internal.Product) (internal.Product, erro
 func (psql *ProductSQL) Delete(id int) error {
 
 	_, err := psql.db.Exec(DeleteString, id)
+	var mysqlErr *mysql.MySQLError
+
 	if err != nil {
-		return internal.ErrProductNotFound
+		fmt.Print(err)
+		if errors.As(err, &mysqlErr) {
+			switch mysqlErr.Number {
+			case 1451:
+				err = internal.ErroProductConflitEntity
+			default:
+				err = internal.ErrProductNotFound
+			}
+		}
+		return err
 	}
 
 	return nil
@@ -175,6 +195,7 @@ func (psql *ProductSQL) FindByIdRecord(id int) (internal.ProductRecordsJsonCount
 	row := psql.db.QueryRow(FindByIdRecordString, id)
 	err := row.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
 	if err != nil {
+
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrProductIdNotFound
 		}

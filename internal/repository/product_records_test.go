@@ -110,6 +110,7 @@ func TestProductRecordsMysql_Save_ok(t *testing.T) {
 	_, err = repo.Save(productRecords)
 	assert.NoError(t, err)
 }
+
 func TestProductRecordsMysql_Save_error(t *testing.T) {
 	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
