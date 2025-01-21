@@ -16,7 +16,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func newWarehouseServiceMock() *WarehouseServiceMock {
+func NewWarehouseServiceMock() *WarehouseServiceMock {
 	return &WarehouseServiceMock{}
 }
 
@@ -85,7 +85,7 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedCode:   http.StatusCreated,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Save", mock.AnythingOfType("*internal.Warehouse")).Run(func(args mock.Arguments) {
 					w := args.Get(0).(*internal.Warehouse)
 					w.ID = 3
@@ -108,7 +108,7 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedCode:   http.StatusUnprocessableEntity,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Save", mock.Anything).Return(fmt.Errorf("%w: %v", internal.ErrWarehouseUnprocessableEntity, "minimum temperature is required"))
 				return mk
 			},
@@ -128,7 +128,7 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedCode:   http.StatusUnprocessableEntity,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Save", mock.Anything).Return(fmt.Errorf("%w: %v", internal.ErrWarehouseUnprocessableEntity, "minimum capacity is required"))
 				return mk
 			},
@@ -148,7 +148,7 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedCode:   http.StatusBadRequest,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				return mk
 			},
 			expectedMockCalls: 0,
@@ -167,7 +167,7 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedCode:   http.StatusConflict,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Save", mock.Anything).Return(internal.ErrWarehouseRepositoryDuplicated)
 				return mk
 			},
@@ -187,7 +187,7 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedCode:   http.StatusInternalServerError,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Save", mock.Anything).Return(errors.New("unexpected error"))
 				return mk
 			},
@@ -231,7 +231,7 @@ func TestWarehouseHandler_GetAll(t *testing.T) {
 				{"id":2,"warehouse_code":"W2","address":"456 Elm St","telephone":"987-654-3210","minimum_capacity":200,"minimum_temperature":0}
 			]}`,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("FindAll").Return([]internal.Warehouse{
 					{ID: 1, WarehouseCode: "W1", Address: "123 Main St", Telephone: "123-456-7890", MinimumCapacity: 100, MinimumTemperature: -10},
 					{ID: 2, WarehouseCode: "W2", Address: "456 Elm St", Telephone: "987-654-3210", MinimumCapacity: 200, MinimumTemperature: 0},
@@ -253,7 +253,7 @@ func TestWarehouseHandler_GetAll(t *testing.T) {
 				"causes": null
 			}`,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("FindAll").Return([]internal.Warehouse{}, errors.New("unexpected error"))
 				return mk
 			},
@@ -296,7 +296,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 				"id":1,"warehouse_code":"W1","address":"123 Main St","telephone":"123-456-7890","minimum_capacity":100,"minimum_temperature":-10}
 			}`,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("FindByID", 1).Return(internal.Warehouse{
 					ID: 1, WarehouseCode: "W1", Address: "123 Main St", Telephone: "123-456-7890", MinimumCapacity: 100, MinimumTemperature: -10,
 				}, nil)
@@ -317,7 +317,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 				"causes": null
 			}`,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("FindByID", 100).Return(internal.Warehouse{}, internal.ErrWarehouseRepositoryNotFound)
 				return mk
 			},
@@ -336,7 +336,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 				"causes": null
 			}`,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				return mk
 			},
 			expectedMockCalls: 0,
@@ -354,7 +354,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 				"causes": null
 			}`,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("FindByID", 1).Return(internal.Warehouse{}, errors.New("unexpected error"))
 				return mk
 			},
@@ -380,8 +380,6 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 			// WHEN
 			hdFunc(response, request)
 
-			fmt.Println(response.Body.String())
-
 			// THEN
 			require.Equal(t, tc.expectedCode, response.Code)
 			require.JSONEq(t, tc.expectedBody, response.Body.String())
@@ -402,7 +400,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedCode:   http.StatusOK,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Update", mock.AnythingOfType("*internal.WarehousePatchUpdate")).Return(internal.Warehouse{
 					ID: 1, WarehouseCode: "W1", Address: "123 Main St UPDATED", Telephone: "123-456-7890", MinimumCapacity: 1000, MinimumTemperature: -20,
 				}, nil)
@@ -425,7 +423,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedCode:   http.StatusNotFound,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Update", mock.AnythingOfType("*internal.WarehousePatchUpdate")).Return(internal.Warehouse{}, internal.ErrWarehouseRepositoryNotFound)
 				return mk
 			},
@@ -446,7 +444,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedCode:   http.StatusBadRequest,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				return mk
 			},
 			expectedMockCalls: 0,
@@ -466,7 +464,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedCode:   http.StatusInternalServerError,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Update", mock.AnythingOfType("*internal.WarehousePatchUpdate")).Return(internal.Warehouse{}, errors.New("unexpected error"))
 				return mk
 			},
@@ -510,7 +508,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			expectedCode:   http.StatusNoContent,
 			expectedHeader: http.Header{},
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Delete", 1).Return(nil)
 				return mk
 			},
@@ -530,7 +528,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			}`,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Delete", 100).Return(internal.ErrWarehouseRepositoryNotFound)
 				return mk
 			},
@@ -550,7 +548,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			}`,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
-				mk := newWarehouseServiceMock()
+				mk := NewWarehouseServiceMock()
 				mk.On("Delete", 1).Return(errors.New("unexpected error"))
 				return mk
 			},
