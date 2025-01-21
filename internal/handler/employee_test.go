@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -50,6 +51,26 @@ type MockEmployeeService struct {
 	mock.Mock
 }
 
+func (m *MockEmployeeService) GetAll() (db []internal.Employee, err error) {
+	args := m.Called(db)
+	return args.Get(0).([]internal.Employee), args.Error(1)
+}
+
+func (m *MockEmployeeService) GetByID(id int) (emp internal.Employee, err error) {
+	args := m.Called(id)
+	return args.Get(0).(internal.Employee), args.Error(1)
+}
+
+func (m *MockEmployeeService) Update(employees internal.Employee) (err error) {
+	args := m.Called(employees)
+	return args.Error(0)
+}
+
+func (m *MockEmployeeService) Save(emp *internal.Employee) (err error) {
+	args := m.Called(emp)
+	return args.Error(0)
+}
+
 func (m *MockEmployeeService) Delete(id int) error {
 	args := m.Called(id)
 	return args.Error(0)
@@ -58,6 +79,11 @@ func (m *MockEmployeeService) Delete(id int) error {
 func (m *MockEmployeeService) CountInboundOrdersPerEmployee() ([]internal.InboundOrdersPerEmployee, error) {
 	args := m.Called()
 	return args.Get(0).([]internal.InboundOrdersPerEmployee), args.Error(1)
+}
+
+func (m *MockEmployeeService) ReportInboundOrdersByID(employeeID int) (io internal.InboundOrdersPerEmployee, err error) {
+	args := m.Called(employeeID)
+	return args.Get(0).(internal.InboundOrdersPerEmployee), args.Error(1)
 }
 
 func (m *MockEmployeeService) ReportInboundOrdersById(employeeId int) (internal.InboundOrdersPerEmployee, error) {
@@ -259,6 +285,76 @@ func (e *EmployeeTestSuite) TestEmployeeHandler_ReportInboundOrders() {
 		e.hd.ReportInboundOrders(w, r)
 
 		require.Equal(t, http.StatusOK, w.Result().StatusCode)
+	})
+}
+
+func TestHandler_CreateEmployeeUnitTest(t *testing.T) {
+	emp := internal.Employee{
+		CardNumberID: "abcde",
+		FirstName:    "Fabio",
+		LastName:     "Nacarelli",
+		WarehouseID:  14,
+	}
+	t.Run("create succeeds with 201", func(t *testing.T) {
+		type CreatedRes struct {
+			Data internal.Employee `json:"data"`
+		}
+		expectedStatus := http.StatusCreated
+		expectedRes := CreatedRes{
+			Data: emp,
+		}
+		sv := new(MockEmployeeService)
+		sv.On("Save", &emp).Return(nil)
+		b, _ := json.Marshal(emp)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/",
+			bytes.NewReader(b),
+		)
+		res := httptest.NewRecorder()
+		hd.Create(res, req)
+
+		var actualRes CreatedRes
+
+		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
+		require.NoError(t, err)
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+		require.Equal(t, expectedRes, actualRes)
+	})
+	t.Run("create fails with 422", func(t *testing.T) {
+		expectedStatus := http.StatusUnprocessableEntity
+		sv := new(MockEmployeeService)
+		sv.On("Save", &emp).Return(errors.New("unprocessable entity"))
+		hd := handler.NewEmployeeDefault(sv)
+		b, _ := json.Marshal(emp)
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/",
+			bytes.NewReader(b),
+		)
+		res := httptest.NewRecorder()
+
+		hd.Create(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("create fails with 409", func(t *testing.T) {
+		expectedStatus := http.StatusConflict
+		sv := new(MockEmployeeService)
+		sv.On("Save", &emp).Return(service.ErrCardNumberIDInUse)
+		hd := handler.NewEmployeeDefault(sv)
+		b, _ := json.Marshal(emp)
+		req := httptest.NewRequest(
+			http.MethodPost,
+			"/",
+			bytes.NewReader(b),
+		)
+		res := httptest.NewRecorder()
+
+		hd.Create(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 }
 
