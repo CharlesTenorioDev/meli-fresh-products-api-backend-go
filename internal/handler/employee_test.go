@@ -459,6 +459,78 @@ func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
 	})
 }
 
+func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
+	t.Run("update successfully (200)", func(t *testing.T) {
+		employee := internal.Employee{
+			ID:           1,
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			CardNumberID: "FN001",
+			WarehouseID:  14,
+		}
+		type UpdateRes struct {
+			Data internal.Employee `json:"data"`
+		}
+
+		expectedStatus := http.StatusOK
+		expectedRes := UpdateRes{
+			Data: employee,
+		}
+		sv := new(MockEmployeeService)
+		sv.On("Update", employee).Return(nil)
+		sv.On("GetByID", 1).Return(employee, nil)
+		b, _ := json.Marshal(employee)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodPatch, "/{id}", bytes.NewReader(b))
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "1")
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+		res := httptest.NewRecorder()
+
+		hd.Update(res, req)
+
+		var actualRes UpdateRes
+		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
+		require.NoError(t, err)
+		require.Equal(t, expectedRes, actualRes)
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("update fails (404)", func(t *testing.T) {
+		employee := internal.Employee{
+			ID:           1,
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			CardNumberID: "FN001",
+			WarehouseID:  14,
+		}
+		type UpdateRes struct {
+			Data string `json:"data"`
+		}
+
+		expectedStatus := http.StatusNotFound
+		expectedRes := UpdateRes{
+			Data: service.ErrEmployeeNotFound.Error(),
+		}
+		sv := new(MockEmployeeService)
+		sv.On("Update", employee).Return(service.ErrEmployeeNotFound)
+		b, _ := json.Marshal(employee)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodPatch, "/{id}", bytes.NewReader(b))
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "1")
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+		res := httptest.NewRecorder()
+
+		hd.Update(res, req)
+
+		var actualRes UpdateRes
+		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
+		require.NoError(t, err)
+		require.Equal(t, expectedRes, actualRes)
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+}
+
 func TestEmployeeTestSuite(t *testing.T) {
 	suite.Run(t, new(EmployeeTestSuite))
 }
