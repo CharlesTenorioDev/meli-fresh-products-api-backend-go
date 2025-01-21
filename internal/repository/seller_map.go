@@ -6,7 +6,7 @@ import (
 
 type SellerMap struct {
 	db     map[int]internal.Seller
-	lastId int
+	lastID int
 }
 
 func NewSellerMap() *SellerMap {
@@ -14,12 +14,12 @@ func NewSellerMap() *SellerMap {
 
 	return &SellerMap{
 		db:     db,
-		lastId: 0,
+		lastID: 0,
 	}
 }
 
 func (s *SellerMap) Save(seller *internal.Seller) (err error) {
-	id := s.lastId + 1
+	id := s.lastID + 1
 
 	_, ok := s.db[id]
 
@@ -29,7 +29,8 @@ func (s *SellerMap) Save(seller *internal.Seller) (err error) {
 
 	seller.ID = id
 	s.db[id] = *seller
-	s.lastId = id
+	s.lastID = id
+
 	return nil
 }
 
@@ -38,6 +39,7 @@ func (s *SellerMap) FindByID(id int) (seller internal.Seller, err error) {
 	if !ok {
 		return internal.Seller{}, internal.ErrSellerNotFound
 	}
+
 	return seller, nil
 }
 
@@ -48,6 +50,7 @@ func (s *SellerMap) FindByCID(cid int) (seller internal.Seller, err error) {
 			return seller, nil
 		}
 	}
+
 	return internal.Seller{}, internal.ErrSellerNotFound
 }
 
@@ -65,11 +68,12 @@ func (s *SellerMap) FindAll() (sellers []internal.Seller, err error) {
 
 func (s *SellerMap) Update(seller *internal.Seller) (err error) {
 	_, ok := s.db[seller.ID]
-
 	if !ok {
 		return internal.ErrSellerNotFound
 	}
+
 	s.db[seller.ID] = *seller
+
 	return nil
 }
 
@@ -78,6 +82,8 @@ func (s *SellerMap) Delete(id int) (err error) {
 	if !ok {
 		return internal.ErrSellerNotFound
 	}
+
 	delete(s.db, id)
+
 	return nil
 }

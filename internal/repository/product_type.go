@@ -2,7 +2,6 @@ package repository
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/loader"
@@ -13,7 +12,6 @@ func NewProductType() *ProductTypeDB {
 
 	prodTypeDBList, err := loader.ReadAllProductsTypeToFile()
 	if err != nil {
-		fmt.Println(err.Error())
 		return &ProductTypeDB{
 			DB: bdProdTypes,
 		}
@@ -37,9 +35,10 @@ type ProductTypeDB struct {
 }
 
 func (r *ProductTypeDB) FindByID(id int) (internal.ProductType, error) {
-	product_type, exists := r.DB[id]
+	productType, exists := r.DB[id]
 	if !exists {
 		return internal.ProductType{}, errors.New("product_type not found")
 	}
-	return *product_type, nil
+
+	return *productType, nil
 }

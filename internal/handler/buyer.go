@@ -10,7 +10,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type BuyerHandlerDefault struct {
@@ -53,13 +53,15 @@ func (h *BuyerHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse id"))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("failed to parse id"))
+
 		return
 	}
 
 	buyer, err := h.s.FindByID(id)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
 		return
 	}
 
@@ -82,19 +84,22 @@ func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Router /api/v1/buyers [post]
 func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var buyer internal.Buyer
+
 	err := json.NewDecoder(r.Body).Decode(&buyer)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
 	err = h.s.Save(&buyer)
 	if err != nil {
 		if errors.Is(err, service.ErrBuyerAlreadyExists) || errors.Is(err, service.ErrCardNumberAlreadyInUse) {
-			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		} else {
-			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
+
 		return
 	}
 
@@ -119,24 +124,28 @@ func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse id"))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("failed to parse id"))
+
 		return
 	}
 
 	var buyer internal.BuyerPatch
+
 	err = json.NewDecoder(r.Body).Decode(&buyer)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse body"))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("failed to parse body"))
+
 		return
 	}
 
 	err = h.s.Update(id, buyer)
 	if err != nil {
 		if errors.Is(err, service.ErrBuyerNotFound) {
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 		} else {
-			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}
+
 		return
 	}
 
@@ -159,13 +168,15 @@ func (h *BuyerHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 func (h *BuyerHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse id"))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("failed to parse id"))
+
 		return
 	}
 
 	err = h.s.Delete(id)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
 		return
 	}
 
@@ -186,6 +197,7 @@ func (h *BuyerHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 // @Router /api/v1/buyers/report-purchase-orders [get]
 func (h *BuyerHandlerDefault) ReportPurchaseOrders(w http.ResponseWriter, r *http.Request) {
 	var purchaseOrdersByBuyer []internal.PurchaseOrdersByBuyer
+
 	var err error
 
 	// Check if there is an id query parameter and call the corresponding service method
@@ -193,10 +205,12 @@ func (h *BuyerHandlerDefault) ReportPurchaseOrders(w http.ResponseWriter, r *htt
 	if id != "" {
 		idInt, parseErr := strconv.Atoi(id)
 		if parseErr != nil {
-			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("failed to parse id"))
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("failed to parse id"))
+
 			return
 		}
-		purchaseOrdersByBuyer, err = h.s.ReportPurchaseOrdersById(idInt)
+
+		purchaseOrdersByBuyer, err = h.s.ReportPurchaseOrdersByID(idInt)
 	} else {
 		purchaseOrdersByBuyer, err = h.s.ReportPurchaseOrders()
 	}
@@ -204,10 +218,11 @@ func (h *BuyerHandlerDefault) ReportPurchaseOrders(w http.ResponseWriter, r *htt
 	if err != nil {
 		switch {
 		case errors.Is(err, service.ErrBuyerNotFound):
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 		default:
-			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(err.Error()))
 		}
+
 		return
 	}
 

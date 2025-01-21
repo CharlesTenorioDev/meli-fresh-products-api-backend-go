@@ -33,18 +33,23 @@ func (seller *Seller) Validate() error {
 	if seller.CID == 0 {
 		return errors.Join(err, errors.New("seller.CID is required"))
 	}
+
 	if seller.CompanyName == "" {
 		return errors.Join(err, errors.New("seller.CompanyName is required"))
 	}
+
 	if seller.Address == "" {
 		return errors.Join(err, errors.New("seller.Address is required"))
 	}
+
 	if seller.Telephone == "" {
 		return errors.Join(err, errors.New("seller.Telephone is required"))
 	}
+
 	if seller.Locality == 0 {
 		return errors.Join(err, errors.New("seller.Locality is required"))
 	}
+
 	return err
 }
 

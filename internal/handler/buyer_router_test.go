@@ -12,7 +12,7 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -66,7 +66,7 @@ func (s *BuyerRouterSuite) TestGetAllBuyers() {
 		require.Equal(s.T(), buyers.Data["0"].ID, 0)
 		require.Equal(s.T(), buyers.Data["0"].FirstName, "John")
 		require.Equal(s.T(), buyers.Data["0"].LastName, "Doe")
-		require.Equal(s.T(), buyers.Data["0"].CardNumberId, "1234567812345678")
+		require.Equal(s.T(), buyers.Data["0"].CardNumberID, "1234567812345678")
 	})
 	if !ok {
 		s.T().FailNow()
@@ -140,7 +140,7 @@ func (s *BuyerRouterSuite) TestGetSpecificBuyers() {
 			require.Equal(s.T(), tt.ID, buyers.Data.ID)
 			require.Equal(s.T(), tt.ExpectedFirstName, buyers.Data.FirstName)
 			require.Equal(s.T(), tt.ExpectedLastName, buyers.Data.LastName)
-			require.Equal(s.T(), tt.ExpectedCardNumberid, buyers.Data.CardNumberId)
+			require.Equal(s.T(), tt.ExpectedCardNumberid, buyers.Data.CardNumberID)
 		})
 		if !ok {
 			s.T().FailNow()
@@ -153,7 +153,7 @@ func (s *BuyerRouterSuite) TestGetInvalidBuyer() {
 	w := httptest.NewRecorder()
 	require.NoError(s.T(), err)
 
-	var restErr rest_err.RestErr
+	var restErr resterr.RestErr
 	s.rt.ServeHTTP(w, r)
 	err = json.NewDecoder(w.Body).Decode(&restErr)
 	ok := s.Run("had no problems while decoding the response", func() {
@@ -171,7 +171,7 @@ func (s *BuyerRouterSuite) TestGetInvalidBuyer() {
 	}
 
 	ok = s.Run("the rest err returned is a 'not found'", func() {
-		expectedError := *rest_err.NewNotFoundError("buyer not found")
+		expectedError := *resterr.NewNotFoundError("buyer not found")
 		require.Equal(s.T(), expectedError, restErr)
 	})
 	if !ok {
@@ -183,7 +183,7 @@ func (s *BuyerRouterSuite) TestCreateBuyer() {
 	buyer := internal.Buyer{
 		FirstName:    "Fabio",
 		LastName:     "Nacarelli",
-		CardNumberId: "40028922",
+		CardNumberID: "40028922",
 	}
 	ok := s.Run("the user is created successfully", func() {
 		b, _ := json.Marshal(buyer)
@@ -207,7 +207,7 @@ func (s *BuyerRouterSuite) TestCreateBuyer() {
 			require.Equal(s.T(), 5, resBuyer.Data.ID)
 			require.Equal(s.T(), buyer.FirstName, resBuyer.Data.FirstName)
 			require.Equal(s.T(), buyer.LastName, resBuyer.Data.LastName)
-			require.Equal(s.T(), buyer.CardNumberId, resBuyer.Data.CardNumberId)
+			require.Equal(s.T(), buyer.CardNumberID, resBuyer.Data.CardNumberID)
 		})
 		if !ok {
 			s.T().FailNow()
@@ -237,7 +237,7 @@ func (s *BuyerRouterSuite) TestCreateBuyer() {
 		ok = s.Run("the entries match", func() {
 			require.Equal(s.T(), buyer.FirstName, resBuyer.Data.FirstName)
 			require.Equal(s.T(), buyer.LastName, resBuyer.Data.LastName)
-			require.Equal(s.T(), buyer.CardNumberId, resBuyer.Data.CardNumberId)
+			require.Equal(s.T(), buyer.CardNumberID, resBuyer.Data.CardNumberID)
 		})
 		if !ok {
 			s.T().FailNow()
@@ -261,8 +261,8 @@ func (s *BuyerRouterSuite) TestCreateBuyer() {
 		}
 
 		ok = s.Run("the rest err is as expected", func() {
-			expectedRestErr := *rest_err.NewConflictError("buyer with given card number already registered")
-			var restErr rest_err.RestErr
+			expectedRestErr := *resterr.NewConflictError("buyer with given card number already registered")
+			var restErr resterr.RestErr
 			err = json.NewDecoder(w.Body).Decode(&restErr)
 			require.NoError(s.T(), err)
 			require.Equal(s.T(), expectedRestErr, restErr)
@@ -280,7 +280,7 @@ func (s *BuyerRouterSuite) TestCreateUnprocessableEntity() {
 	b, _ := json.Marshal(internal.Buyer{
 		FirstName:    "",
 		LastName:     "",
-		CardNumberId: "",
+		CardNumberID: "",
 	})
 	w := httptest.NewRecorder()
 	r, err := http.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
@@ -294,8 +294,8 @@ func (s *BuyerRouterSuite) TestCreateUnprocessableEntity() {
 	}
 
 	ok = s.Run("the rest error is as expected", func() {
-		expectedRestErr := *rest_err.NewUnprocessableEntityError("couldn't parse buyer")
-		var resRestErr rest_err.RestErr
+		expectedRestErr := *resterr.NewUnprocessableEntityError("couldn't parse buyer")
+		var resRestErr resterr.RestErr
 		json.NewDecoder(w.Body).Decode(&resRestErr)
 		require.Equal(s.T(), expectedRestErr, resRestErr)
 	})
@@ -311,7 +311,7 @@ func (s *BuyerRouterSuite) TestPatchBuyer() {
 	buyer := internal.BuyerPatch{
 		FirstName:    &fname,
 		LastName:     &lname,
-		CardNumberId: &cardNumberId,
+		CardNumberID: &cardNumberId,
 	}
 	ok := s.Run("the user is modified successfully", func() {
 		b, _ := json.Marshal(buyer)
@@ -334,7 +334,7 @@ func (s *BuyerRouterSuite) TestPatchBuyer() {
 		ok = s.Run("the response fields are as expected", func() {
 			require.Equal(s.T(), *buyer.FirstName, *resBuyer.Data.FirstName)
 			require.Equal(s.T(), *buyer.LastName, *resBuyer.Data.LastName)
-			require.Equal(s.T(), *buyer.CardNumberId, *resBuyer.Data.CardNumberId)
+			require.Equal(s.T(), *buyer.CardNumberID, *resBuyer.Data.CardNumberID)
 		})
 		if !ok {
 			s.T().FailNow()
@@ -364,7 +364,7 @@ func (s *BuyerRouterSuite) TestPatchBuyer() {
 		ok = s.Run("the entries match", func() {
 			require.Equal(s.T(), *buyer.FirstName, *resBuyer.Data.FirstName)
 			require.Equal(s.T(), *buyer.LastName, *resBuyer.Data.LastName)
-			require.Equal(s.T(), *buyer.CardNumberId, *resBuyer.Data.CardNumberId)
+			require.Equal(s.T(), *buyer.CardNumberID, *resBuyer.Data.CardNumberID)
 		})
 		if !ok {
 			s.T().FailNow()
