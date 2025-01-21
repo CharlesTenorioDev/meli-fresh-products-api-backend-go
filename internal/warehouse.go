@@ -23,9 +23,11 @@ type WarehousePatchUpdate struct {
 
 var (
 	// ErrWarehouseRepositoryNotFound is returned when the warehouse is not found
-	ErrWarehouseRepositoryNotFound = errors.New("Warehouse not found")
+	ErrWarehouseRepositoryNotFound = errors.New("warehouse not found")
 	// ErrWarehouseRepositoryDuplicated is returned when the warehouse already exists
-	ErrWarehouseRepositoryDuplicated = errors.New("Warehouse already exists")
+	ErrWarehouseRepositoryDuplicated = errors.New("warehouse already exists")
+	// ErrWarehouseUnprocessableEntity is returned when the warehouse is unprocessable
+	ErrWarehouseUnprocessableEntity = errors.New("unprocessable entity")
 )
 
 func (w *Warehouse) Validate() error {

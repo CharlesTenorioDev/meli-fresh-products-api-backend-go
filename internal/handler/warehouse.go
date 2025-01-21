@@ -135,18 +135,14 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			MinimumTemperature: requestInput.MinimumTemperature,
 		}
 
-		// validating the warehouse
-		if err := warehouse.Validate(); err != nil {
-			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
-			return
-		}
-
 		// save the warehouse
 		err := h.sv.Save(&warehouse)
 		if err != nil {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
 				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			case errors.Is(err, internal.ErrWarehouseUnprocessableEntity):
+				response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
 			default:
 				response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
 			}
