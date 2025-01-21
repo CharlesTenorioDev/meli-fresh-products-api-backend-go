@@ -531,6 +531,42 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 	})
 }
 
+func TestHandler_DeleteEmployeeUnitTest(t *testing.T) {
+	t.Run("delete successfully (204)", func(t *testing.T) {
+		expectedStatus := http.StatusNoContent
+		sv := new(MockEmployeeService)
+		sv.On("Delete", 1).Return(nil)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodDelete, "/{id}", nil)
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "1")
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+		res := httptest.NewRecorder()
+
+		hd.Delete(res, req)
+
+		require.Equal(t, 0, res.Body.Len())
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("delete fails (404)", func(t *testing.T) {
+		expectedStatus := http.StatusNotFound
+		expectedRes := `{"data":"employee not found"}`
+		sv := new(MockEmployeeService)
+		sv.On("Delete", 1).Return(errors.New("employee not found"))
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodDelete, "/{id}", nil)
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "1")
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+		res := httptest.NewRecorder()
+
+		hd.Delete(res, req)
+
+		require.Equal(t, expectedRes, string(res.Body.Bytes()))
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+}
+
 func TestEmployeeTestSuite(t *testing.T) {
 	suite.Run(t, new(EmployeeTestSuite))
 }
