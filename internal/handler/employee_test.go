@@ -52,7 +52,7 @@ type MockEmployeeService struct {
 }
 
 func (m *MockEmployeeService) GetAll() (db []internal.Employee, err error) {
-	args := m.Called(db)
+	args := m.Called()
 	return args.Get(0).([]internal.Employee), args.Error(1)
 }
 
@@ -354,6 +354,107 @@ func TestHandler_CreateEmployeeUnitTest(t *testing.T) {
 
 		hd.Create(res, req)
 
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+}
+
+func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
+	employeeDb := []internal.Employee{
+		{
+			ID:           1,
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			CardNumberID: "CN001",
+			WarehouseID:  12,
+		},
+		{
+			ID:           2,
+			FirstName:    "Mocked",
+			LastName:     "Database",
+			CardNumberID: "CN002",
+			WarehouseID:  11,
+		},
+	}
+	t.Run("fetch every employee", func(t *testing.T) {
+		type GetAllRes struct {
+			Data []internal.Employee `json:"data"`
+		}
+
+		expectedStatus := http.StatusOK
+		expectedRes := GetAllRes{
+			Data: employeeDb,
+		}
+		sv := new(MockEmployeeService)
+		sv.On("GetAll").Return(employeeDb, nil)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		res := httptest.NewRecorder()
+
+		hd.GetAll(res, req)
+
+		var actualRes GetAllRes
+		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
+		require.NoError(t, err)
+		require.Equal(t, expectedRes, actualRes)
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("fetch employee by id (404)", func(t *testing.T) {
+		type GetByIDRes struct {
+			Data string `json:"data"`
+		}
+
+		expectedStatus := http.StatusNotFound
+		expectedRes := GetByIDRes{
+			Data: "employee not found",
+		}
+		sv := new(MockEmployeeService)
+		sv.On("GetByID", 1).Return(internal.Employee{}, errors.New("employee not found"))
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodGet, "/{id}", nil)
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "1")
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+		res := httptest.NewRecorder()
+
+		hd.GetByID(res, req)
+
+		var actualRes GetByIDRes
+		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
+		require.NoError(t, err)
+		require.Equal(t, expectedRes, actualRes)
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("fetch employee by id (200)", func(t *testing.T) {
+		employee := internal.Employee{
+			ID:           1,
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			CardNumberID: "FN001",
+			WarehouseID:  14,
+		}
+		type GetByIDRes struct {
+			Data internal.Employee `json:"data"`
+		}
+
+		expectedStatus := http.StatusOK
+		expectedRes := GetByIDRes{
+			Data: employee,
+		}
+		sv := new(MockEmployeeService)
+		sv.On("GetByID", 1).Return(employee, nil)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodGet, "/{id}", nil)
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "1")
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+		res := httptest.NewRecorder()
+
+		hd.GetByID(res, req)
+
+		var actualRes GetByIDRes
+		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
+		require.NoError(t, err)
+		require.Equal(t, expectedRes, actualRes)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 }
