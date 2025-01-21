@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -11,8 +12,8 @@ import (
 var (
 	log *zap.Logger
 
-	LOG_OUTPUT = "LOG_OUTPUT"
-	LOG_LEVEL  = "LOG_LEVEL"
+	LogOutput = "LOG_OUTPUT"
+	LogLevel  = "LOG_LEVEL"
 )
 
 func init() {
@@ -35,17 +36,25 @@ func init() {
 
 func Info(message string, tags ...zap.Field) {
 	log.Info(message, tags...)
-	log.Sync()
+	err := log.Sync()
+
+	if err != nil {
+		fmt.Println("Failed to sync log")
+	}
 }
 
 func Error(message string, err error, tags ...zap.Field) {
 	tags = append(tags, zap.NamedError("error", err))
 	log.Info(message, tags...)
-	log.Sync()
+	err = log.Sync()
+
+	if err != nil {
+		fmt.Println("Failed to sync log")
+	}
 }
 
 func getOutputLogs() string {
-	output := strings.ToLower(strings.TrimSpace(os.Getenv(LOG_OUTPUT)))
+	output := strings.ToLower(strings.TrimSpace(os.Getenv(LogOutput)))
 	if output == "" {
 		return "stdout"
 	}
@@ -54,7 +63,7 @@ func getOutputLogs() string {
 }
 
 func getLevelLogs() zapcore.Level {
-	switch strings.ToLower(strings.TrimSpace(os.Getenv(LOG_LEVEL))) {
+	switch strings.ToLower(strings.TrimSpace(os.Getenv(LogLevel))) {
 	case "info":
 		return zapcore.InfoLevel
 	case "error":

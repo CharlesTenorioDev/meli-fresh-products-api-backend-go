@@ -21,6 +21,7 @@ func (r *PurchaseOrderRepository) FindByID(id int) (purchaseOrder internal.Purch
 		WHERE po.id = ?
 	`
 	row := r.db.QueryRow(query, id)
+
 	if err = row.Err(); err != nil {
 		return
 	}
@@ -32,11 +33,12 @@ func (r *PurchaseOrderRepository) FindByID(id int) (purchaseOrder internal.Purch
 		&purchaseOrder.OrderDate,
 		&purchaseOrder.TrackingCode,
 		&purchaseOrder.BuyerID,
-		&purchaseOrder.ProductRecordId)
+		&purchaseOrder.ProductRecordID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			err = internal.ErrPurchaseOrderNotFound
 		}
+
 		return
 	}
 
@@ -47,10 +49,11 @@ func (r *PurchaseOrderRepository) FindByID(id int) (purchaseOrder internal.Purch
 func (r *PurchaseOrderRepository) Save(purchaseOrder *internal.PurchaseOrder) error {
 	// Checking if the purchase order already exists
 	row := r.db.QueryRow("SELECT COUNT(*) FROM purchase_orders WHERE order_number = ?", purchaseOrder.OrderNumber)
-	var count int
-	row.Scan(&count)
 
-	if count > 0 {
+	var count int
+
+	err := row.Scan(&count)
+	if count > 0 || err != nil {
 		return internal.ErrPurchaseOrderConflict
 	}
 
@@ -60,7 +63,7 @@ func (r *PurchaseOrderRepository) Save(purchaseOrder *internal.PurchaseOrder) er
 		VALUES (?, ?, ?, ?, ?)
 	`
 
-	result, err := r.db.Exec(query, (*purchaseOrder).OrderNumber, (*purchaseOrder).OrderDate, (*purchaseOrder).TrackingCode, (*purchaseOrder).BuyerID, (*purchaseOrder).ProductRecordId)
+	result, err := r.db.Exec(query, (*purchaseOrder).OrderNumber, (*purchaseOrder).OrderDate, (*purchaseOrder).TrackingCode, (*purchaseOrder).BuyerID, (*purchaseOrder).ProductRecordID)
 	if err != nil {
 		return err
 	}

@@ -23,7 +23,7 @@ const (
 	INNER JOIN employees e ON i.employee_id = e.id
 	GROUP BY i.employee_id, i.id;`
 
-	InboundOrdersPerEmployeeByIdQuery = `
+	InboundOrdersPerEmployeeByIDQuery = `
 	SELECT COUNT(i.employee_id) AS inbound_orders_count, i.id, e.card_number_id, e.first_name, e.last_name, i.warehouse_id
 	FROM inbound_orders i
 	INNER JOIN employees e ON i.employee_id = e.id
@@ -40,31 +40,36 @@ func (r *EmployeeMysql) GetAll() (db []internal.Employee, err error) {
 
 	for rows.Next() {
 		var emp internal.Employee
-		if err := rows.Scan(&emp.Id, &emp.CardNumberId, &emp.FirstName, &emp.LastName, &emp.WarehouseId); err != nil {
+		if err := rows.Scan(&emp.ID, &emp.CardNumberID, &emp.FirstName, &emp.LastName, &emp.WarehouseID); err != nil {
 			return nil, err
 		}
 
 		db = append(db, emp)
 	}
+
 	err = rows.Err()
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrEmployeeNotFound
 		}
+
 		return
 	}
+
 	return
 }
 
-func (r *EmployeeMysql) GetById(id int) (emp internal.Employee, err error) {
+func (r *EmployeeMysql) GetByID(id int) (emp internal.Employee, err error) {
 	row := r.db.QueryRow("SELECT id, card_number_id, first_name, last_name, warehouse_id FROM employees WHERE id = ?", id)
 
-	if err := row.Scan(&emp.Id, &emp.CardNumberId, &emp.FirstName, &emp.LastName, &emp.WarehouseId); err != nil {
+	if err := row.Scan(&emp.ID, &emp.CardNumberID, &emp.FirstName, &emp.LastName, &emp.WarehouseID); err != nil {
 		if err == sql.ErrNoRows {
 			return emp, fmt.Errorf("employee not found")
 		}
+
 		return emp, err
 	}
+
 	return emp, nil
 }
 
@@ -74,37 +79,38 @@ func (r *EmployeeMysql) Save(emp *internal.Employee) (int, error) {
 	var existingEmployee internal.Employee
 	err = r.db.QueryRow(
 		"SELECT id FROM employees WHERE card_number_id = ?",
-		emp.CardNumberId).Scan(&existingEmployee.Id)
+		emp.CardNumberID).Scan(&existingEmployee.ID)
 
 	if err == nil {
-		return 0, fmt.Errorf("employee with card_number_id %s already exists", emp.CardNumberId)
+		return 0, fmt.Errorf("employee with card_number_id %s already exists", emp.CardNumberID)
 	} else if err != sql.ErrNoRows {
 		return 0, err
 	}
 
 	_, err = r.db.Exec(
 		"INSERT INTO employees (card_number_id, first_name, last_name, warehouse_id) VALUES (?, ?, ?, ?)",
-		emp.CardNumberId, emp.FirstName, emp.LastName, emp.WarehouseId)
+		emp.CardNumberID, emp.FirstName, emp.LastName, emp.WarehouseID)
 
 	if err != nil {
 		return 0, err
 	}
 
-	err = r.db.QueryRow("SELECT LAST_INSERT_ID()").Scan(&emp.Id)
+	err = r.db.QueryRow("SELECT LAST_INSERT_ID()").Scan(&emp.ID)
 	if err != nil {
 		return 0, err
 	}
 
-	return emp.Id, nil
+	return emp.ID, nil
 }
 
 func (r *EmployeeMysql) Update(id int, employee internal.Employee) error {
 	_, err := r.db.Exec(
 		"UPDATE employees SET card_number_id = ?, first_name = ?, last_name = ?, warehouse_id = ? WHERE id = ?",
-		employee.CardNumberId, employee.FirstName, employee.LastName, employee.WarehouseId, id)
+		employee.CardNumberID, employee.FirstName, employee.LastName, employee.WarehouseID, id)
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -121,21 +127,25 @@ func (r *EmployeeMysql) CountInboundOrdersPerEmployee() (io []internal.InboundOr
 
 	for row.Next() {
 		var countInboundPerEmployee internal.InboundOrdersPerEmployee
-		row.Scan(&countInboundPerEmployee.CountInOrders, &countInboundPerEmployee.Id, &countInboundPerEmployee.CardNumberId, &countInboundPerEmployee.FirstName, &countInboundPerEmployee.LastName, &countInboundPerEmployee.WarehouseId)
+
+		err = row.Scan(&countInboundPerEmployee.CountInOrders, &countInboundPerEmployee.ID, &countInboundPerEmployee.CardNumberID, &countInboundPerEmployee.FirstName, &countInboundPerEmployee.LastName, &countInboundPerEmployee.WarehouseID)
+		if err != nil {
+			return
+		}
 
 		io = append(io, countInboundPerEmployee)
 	}
+
 	return
 }
 
-func (r *EmployeeMysql) ReportInboundOrdersById(employeeId int) (io internal.InboundOrdersPerEmployee, err error) {
-
+func (r *EmployeeMysql) ReportInboundOrdersByID(employeeID int) (io internal.InboundOrdersPerEmployee, err error) {
 	row := r.db.QueryRow(
-		InboundOrdersPerEmployeeByIdQuery,
-		employeeId,
+		InboundOrdersPerEmployeeByIDQuery,
+		employeeID,
 	)
 
-	err = row.Scan(&io.CountInOrders, &io.Id, &io.CardNumberId, &io.FirstName, &io.LastName, &io.WarehouseId)
+	err = row.Scan(&io.CountInOrders, &io.ID, &io.CardNumberID, &io.FirstName, &io.LastName, &io.WarehouseID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrEmployeeNotFound

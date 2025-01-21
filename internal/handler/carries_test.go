@@ -74,7 +74,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",
-			LocalityId:  3,
+			LocalityID:  3,
 		}
 		b, err := json.Marshal(carry)
 		require.NoError(t, err)
@@ -89,7 +89,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			&resCarry.CompanyName,
 			&resCarry.Address,
 			&resCarry.PhoneNumber,
-			&resCarry.LocalityId,
+			&resCarry.LocalityID,
 		)
 		var data struct {
 			Data struct {
@@ -115,7 +115,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",
-			LocalityId:  3,
+			LocalityID:  3,
 		}
 		b, err := json.Marshal(carry)
 		require.NoError(t, err)
@@ -130,7 +130,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",
-			LocalityId:  100,
+			LocalityID:  100,
 		}
 		b, err := json.Marshal(carry)
 		require.NoError(t, err)

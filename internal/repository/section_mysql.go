@@ -23,12 +23,15 @@ func (r *SectionMysql) FindAll() ([]internal.Section, error) {
 	defer rows.Close()
 
 	var sections []internal.Section
+
 	for rows.Next() {
 		var s internal.Section
+
 		err := rows.Scan(&s.ID, &s.SectionNumber, &s.CurrentTemperature, &s.MinimumTemperature, &s.CurrentCapacity, &s.MinimumCapacity, &s.MaximumCapacity, &s.WarehouseID, &s.ProductTypeID)
 		if err != nil {
 			return nil, err
 		}
+
 		sections = append(sections, s)
 	}
 
@@ -58,11 +61,13 @@ func (r *SectionMysql) FindByID(id int) (internal.Section, error) {
 		id = ?`
 
 	var s internal.Section
+
 	err := r.db.QueryRow(query, id).Scan(&s.ID, &s.SectionNumber, &s.CurrentTemperature, &s.MinimumTemperature, &s.CurrentCapacity, &s.MinimumCapacity, &s.MaximumCapacity, &s.WarehouseID, &s.ProductTypeID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return s, internal.ErrSectionNotFound
 		}
+
 		return s, err
 	}
 
@@ -126,6 +131,7 @@ func (r *SectionMysql) ReportProductsByID(sectionID int) (internal.ReportProduct
 			rp.ProductsCount = 0
 			return rp, nil
 		}
+
 		return rp, err
 	}
 
@@ -136,6 +142,7 @@ func (r *SectionMysql) SectionNumberExists(section internal.Section) (bool, erro
 	query := "SELECT COUNT(*) FROM sections WHERE section_number = ?"
 
 	var count int
+
 	err := r.db.QueryRow(query, section.SectionNumber).Scan(&count)
 	if err != nil {
 		return false, err
@@ -184,6 +191,7 @@ func (r *SectionMysql) Update(section *internal.Section) error {
 		section.ProductTypeID,
 		section.ID,
 	)
+
 	return err
 }
 

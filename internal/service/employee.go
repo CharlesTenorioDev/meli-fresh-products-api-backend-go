@@ -8,7 +8,7 @@ import (
 
 var (
 	ErrEmployeeInUse       = errors.New("employee already in use")
-	ErrCardNumberIdInUse   = errors.New("card number id already in use")
+	ErrCardNumberIDInUse   = errors.New("card number id already in use")
 	ErrEmployeeNotFound    = errors.New("employee not found")
 	ErrUnprocessableEntity = errors.New("couldn't parse employee")
 	ErrConflictInEmployee  = errors.New("conflict in employee")
@@ -19,7 +19,6 @@ func NewEmployeeServiceDefault(rp internal.EmployeeRepository, rpWarehouse inter
 		rp:  rp,
 		rpW: rpWarehouse,
 	}
-
 }
 
 type EmployeeDefault struct {
@@ -32,11 +31,12 @@ func (s *EmployeeDefault) GetAll() (emp []internal.Employee, err error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return emp, nil
 }
 
-func (s *EmployeeDefault) GetById(id int) (emp internal.Employee, err error) {
-	return s.rp.GetById(id)
+func (s *EmployeeDefault) GetByID(id int) (emp internal.Employee, err error) {
+	return s.rp.GetByID(id)
 }
 
 func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
@@ -45,13 +45,12 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 		return internal.ErrEmployeeNotFound
 	}
 
-	if emp.Id != 0 {
-		err = errors.New("employee already exists")
-		return
+	if emp.ID != 0 {
+		return errors.New("employee already exists")
 	}
 
-	if cardNumberIdInUse(emp.CardNumberId, employees) {
-		err = ErrCardNumberIdInUse
+	if cardNumberIDInUse(emp.CardNumberID, employees) {
+		err = ErrCardNumberIDInUse
 		return err
 	}
 
@@ -61,7 +60,7 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 		return err
 	}
 
-	_, err = s.rpW.FindByID(emp.WarehouseId)
+	_, err = s.rpW.FindByID(emp.WarehouseID)
 	if err != nil {
 		return internal.ErrWarehouseRepositoryNotFound
 	}
@@ -72,70 +71,68 @@ func (s *EmployeeDefault) Save(emp *internal.Employee) (err error) {
 	}
 
 	return nil
-
 }
 
-func cardNumberIdInUse(cardId string, employees []internal.Employee) bool {
-
+func cardNumberIDInUse(cardID string, employees []internal.Employee) bool {
 	for _, employee := range employees {
-		if employee.CardNumberId == cardId {
+		if employee.CardNumberID == cardID {
 			return true
 		}
 	}
+
 	return false
 }
 
 func (s *EmployeeDefault) Update(emp internal.Employee) (err error) {
-
 	data, err := s.rp.GetAll()
 	if err != nil {
 		return err
 	}
 
 	var existingEmployee *internal.Employee
+
 	for _, employee := range data {
-		if employee.Id == emp.Id {
+		if employee.ID == emp.ID {
 			existingEmployee = &employee
 			break
 		}
 	}
 
 	if existingEmployee == nil {
-		err = ErrEmployeeNotFound
-		return
+		return ErrEmployeeNotFound
 	}
 
-	if cardNumberIdInUse(emp.CardNumberId, data) && existingEmployee.CardNumberId != emp.CardNumberId {
-		err = ErrCardNumberIdInUse
-		return
+	if cardNumberIDInUse(emp.CardNumberID, data) && existingEmployee.CardNumberID != emp.CardNumberID {
+		return ErrCardNumberIDInUse
 	}
 
 	if !emp.RequirementsFields() {
-		err = errors.New("required fields are missing")
-		return
+		return errors.New("required fields are missing")
 	}
 
-	_, err = s.rpW.FindByID(emp.WarehouseId)
+	_, err = s.rpW.FindByID(emp.WarehouseID)
 	if err != nil {
 		return ErrConflictInEmployee
 	}
 
-	err = s.rp.Update(emp.Id, emp)
+	err = s.rp.Update(emp.ID, emp)
 	if err != nil {
 		return err
 	}
 
-	return
+	return nil
 }
 
 func (s *EmployeeDefault) Delete(id int) (err error) {
-	_, err = s.rp.GetById(id)
+	_, err = s.rp.GetByID(id)
 	if err != nil {
 		if err == internal.ErrEmployeeNotFound {
 			return ErrEmployeeNotFound
 		}
+
 		return err
 	}
+
 	return s.rp.Delete(id)
 }
 
@@ -143,6 +140,6 @@ func (s *EmployeeDefault) CountInboundOrdersPerEmployee() (io []internal.Inbound
 	return s.rp.CountInboundOrdersPerEmployee()
 }
 
-func (s *EmployeeDefault) ReportInboundOrdersById(employeeId int) (io internal.InboundOrdersPerEmployee, err error) {
-	return s.rp.ReportInboundOrdersById(employeeId)
+func (s *EmployeeDefault) ReportInboundOrdersByID(employeeID int) (io internal.InboundOrdersPerEmployee, err error) {
+	return s.rp.ReportInboundOrdersByID(employeeID)
 }

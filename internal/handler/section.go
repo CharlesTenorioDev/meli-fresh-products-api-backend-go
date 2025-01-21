@@ -10,7 +10,7 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type RequestSectionJSON struct {
@@ -43,7 +43,7 @@ type SectionHandler struct {
 func (h *SectionHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	sections, err := h.sv.FindAll()
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -55,14 +55,15 @@ func (h *SectionHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 func (h *SectionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
 	var section internal.Section
+
 	section, err = h.sv.FindByID(id)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 		return
 	}
 
@@ -77,30 +78,33 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 	if idStr == "" {
 		sections, err := h.sv.ReportProducts()
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(err.Error()))
 			return
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
 			"data": sections,
 		})
+
 		return
 	}
 
 	idSection, err := strconv.Atoi(idStr)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
 	report, err := h.sv.ReportProductsByID(idSection)
 	if err != nil {
 		log.Println(err)
+
 		if errors.Is(err, internal.ErrSectionNotFound) {
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 		} else {
-			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(err.Error()))
+			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(err.Error()))
 		}
+
 		return
 	}
 
@@ -112,7 +116,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var sectionJSON RequestSectionJSON
 	if err := json.NewDecoder(r.Body).Decode(&sectionJSON); err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -130,10 +134,11 @@ func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
 	err := h.sv.Save(&section)
 	if err != nil {
 		if errors.Is(err, internal.ErrSectionAlreadyExists) || errors.Is(err, internal.ErrSectionNumberAlreadyInUse) {
-			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		} else {
-			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
+
 		return
 	}
 
@@ -145,23 +150,24 @@ func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
 func (h *SectionHandler) Update(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
-	var updates map[string]interface{}
+	var updates map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
 	section, err := h.sv.Update(id, updates)
 	if err != nil {
 		if errors.Is(err, internal.ErrSectionNotFound) {
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 		} else {
-			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}
+
 		return
 	}
 
@@ -173,7 +179,7 @@ func (h *SectionHandler) Update(w http.ResponseWriter, r *http.Request) {
 func (h *SectionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
@@ -181,10 +187,11 @@ func (h *SectionHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, internal.ErrSectionNotFound):
-			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 		default:
-			response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError(ErrInternalServer))
+			response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 		}
+
 		return
 	}
 
