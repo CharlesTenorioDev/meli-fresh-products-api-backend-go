@@ -10,6 +10,9 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
+	httpSwagger "github.com/swaggo/http-swagger"
+
+	_ "github.com/meli-fresh-products-api-backend-t1/swagger/docs"
 )
 
 // ConfigServerChi is a struct that represents the configuration for ServerChi
@@ -67,6 +70,7 @@ func (a *ServerChi) Run() (err error) {
 
 	rt := chi.NewRouter()
 	rt.Use(middleware.Logger)
+	rt.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	buMysqlRepository := repository.NewBuyerMysqlRepository(db)
 	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")

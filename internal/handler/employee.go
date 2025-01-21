@@ -24,6 +24,15 @@ func NewEmployeeDefault(sv internal.EmployeeService) *EmployeeHandlerDefault {
 	}
 }
 
+// GetAll godoc
+// @Summary Get all employees
+// @Description Retrieve a list of all employees from the database
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "List of all employees"
+// @Failure 500 {object} rest_err.RestErr "internal server error"
+// @Router /api/v1/employees [get]
 func (h *EmployeeHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	dataEmployee, err := h.sv.GetAll()
 
@@ -39,6 +48,17 @@ func (h *EmployeeHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) 
 
 }
 
+// GetByID godoc
+// @Summary Get an employee by Id
+// @Description Retrieve a specific employee by Id
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param id path int true "Employee ID"
+// @Success 200 {object} map[string]interface{} "Employee data"
+// @Failure 400 {object} map[string]interface{} "Invalid Id format"
+// @Failure 404 {object} map[string]interface{} "Employee not found"
+// @Router /api/v1/employees/{id} [get]
 func (h *EmployeeHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -64,6 +84,18 @@ func (h *EmployeeHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request)
 
 }
 
+// Create godoc
+// @Summary Create a new employee
+// @Description Create a new employee record in the database
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param employee body internal.Employee true "Employee data"
+// @Success 201 {object} map[string]interface{} "Created employee"
+// @Failure 400 {object} map[string]interface{} "Invalid body format"
+// @Failure 409 {object} map[string]interface{} "Card number id already in use" or "Employee already in use"
+// @Failure 422 {object} map[string]interface{} "Invalid entity data"
+// @Router /api/v1/employees [post]
 func (h *EmployeeHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 
 	var employee internal.Employee
@@ -104,6 +136,19 @@ func (h *EmployeeHandlerDefault) Create(w http.ResponseWriter, r *http.Request) 
 
 }
 
+// Update godoc
+// @Summary Update an existing employee
+// @Description Update the details of an existing employee by Id
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param id path int true "Employee ID"
+// @Param employee body internal.Employee true "Employee data"
+// @Success 200 {object} map[string]interface{} "Updated employee"
+// @Failure 400 {object} map[string]interface{} "Invalid Id format" or "Invalid body format"
+// @Failure 404 {object} map[string]interface{} "Employee not found"
+// @Failure 409 {object} map[string]interface{} "Card number id already in use" or "Conflict in employee"
+// @Router /api/v1/employees/{id} [patch]
 func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -154,6 +199,17 @@ func (h *EmployeeHandlerDefault) Update(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+// Delete godoc
+// @Summary Delete an employee by Id
+// @Description Remove an employee record from the database by Id
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param id path int true "Employee ID"
+// @Success 204 {object} nil "No Content"
+// @Failure 400 {object} map[string]interface{} "Invalid Id format"
+// @Failure 404 {object} map[string]interface{} "Employee not found"
+// @Router /api/v1/employees/{id} [delete]
 func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
@@ -174,6 +230,18 @@ func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) 
 	response.JSON(w, http.StatusNoContent, nil)
 }
 
+// ReportInboundOrders godoc
+// @Summary Get inbound orders for employees
+// @Description Retrieve the count all inbound orders per employee, or for a specific employee if Id is provided
+// @Tags Employees
+// @Accept json
+// @Produce json
+// @Param id query int false "Employee ID"
+// @Success 200 {object} map[string]interface{} "Count of inbound orders per employee"
+// @Failure 400 {object} rest_err.RestErr "Id should be a number"
+// @Failure 404 {object} rest_err.RestErr "Employee not found"
+// @Failure 500 {object} rest_err.RestErr "Failed to fetch inbound orders"
+// @Router /api/v1/employees/report-inbound-orders [get]
 func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *http.Request) {
 
 	idStr := r.URL.Query().Get("id")

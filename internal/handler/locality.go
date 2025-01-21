@@ -3,9 +3,10 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"go.uber.org/zap"
 	"net/http"
 	"strconv"
+
+	"go.uber.org/zap"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -41,6 +42,18 @@ type LocalityPostJson struct {
 	CountryName  string `json:"country_name"`
 }
 
+// ReportCarries godoc
+// @Summary Report carries count per locality
+// @Description Report the total number of carries for every locality or a specific one by Id
+// @Tags Locality
+// @Accept json
+// @Produce json
+// @Param id query string false "Locality ID" Format(int)
+// @Success 200 {object} map[string]any "Carries report data"
+// @Failure 400 {object} rest_err.RestErr "Id should be a number"
+// @Failure 404 {object} rest_err.RestErr "Not carries on locality_id"
+// @Failure 500 {object} rest_err.RestErr "Failed to fetch carries"
+// @Router /api/v1/localities/report-carries [get]
 func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
@@ -92,7 +105,18 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 	}
 }
 
-// ReportSellers returns locality with sellers count
+// ReportSellers godoc
+// @Summary Report sellers count per locality
+// @Description Report the sellers count for every locality or a specific one by Id
+// @Tags Locality
+// @Accept json
+// @Produce json
+// @Param id query string false "Locality ID" Format(int)
+// @Success 200 {object} map[string]any "Sellers count report data"
+// @Failure 400 {object} rest_err.RestErr "Id should be a number"
+// @Failure 404 {object} rest_err.RestErr "Locality not found"
+// @Failure 500 {object} rest_err.RestErr "Internal server error"
+// @Router /api/v1/localities/report-sellers [get]
 func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var localities []internal.Locality
@@ -144,7 +168,18 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 
 }
 
-// Save method save the locality
+// Save godoc
+// @Summary Save a locality
+// @Description Save a new locality on the database
+// @Tags Locality
+// @Accept json
+// @Produce json
+// @Param locality body LocalityPostJson true "Locality data"
+// @Success 200 {object} map[string]any "Saved locality data"
+// @Failure 400 {object} rest_err.RestErr "Locality inputs are Invalid"
+// @Failure 409 {object} rest_err.RestErr "Locality conflict"
+// @Failure 500 {object} rest_err.RestErr "Internal server error"
+// @Router /api/v1/localities [post]
 func (h *LocalityDefault) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var localityJson LocalityPostJson

@@ -1,3 +1,10 @@
+// @title Meli Fresh Products API
+// @version 1.0
+// @description API for managing fresh products and orders
+// @contact.name Bootcampers GO - W5
+// @host localhost:8080
+// @BasePath /
+
 package main
 
 import (

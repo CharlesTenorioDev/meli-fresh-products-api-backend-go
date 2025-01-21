@@ -19,6 +19,18 @@ func NewInboundOrdersHandler(sv internal.InboundOrderService) *InboundOrdersHand
 	}
 }
 
+// Create godoc
+// @Summary Create a new inbound order
+// @Description Create a new inbound order with the provided details
+// @Tags InboundOrders
+// @Accept json
+// @Produce json
+// @Param inbound body internal.InboundOrders true "Inbound order data"
+// @Success 201 {object} map[string]interface{} "Created inbound order with ID"
+// @Failure 400 {object} map[string]interface{} "Invalid body format"
+// @Failure 422 {object} map[string]interface{} "Required fields are missing"
+// @Failure 409 {object} map[string]interface{} "Order number already exists" or "Employee not exists"
+// @Router /api/v1/inbound-orders [post]
 func (h *InboundOrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	var inbound internal.InboundOrders
@@ -63,6 +75,15 @@ func (h *InboundOrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetAll godoc
+// @Summary Get all inbound orders
+// @Description Retrieve a list of all inbound orders from the database
+// @Tags InboundOrders
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "List of inbound orders"
+// @Failure 500 {object} rest_err.RestErr "Failed to fetch inbounds orders"
+// @Router /api/v1/inbound-orders [get]
 func (h *InboundOrdersHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	allInbounds, err := h.sv.FindAll()
 	if err != nil {
