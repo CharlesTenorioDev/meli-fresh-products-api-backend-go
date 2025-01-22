@@ -5,15 +5,16 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/go-chi/chi/v5"
-	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/meli-fresh-products-api-backend-t1/internal"
+	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 // MockSellerService é uma estrutura mock para internal.SellerService
@@ -90,17 +91,17 @@ func TestSellerDefault_GetAll(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": []handler.SellersGetJson{
+				"data": []handler.SellersGetJSON{
 					{
-						Id:          1,
-						Cid:         123,
+						ID:          1,
+						CID:         123,
 						CompanyName: "Test Seller 1",
 						Address:     "Rua 1",
 						Telephone:   "1234567890",
 					},
 					{
-						Id:          2,
-						Cid:         456,
+						ID:          2,
+						CID:         456,
 						CompanyName: "Test Seller 2",
 						Address:     "Rua 2",
 						Telephone:   "9876543210",
@@ -113,7 +114,7 @@ func TestSellerDefault_GetAll(t *testing.T) {
 				m.On("FindAll").Return([]internal.Seller{}, internal.ErrSellerNotFound)
 			},
 			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   *rest_err.NewNotFoundError("seller not found"),
+			expectedResponse:   *resterr.NewNotFoundError("seller not found"),
 		},
 		{
 			name: "should return internal server error",
@@ -146,7 +147,7 @@ func TestSellerDefault_GetAll(t *testing.T) {
 				switch response := tt.expectedResponse.(type) {
 				case map[string]interface{}:
 					var actualResponse struct {
-						Data []handler.SellersGetJson `json:"data"`
+						Data []handler.SellersGetJSON `json:"data"`
 					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
@@ -154,8 +155,8 @@ func TestSellerDefault_GetAll(t *testing.T) {
 					}
 					assert.Equal(t, response["data"], actualResponse.Data)
 
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
@@ -192,9 +193,9 @@ func TestSellerDefault_GetByID(t *testing.T) {
 			id:                 "1",
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": handler.SellersGetJson{
-					Id:          1,
-					Cid:         123,
+				"data": handler.SellersGetJSON{
+					ID:          1,
+					CID:         123,
 					CompanyName: "Test Seller",
 					Address:     "Rua 1",
 					Telephone:   "1234567890",
@@ -208,7 +209,7 @@ func TestSellerDefault_GetByID(t *testing.T) {
 			},
 			id:                 "1",
 			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   *rest_err.NewNotFoundError("seller not found"),
+			expectedResponse:   *resterr.NewNotFoundError("seller not found"),
 		},
 		{
 			name: "should return internal server error",
@@ -254,15 +255,15 @@ func TestSellerDefault_GetByID(t *testing.T) {
 				switch response := tt.expectedResponse.(type) {
 				case map[string]interface{}:
 					var actualResponse struct {
-						Data handler.SellersGetJson `json:"data"`
+						Data handler.SellersGetJSON `json:"data"`
 					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
 					}
 					assert.Equal(t, response["data"], actualResponse.Data)
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
@@ -289,7 +290,7 @@ func TestSellerDefault_Save(t *testing.T) {
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(nil)
 			},
-			requestBody: handler.SellersPostJson{
+			requestBody: handler.SellersPostJSON{
 				CID:         123,
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
@@ -308,7 +309,7 @@ func TestSellerDefault_Save(t *testing.T) {
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(internal.ErrSellerConflict)
 			},
-			requestBody: handler.SellersPostJson{
+			requestBody: handler.SellersPostJSON{
 				CID:         123,
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
@@ -316,14 +317,14 @@ func TestSellerDefault_Save(t *testing.T) {
 				Locality:    1,
 			},
 			expectedStatusCode: http.StatusConflict,
-			expectedResponse:   *rest_err.NewConflictError("seller already exists"),
+			expectedResponse:   *resterr.NewConflictError("seller already exists"),
 		},
 		{
 			name: "should return cid conflict error",
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(internal.ErrSellerCIDAlreadyExists)
 			},
-			requestBody: handler.SellersPostJson{
+			requestBody: handler.SellersPostJSON{
 				CID:         123,
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
@@ -331,14 +332,14 @@ func TestSellerDefault_Save(t *testing.T) {
 				Locality:    1,
 			},
 			expectedStatusCode: http.StatusConflict,
-			expectedResponse:   *rest_err.NewConflictError("seller with this CID already exists"),
+			expectedResponse:   *resterr.NewConflictError("seller already exists"),
 		},
 		{
 			name: "should return internal server error",
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(errors.New("internal server error"))
 			},
-			requestBody: handler.SellersPostJson{
+			requestBody: handler.SellersPostJSON{
 				CID:         123,
 				CompanyName: "Test Seller",
 				Address:     "Rua 1",
@@ -385,8 +386,8 @@ func TestSellerDefault_Save(t *testing.T) {
 						t.Fatal(err)
 					}
 					assert.Equal(t, response["data"], actualResponse.Data)
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
@@ -429,7 +430,7 @@ func TestSellerDefault_Update(t *testing.T) {
 				}).Return(nil, mockSeller)
 			},
 			id: "1",
-			requestBody: handler.SellersUpdateJson{
+			requestBody: handler.SellersUpdateJSON{
 				CID:         intPtr(456),
 				CompanyName: stringPtr("Updated Seller"),
 				Address:     stringPtr("Rua 2"),
@@ -438,9 +439,9 @@ func TestSellerDefault_Update(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": handler.SellersGetJson{
-					Id:          1,
-					Cid:         456,
+				"data": handler.SellersGetJSON{
+					ID:          1,
+					CID:         456,
 					CompanyName: "Updated Seller",
 					Address:     "Rua 2",
 					Telephone:   "9876543210",
@@ -463,7 +464,7 @@ func TestSellerDefault_Update(t *testing.T) {
 				m.On("Update", 1, mock.Anything).Return(internal.ErrSellerInvalidFields, internal.Seller{})
 			},
 			id: "1",
-			requestBody: handler.SellersUpdateJson{
+			requestBody: handler.SellersUpdateJSON{
 				CID:         intPtr(456),
 				CompanyName: stringPtr(""), // Nome da empresa inválido
 				Address:     stringPtr("Rua 2"),
@@ -471,7 +472,7 @@ func TestSellerDefault_Update(t *testing.T) {
 				Locality:    intPtr(2),
 			},
 			expectedStatusCode: http.StatusBadRequest,
-			expectedResponse:   *rest_err.NewBadRequestError("seller invalid fields"),
+			expectedResponse:   *resterr.NewBadRequestError("seller invalid fields"),
 		},
 		{
 			name: "should return conflict error",
@@ -479,7 +480,7 @@ func TestSellerDefault_Update(t *testing.T) {
 				m.On("Update", 1, mock.Anything).Return(internal.ErrSellerCIDAlreadyExists, internal.Seller{})
 			},
 			id: "1",
-			requestBody: handler.SellersUpdateJson{
+			requestBody: handler.SellersUpdateJSON{
 				CID:         intPtr(456),
 				CompanyName: stringPtr("Updated Seller"),
 				Address:     stringPtr("Rua 2"),
@@ -487,7 +488,7 @@ func TestSellerDefault_Update(t *testing.T) {
 				Locality:    intPtr(2),
 			},
 			expectedStatusCode: http.StatusConflict,
-			expectedResponse:   *rest_err.NewConflictError("seller with this CID already exists"),
+			expectedResponse:   *resterr.NewConflictError("seller with this CID already exists"),
 		},
 		{
 			name: "should return not found error",
@@ -495,7 +496,7 @@ func TestSellerDefault_Update(t *testing.T) {
 				m.On("Update", 1, mock.Anything).Return(internal.ErrSellerNotFound, internal.Seller{})
 			},
 			id: "1",
-			requestBody: handler.SellersUpdateJson{
+			requestBody: handler.SellersUpdateJSON{
 				CID:         intPtr(456),
 				CompanyName: stringPtr("Updated Seller"),
 				Address:     stringPtr("Rua 2"),
@@ -503,7 +504,7 @@ func TestSellerDefault_Update(t *testing.T) {
 				Locality:    intPtr(2),
 			},
 			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   *rest_err.NewNotFoundError("seller not found"),
+			expectedResponse:   *resterr.NewNotFoundError("seller not found"),
 		},
 		{
 			name: "should return internal server error",
@@ -511,7 +512,7 @@ func TestSellerDefault_Update(t *testing.T) {
 				m.On("Update", 1, mock.Anything).Return(errors.New("internal server error"), internal.Seller{})
 			},
 			id: "1",
-			requestBody: handler.SellersUpdateJson{
+			requestBody: handler.SellersUpdateJSON{
 				CID:         intPtr(456),
 				CompanyName: stringPtr("Updated Seller"),
 				Address:     stringPtr("Rua 2"),
@@ -555,15 +556,15 @@ func TestSellerDefault_Update(t *testing.T) {
 				switch response := tt.expectedResponse.(type) {
 				case map[string]interface{}:
 					var actualResponse struct {
-						Data handler.SellersGetJson `json:"data"`
+						Data handler.SellersGetJSON `json:"data"`
 					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
 					}
 					assert.Equal(t, response["data"], actualResponse.Data)
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
@@ -601,7 +602,7 @@ func TestSellerDefault_Delete(t *testing.T) {
 			},
 			id:                 "1",
 			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   *rest_err.NewNotFoundError("seller not found"),
+			expectedResponse:   *resterr.NewNotFoundError("seller not found"),
 		},
 		{
 			name: "should return internal server error",
@@ -645,8 +646,8 @@ func TestSellerDefault_Delete(t *testing.T) {
 
 			if tt.expectedResponse != nil {
 				switch response := tt.expectedResponse.(type) {
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)

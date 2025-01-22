@@ -3,6 +3,7 @@ package repository
 import (
 	"database/sql"
 	"errors"
+
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 
 	"github.com/go-sql-driver/mysql"
@@ -27,16 +28,18 @@ func (r *SellerMysql) FindAll() (sellers []internal.Seller, err error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrSellerNotFound
 		}
-		return
+
+		return sellers, err
 	}
 
 	// iterate over the rows
 	for rows.Next() {
 		// create a new seller
 		var seller internal.Seller
+
 		err = rows.Scan(&seller.ID, &seller.CID, &seller.CompanyName, &seller.Address, &seller.Telephone)
 		if err != nil {
-			return
+			return sellers, err
 		}
 
 		// append the seller to the slice
@@ -49,10 +52,11 @@ func (r *SellerMysql) FindAll() (sellers []internal.Seller, err error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrSellerNotFound
 		}
-		return
+
+		return sellers, err
 	}
 
-	return
+	return sellers, err
 }
 
 // FindByID returns a seller from the database by its id
@@ -102,6 +106,7 @@ func (r *SellerMysql) Save(seller *internal.Seller) (err error) {
 				err = internal.ErrSellerConflict
 			}
 		}
+
 		return
 	}
 

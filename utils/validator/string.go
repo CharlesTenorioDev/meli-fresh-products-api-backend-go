@@ -2,8 +2,8 @@ package validator
 
 import "regexp"
 
-func String(str string, min int, max int) bool {
-	return len(str) >= min && len(str) <= max && !BlankString(str)
+func String(str string, minV int, maxV int) bool {
+	return len(str) >= minV && len(str) <= maxV && !BlankString(str)
 }
 
 func EmptyString(str string) bool {

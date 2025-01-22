@@ -44,7 +44,7 @@ type SectionService interface {
 	ReportProducts() ([]ReportProduct, error)
 	ReportProductsByID(sectionID int) (ReportProduct, error)
 	Save(section *Section) error
-	Update(id int, updates map[string]interface{}) (Section, error)
+	Update(id int, updates map[string]any) (Section, error)
 	Delete(id int) error
 }
 
@@ -59,5 +59,6 @@ func (s *Section) Ok() bool {
 		s.ProductTypeID <= 0 {
 		return false
 	}
+
 	return true
 }

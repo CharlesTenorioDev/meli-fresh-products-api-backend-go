@@ -91,7 +91,7 @@ func (suite *BuyerTestSuite) TestCreateBuyer() {
 	bc := internal.Buyer{
 		FirstName:    "Fabio",
 		LastName:     "Nacarelli",
-		CardNumberId: "80028922",
+		CardNumberID: "80028922",
 	}
 	b, _ := json.Marshal(bc)
 	r := httptest.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
@@ -114,7 +114,7 @@ func (suite *BuyerTestSuite) TestCreateBuyer() {
 	require.Equal(suite.T(), 5, buyerCreated.Data.ID)
 	require.Equal(suite.T(), bc.FirstName, buyerCreated.Data.FirstName)
 	require.Equal(suite.T(), bc.LastName, buyerCreated.Data.LastName)
-	require.Equal(suite.T(), bc.CardNumberId, buyerCreated.Data.CardNumberId)
+	require.Equal(suite.T(), bc.CardNumberID, buyerCreated.Data.CardNumberID)
 }
 
 func (suite *BuyerTestSuite) TestCreateBuyerWithMissingParameters() {
@@ -149,7 +149,7 @@ func (suite *BuyerTestSuite) TestPatchBuyer() {
 		bp := internal.BuyerPatch{
 			FirstName:    &fname,
 			LastName:     &lname,
-			CardNumberId: &cardNumberId,
+			CardNumberID: &cardNumberId,
 		}
 		b, _ := json.Marshal(bp)
 		r := httptest.NewRequest(http.MethodPatch, Api+"/{id}", bytes.NewReader(b))
@@ -166,7 +166,7 @@ func (suite *BuyerTestSuite) TestPatchBuyer() {
 		json.NewDecoder(w.Body).Decode(&updatedBuyer)
 		require.Equal(suite.T(), fname, updatedBuyer.Data.FirstName)
 		require.Equal(suite.T(), lname, updatedBuyer.Data.LastName)
-		require.Equal(suite.T(), cardNumberId, updatedBuyer.Data.CardNumberId)
+		require.Equal(suite.T(), cardNumberId, updatedBuyer.Data.CardNumberID)
 	})
 	suite.Run("check if changes were applied", func() {
 		r := httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
@@ -183,7 +183,7 @@ func (suite *BuyerTestSuite) TestPatchBuyer() {
 		require.Equal(suite.T(), http.StatusOK, w.Result().StatusCode)
 		require.Equal(suite.T(), fname, buyers.Data.FirstName)
 		require.Equal(suite.T(), lname, buyers.Data.LastName)
-		require.Equal(suite.T(), cardNumberId, buyers.Data.CardNumberId)
+		require.Equal(suite.T(), cardNumberId, buyers.Data.CardNumberID)
 	})
 }
 
@@ -194,7 +194,7 @@ func (suite *BuyerTestSuite) TestPatchInvalidId() {
 	bp := internal.BuyerPatch{
 		FirstName:    &fname,
 		LastName:     &lname,
-		CardNumberId: &cardNumberId,
+		CardNumberID: &cardNumberId,
 	}
 	b, _ := json.Marshal(bp)
 	r := httptest.NewRequest(http.MethodPatch, Api+"/{id}", bytes.NewReader(b))

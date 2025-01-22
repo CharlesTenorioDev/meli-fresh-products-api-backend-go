@@ -20,7 +20,7 @@ type PurchaseOrderService struct {
 	svBuyer          internal.BuyerService
 }
 
-// FindById returns a purchase order
+// FindByID returns a purchase order
 func (s *PurchaseOrderService) FindByID(id int) (p internal.PurchaseOrder, err error) {
 	p, err = s.rpPurchaseOrder.FindByID(id)
 	return
@@ -30,6 +30,7 @@ func (s *PurchaseOrderService) FindByID(id int) (p internal.PurchaseOrder, err e
 func (s *PurchaseOrderService) Save(p *internal.PurchaseOrder) (err error) {
 	// Validate the purchase order entity
 	causes := p.Validate()
+
 	if len(causes) > 0 {
 		return internal.DomainError{
 			Message: "Purchase Order inputs are Invalid",
@@ -38,7 +39,7 @@ func (s *PurchaseOrderService) Save(p *internal.PurchaseOrder) (err error) {
 	}
 
 	// Check if the product records exists
-	_, err = s.rpProductRecords.FindByID(p.ProductRecordId)
+	_, err = s.rpProductRecords.FindByID(p.ProductRecordID)
 	if err != nil {
 		return err
 	}
@@ -51,5 +52,6 @@ func (s *PurchaseOrderService) Save(p *internal.PurchaseOrder) (err error) {
 
 	// Save the purchase order
 	err = s.rpPurchaseOrder.Save(p)
+
 	return
 }

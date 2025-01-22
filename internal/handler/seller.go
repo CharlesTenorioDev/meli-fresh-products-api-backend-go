@@ -9,7 +9,7 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 // NewSellerDefault creates a new instance of the seller handler
@@ -25,16 +25,8 @@ type SellerDefault struct {
 	sv internal.SellerService
 }
 
-type SellersGetJson struct {
-	Id          int    `json:"id"`
-	Cid         int    `json:"cid"`
-	CompanyName string `json:"company_name"`
-	Address     string `json:"address"`
-	Telephone   string `json:"telephone"`
-	Locality    int    `json:"locality_id"`
-}
-
-type SellersPostJson struct {
+type SellersGetJSON struct {
+	ID          int    `json:"id"`
 	CID         int    `json:"cid"`
 	CompanyName string `json:"company_name"`
 	Address     string `json:"address"`
@@ -42,7 +34,15 @@ type SellersPostJson struct {
 	Locality    int    `json:"locality_id"`
 }
 
-type SellersUpdateJson struct {
+type SellersPostJSON struct {
+	CID         int    `json:"cid"`
+	CompanyName string `json:"company_name"`
+	Address     string `json:"address"`
+	Telephone   string `json:"telephone"`
+	Locality    int    `json:"locality_id"`
+}
+
+type SellersUpdateJSON struct {
 	CID         *int    `json:"cid"`
 	CompanyName *string `json:"company_name"`
 	Address     *string `json:"address"`
@@ -51,6 +51,14 @@ type SellersUpdateJson struct {
 }
 
 // GetAll returns all sellers
+// @Summary Retrieve all sellers
+// @Description Fetches a list of all sellers in the database
+// @Tags Seller
+// @Produce json
+// @Success 200 {object} []SellersGetJson "List of sellers"
+// @Failure 404 {object} rest_err.RestErr "Sellers not found"
+// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Router /api/v1/sellers [get]
 func (h *SellerDefault) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		all, err := h.sv.FindAll()
@@ -59,11 +67,11 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 			return
 		}
 
-		var sellersJson []SellersGetJson
+		var sellerJSON []SellersGetJSON
 		for i := range all {
-			sellersJson = append(sellersJson, SellersGetJson{
-				Id:          all[i].ID,
-				Cid:         all[i].CID,
+			sellerJSON = append(sellerJSON, SellersGetJSON{
+				ID:          all[i].ID,
+				CID:         all[i].CID,
 				CompanyName: all[i].CompanyName,
 				Address:     all[i].Address,
 				Telephone:   all[i].Telephone,
@@ -71,18 +79,27 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": sellersJson,
+			"data": sellerJSON,
 		})
 	}
 }
 
-// GetByID returns a seller
+// GetByID returns a seller by ID
+// @Summary Retrieve a seller by ID
+// @Description Fetches a seller's details based on the provided ID
+// @Tags Seller
+// @Produce json
+// @Param id path int true "Seller ID"
+// @Success 200 {object} SellersGetJson "Seller data"
+// @Failure 400 {object} rest_err.RestErr "Bad Request"
+// @Failure 404 {object} rest_err.RestErr "Seller Not Found"
+// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Router /api/v1/sellers/{id} [get]
 func (h *SellerDefault) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := chi.URLParam(r, "id")
 
 		id, err := strconv.Atoi(idStr)
-
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 			return
@@ -94,9 +111,9 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 			return
 		}
 
-		var sellerJson = SellersGetJson{
-			Id:          seller.ID,
-			Cid:         seller.CID,
+		var sellerJSON = SellersGetJSON{
+			ID:          seller.ID,
+			CID:         seller.CID,
 			CompanyName: seller.CompanyName,
 			Address:     seller.Address,
 			Telephone:   seller.Telephone,
@@ -104,16 +121,29 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": sellerJson,
+			"data": sellerJSON,
 		})
 	}
 }
 
 // Save creates a new seller
+// @Summary Create a new seller
+// @Description Adds a new seller to the system with the provided details on the request body.
+// @Tags Seller
+// @Accept json
+// @Produce json
+// @Param seller body SellersPostJson true "Seller Create Request"
+// @Success 201 {object} map[string]interface{} "Created Seller Id"
+// @Failure 400 {object} rest_err.RestErr "Bad Request"
+// @Failure 404 {object} rest_err.RestErr "Seller not found" or "Locality not found"
+// @Failure 409 {object} rest_err.RestErr "Seller already exists" or "Seller with this CID already exists"
+// @Failure 422 {object} rest_err.RestErr "Unprocessable Entity"
+// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Router /api/v1/sellers [post]
 func (h *SellerDefault) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var body SellersPostJSON
 
-		var body SellersPostJson
 		err := request.JSON(r, &body)
 		if err != nil {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
@@ -142,19 +172,32 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 	}
 }
 
-// Update updates a seller
+// Update updates a seller's details
+// @Summary Update seller details
+// @Description Modify the information of an existing seller
+// @Tags Seller
+// @Accept json
+// @Produce json
+// @Param id path int true "Seller ID"
+// @Param seller body SellersUpdateJson true "Seller Update Request"
+// @Success 200 {object} SellersGetJson "Updated Seller data"
+// @Failure 400 {object} rest_err.RestErr "Seller invalid fields"
+// @Failure 404 {object} rest_err.RestErr "Seller not found"
+// @Failure 409 {object} rest_err.RestErr "Seller with this CID already exists"
+// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Router /api/v1/sellers/{id} [patch]
 func (h *SellerDefault) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := chi.URLParam(r, "id")
 
 		id, err := strconv.Atoi(idStr)
-
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 			return
 		}
 
-		var body SellersUpdateJson
+		var body SellersUpdateJSON
+
 		err = request.JSON(r, &body)
 		if err != nil {
 			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
@@ -176,26 +219,34 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": SellersGetJson{
-				Id:          seller.ID,
-				Cid:         seller.CID,
+			"data": SellersGetJSON{
+				ID:          seller.ID,
+				CID:         seller.CID,
 				CompanyName: seller.CompanyName,
 				Address:     seller.Address,
 				Telephone:   seller.Telephone,
 				Locality:    seller.Locality,
 			},
 		})
-
 	}
 }
 
 // Delete deletes a seller
+// @Summary Delete a seller
+// @Description Removes a seller from the system based on the provided Id
+// @Tags Seller
+// @Produce json
+// @Param id path int true "Seller ID"
+// @Success 204 {object} nil "No Content"
+// @Failure 400 {object} rest_err.RestErr "Bad Request"
+// @Failure 404 {object} rest_err.RestErr "Seller not found"
+// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Router /api/v1/sellers/{id} [delete]
 func (h *SellerDefault) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := chi.URLParam(r, "id")
 
 		id, err := strconv.Atoi(idStr)
-
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
 			return
