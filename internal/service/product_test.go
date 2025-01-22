@@ -39,14 +39,14 @@ func (r *repositoryProductMock) Delete(id int) error {
 	return args.Error(0)
 }
 
-func (m *repositoryProductMock) FindAllRecord() ([]internal.ProductRecordsJsonCount, error) {
+func (m *repositoryProductMock) FindAllRecord() ([]internal.ProductRecordsJSONCount, error) {
 	args := m.Called()
-	return args.Get(0).([]internal.ProductRecordsJsonCount), args.Error(1)
+	return args.Get(0).([]internal.ProductRecordsJSONCount), args.Error(1)
 }
 
-func (r *repositoryProductMock) FindByIdRecord(id int) (internal.ProductRecordsJsonCount, error) {
+func (r *repositoryProductMock) FindByIDRecord(id int) (internal.ProductRecordsJSONCount, error) {
 	args := r.Called(id)
-	return args.Get(0).(internal.ProductRecordsJsonCount), args.Error(1)
+	return args.Get(0).(internal.ProductRecordsJSONCount), args.Error(1)
 }
 
 // Criação dos mocks dos repositórios
@@ -61,8 +61,8 @@ func TestProductServiceDefault_GetAll(t *testing.T) { //Se a lista tiver "n" ele
 	t.Run("find_all", func(t *testing.T) {
 		// Produtos esperados que o repositório deve retornar
 		expectedProducts := []internal.Product{
-			{Id: 1, ProductCode: "P001"},
-			{Id: 2, ProductCode: "P002"},
+			{ID: 1, ProductCode: "P001"},
+			{ID: 2, ProductCode: "P002"},
 		}
 
 		// Configuração do mock para o método FindAll
@@ -77,7 +77,7 @@ func TestProductServiceDefault_GetAll(t *testing.T) { //Se a lista tiver "n" ele
 
 func TestProductServiceDefault_GetByID(t *testing.T) {
 	t.Run("find_by_id_existent", func(t *testing.T) { //Se o elemento pesquisado pelo id existir, ele retornará as informações do elemento solicitado
-		expectedProduct := internal.Product{Id: 1}
+		expectedProduct := internal.Product{ID: 1}
 
 		productRepo.On("FindByID", 1).Return(expectedProduct, nil)
 
@@ -100,7 +100,7 @@ func TestProductServiceDefault_GetByID(t *testing.T) {
 
 func TestProductServiceDefault_Create(t *testing.T) {
 	product := internal.Product{
-		Id:                             1,
+		ID:                             1,
 		ProductCode:                    "code 1",
 		Description:                    "Example Product",
 		Height:                         1,
@@ -110,8 +110,8 @@ func TestProductServiceDefault_Create(t *testing.T) {
 		RecommendedFreezingTemperature: 1,
 		Width:                          1,
 		FreezingRate:                   1,
-		ProductTypeId:                  1,
-		SellerId:                       1,
+		ProductTypeID:                  1,
+		SellerID:                       1,
 	}
 
 	t.Run("create_ok", func(t *testing.T) { //Se ele contiver os campos necessários, será criado
@@ -119,8 +119,8 @@ func TestProductServiceDefault_Create(t *testing.T) {
 		// Configura o mock para as chamadas necessárias
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)                               // Configuração para FindAll
 		productRepo.On("Save", product).Return(product, nil)                                      // Configuração para Save
-		sellerRepo.On("FindByID", product.SellerId).Return(internal.Seller{}, nil)                // Configuração para FindByID no sellerRepo
-		productTypeRepo.On("FindByID", product.ProductTypeId).Return(internal.ProductType{}, nil) // Configuração para FindByID no productTypeRepo
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)                // Configuração para FindByID no sellerRepo
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, nil) // Configuração para FindByID no productTypeRepo
 
 		// Executa o método que será testado
 		_, err := svc.Create(product)
@@ -145,7 +145,7 @@ func TestProductServiceDefault_Create(t *testing.T) {
 		// Cria um product com seller que não existe
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)
 		productRepo.On("Save", product).Return(product, nil)
-		sellerRepo.On("FindByID", product.SellerId).Return(internal.Seller{}, internal.ErrSellerIdNotFound)
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, internal.ErrSellerIdNotFound)
 
 		// Executa o método que será testado
 		_, err := svc.Create(product)
@@ -159,8 +159,8 @@ func TestProductServiceDefault_Create(t *testing.T) {
 		// Cria um product com product-type não existe
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)
 		productRepo.On("Save", product).Return(product, nil)
-		sellerRepo.On("FindByID", product.SellerId).Return(internal.Seller{}, nil)
-		sellerRepo.On("FindByID", product.ProductTypeId).Return(internal.ProductType{}, internal.ErrProductTypeIdNotFound)
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)
+		sellerRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, internal.ErrProductTypeIdNotFound)
 
 		// Executa o método que será testado
 		_, err := svc.Create(product)
@@ -174,8 +174,8 @@ func TestProductServiceDefault_Create(t *testing.T) {
 		//cria um erro de servidor
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)
 		productRepo.On("Save", product).Return(product, errors.New("repository error"))
-		sellerRepo.On("FindByID", product.SellerId).Return(internal.Seller{}, nil)
-		productTypeRepo.On("FindByID", product.ProductTypeId).Return(internal.ProductType{}, nil)
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, nil)
 
 		// Executa o método que será testado
 		_, err := svc.Create(product)
@@ -189,7 +189,7 @@ func TestProductServiceDefault_Create(t *testing.T) {
 
 func TestProductServiceDefault_Update(t *testing.T) {
 	product := internal.Product{
-		Id:                             1,
+		ID:                             1,
 		ProductCode:                    "code 1",
 		Description:                    "Example Product",
 		Height:                         1,
@@ -199,8 +199,8 @@ func TestProductServiceDefault_Update(t *testing.T) {
 		RecommendedFreezingTemperature: 1,
 		Width:                          1,
 		FreezingRate:                   1,
-		ProductTypeId:                  1,
-		SellerId:                       1,
+		ProductTypeID:                  1,
+		SellerID:                       1,
 	}
 
 	t.Run("update_existent", func(t *testing.T) {
@@ -208,10 +208,10 @@ func TestProductServiceDefault_Update(t *testing.T) {
 
 		// Configura o mock para as chamadas necessárias
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)
-		productRepo.On("FindByID", product.Id).Return(product, nil)                               // Configuração para FindAll
+		productRepo.On("FindByID", product.ID).Return(product, nil)                               // Configuração para FindAll
 		productRepo.On("Update", product).Return(product, nil)                                    // Configuração para Save
-		sellerRepo.On("FindByID", product.SellerId).Return(internal.Seller{}, nil)                // Configuração para FindByID no sellerRepo
-		productTypeRepo.On("FindByID", product.ProductTypeId).Return(internal.ProductType{}, nil) // Configuração para FindByID no productTypeRepo
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)                // Configuração para FindByID no sellerRepo
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, nil) // Configuração para FindByID no productTypeRepo
 
 		// Executa o método que será testado
 		_, err := svc.Update(product)
@@ -225,10 +225,10 @@ func TestProductServiceDefault_Update(t *testing.T) {
 
 		// Configura o mock para as chamadas necessárias
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)
-		productRepo.On("FindByID", product.Id).Return(product, internal.ErrProductNotFound)       // Configuração para FindAll
+		productRepo.On("FindByID", product.ID).Return(product, internal.ErrProductNotFound)       // Configuração para FindAll
 		productRepo.On("Update", product).Return(product, nil)                                    // Configuração para Save
-		sellerRepo.On("FindByID", product.SellerId).Return(internal.Seller{}, nil)                // Configuração para FindByID no sellerRepo
-		productTypeRepo.On("FindByID", product.ProductTypeId).Return(internal.ProductType{}, nil) // Configuração para FindByID no productTypeRepo
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)                // Configuração para FindByID no sellerRepo
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, nil) // Configuração para FindByID no productTypeRepo
 
 		// Executa o método que será testado
 		_, err := svc.Update(product)

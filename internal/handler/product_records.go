@@ -7,7 +7,7 @@ import (
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type ProductRecordsHandlerDefault struct {
@@ -38,7 +38,7 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 
 	// Decodifica o corpo da requisição JSON
 	if err := json.NewDecoder(r.Body).Decode(&productRec); err != nil {
-		response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
+		response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		return
 	}
 
@@ -46,10 +46,10 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 	createdProductRec, err := h.s.Create(productRec)
 	if err != nil {
 		if errors.Is(err, internal.ErrProductUnprocessableEntity) {
-			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
 		if errors.Is(err, internal.ErrProductIdNotFound) {
-			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}
 
 		return

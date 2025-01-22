@@ -71,7 +71,7 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	if err != nil {
 		return product, err
 	}
-	existingProduct, err := s.productRepo.FindByID(product.Id)
+	existingProduct, err := s.productRepo.FindByID(product.ID)
 	if err != nil {
 		return product, internal.ErrProductNotFound
 	}

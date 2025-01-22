@@ -51,7 +51,7 @@ func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error)
 	var productRecord internal.ProductRecords
 
 	row := psql.db.QueryRow(FindByIdProductRecords, id)
-	err := row.Scan(&productRecord.Id, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
+	err := row.Scan(&productRecord.ID, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

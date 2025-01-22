@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestProductTypeMysql_FindById_ok(t *testing.T) {
+func TestProductTypeMysql_FindByID_ok(t *testing.T) {
 	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
 	defer mockDB.Close()
@@ -25,10 +25,10 @@ func TestProductTypeMysql_FindById_ok(t *testing.T) {
 
 	_, err = repo.FindByID(1)
 	assert.NoError(t, err)
-	assert.Equal(t, 1, product.Id)
+	assert.Equal(t, 1, product.ID)
 }
 
-func TestProductTypeMysql_FindById_not_found(t *testing.T) {
+func TestProductTypeMysql_FindByID_not_found(t *testing.T) {
 	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
 	defer mockDB.Close()
@@ -44,5 +44,5 @@ func TestProductTypeMysql_FindById_not_found(t *testing.T) {
 
 	_, err = repo.FindByID(1)
 	assert.Equal(t, internal.ErrProductTypeNotFound, err)
-	assert.Equal(t, 1, product.Id)
+	assert.Equal(t, 1, product.ID)
 }

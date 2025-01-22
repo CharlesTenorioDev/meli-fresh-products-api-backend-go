@@ -12,7 +12,7 @@ import (
 )
 
 var product = internal.Product{
-	Id:                             1,
+	ID:                             1,
 	ProductCode:                    "code 1",
 	Description:                    "Example Product",
 	Height:                         1,
@@ -22,8 +22,8 @@ var product = internal.Product{
 	RecommendedFreezingTemperature: 1,
 	Width:                          1,
 	FreezingRate:                   1,
-	ProductTypeId:                  1,
-	SellerId:                       1,
+	ProductTypeID:                  1,
+	SellerID:                       1,
 }
 
 func TestProductMysql_FinAll(t *testing.T) {
@@ -55,8 +55,8 @@ func TestProductMysql_FinAll(t *testing.T) {
 	products, err := repo.FindAll()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(products))
-	assert.Equal(t, 1, products[0].Id)
-	assert.Equal(t, 2, products[1].Id)
+	assert.Equal(t, 1, products[0].ID)
+	assert.Equal(t, 2, products[1].ID)
 }
 
 func TestProductMysql_FinAByID_ok(t *testing.T) {
@@ -80,13 +80,13 @@ func TestProductMysql_FinAByID_ok(t *testing.T) {
 	}).
 		AddRow(1, "code 1", 1, 1, 1, 1, 1, "desc 1", 1, 1, 1, 1)
 
-	mock.ExpectQuery(repository.FindByIdString).WithArgs(1).WillReturnRows(row)
+	mock.ExpectQuery(repository.FindByIDString).WithArgs(1).WillReturnRows(row)
 
 	repo := repository.NewProductSQL(mockDB)
 
 	product, err := repo.FindByID(1)
 	assert.NoError(t, err)
-	assert.Equal(t, 1, product.Id)
+	assert.Equal(t, 1, product.ID)
 }
 
 func TestProductMysql_FinAByID_not_found(t *testing.T) {
@@ -109,7 +109,7 @@ func TestProductMysql_FinAByID_not_found(t *testing.T) {
 		"seller_id",
 	})
 
-	mock.ExpectQuery(repository.FindByIdString).WithArgs(1).WillReturnRows(row)
+	mock.ExpectQuery(repository.FindByIDString).WithArgs(1).WillReturnRows(row)
 
 	repo := repository.NewProductSQL(mockDB)
 
@@ -129,7 +129,7 @@ func TestProductMysql_save_ok(t *testing.T) {
 	// E simula a execução da query, retornando um resultado indicando que 1 linha foi afetada
 	mock.ExpectExec(repository.SaveString).
 		WithArgs(
-			product.Id,
+			product.ID,
 			product.Description,
 			product.ExpirationRate,
 			product.FreezingRate,
@@ -139,8 +139,8 @@ func TestProductMysql_save_ok(t *testing.T) {
 			product.ProductCode,
 			product.RecommendedFreezingTemperature,
 			product.Width,
-			product.ProductTypeId,
-			product.SellerId,
+			product.ProductTypeID,
+			product.SellerID,
 		).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	// Cria uma instância do repositório ProductSQL passando o mock do banco
@@ -160,7 +160,7 @@ func TestProductMysql_save_error(t *testing.T) {
 
 	mock.ExpectExec(repository.SaveString).
 		WithArgs(
-			product.Id,
+			product.ID,
 			product.Description,
 			product.ExpirationRate,
 			product.FreezingRate,
@@ -170,8 +170,8 @@ func TestProductMysql_save_error(t *testing.T) {
 			product.ProductCode,
 			product.RecommendedFreezingTemperature,
 			product.Width,
-			product.ProductTypeId,
-			product.SellerId,
+			product.ProductTypeID,
+			product.SellerID,
 		).WillReturnError(fmt.Errorf("some Error"))
 
 	// Cria uma instância do repositório ProductSQL passando o mock do banco
@@ -190,7 +190,7 @@ func TestProductMysql_save_conflict(t *testing.T) {
 
 	mock.ExpectExec(repository.SaveString).
 		WithArgs(
-			product.Id,
+			product.ID,
 			product.Description,
 			product.ExpirationRate,
 			product.FreezingRate,
@@ -200,8 +200,8 @@ func TestProductMysql_save_conflict(t *testing.T) {
 			product.ProductCode,
 			product.RecommendedFreezingTemperature,
 			product.Width,
-			product.ProductTypeId,
-			product.SellerId,
+			product.ProductTypeID,
+			product.SellerID,
 		).WillReturnError(&mysql.MySQLError{Number: 1062})
 
 	// Cria uma instância do repositório ProductSQL passando o mock do banco
@@ -229,9 +229,9 @@ func TestProductMysql_Update_ok(t *testing.T) {
 			product.ProductCode,
 			product.RecommendedFreezingTemperature,
 			product.Width,
-			product.ProductTypeId,
-			product.SellerId,
-			product.Id,
+			product.ProductTypeID,
+			product.SellerID,
+			product.ID,
 		).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	repo := repository.NewProductSQL(mockDB)
@@ -256,9 +256,9 @@ func TestProductMysql_Update_not_found(t *testing.T) {
 			product.ProductCode,
 			product.RecommendedFreezingTemperature,
 			product.Width,
-			product.ProductTypeId,
-			product.SellerId,
-			product.Id,
+			product.ProductTypeID,
+			product.SellerID,
+			product.ID,
 		).WillReturnResult(sqlmock.NewResult(0, 0))
 
 	repo := repository.NewProductSQL(mockDB)
@@ -275,7 +275,7 @@ func TestProductMysql_Delete_ok(t *testing.T) {
 
 	mock.ExpectExec(repository.DeleteString).
 		WithArgs(
-			product.Id,
+			product.ID,
 		).WillReturnResult(sqlmock.NewResult(1, 1))
 
 	repo := repository.NewProductSQL(mockDB)
@@ -291,7 +291,7 @@ func TestProductMysql_Delete_not_found(t *testing.T) {
 
 	mock.ExpectExec(repository.DeleteString).
 		WithArgs(
-			product.Id,
+			product.ID,
 		).WillReturnResult(sqlmock.NewResult(0, 0))
 
 	repo := repository.NewProductSQL(mockDB)
@@ -336,11 +336,11 @@ func TestProductMysql_FinAByIDRecords_ok(t *testing.T) {
 	}).
 		AddRow(1, "code 1", 1)
 
-	mock.ExpectQuery(repository.FindByIdRecordString).WithArgs(1).WillReturnRows(row)
+	mock.ExpectQuery(repository.FindByIDRecordString).WithArgs(1).WillReturnRows(row)
 
 	repo := repository.NewProductSQL(mockDB)
 
-	productRecords, err := repo.FindByIdRecord(1)
+	productRecords, err := repo.FindByIDRecord(1)
 	assert.NoError(t, err)
 	assert.Equal(t, 1, productRecords.ProductID)
 }
@@ -356,11 +356,11 @@ func TestProductMysql_FinAByIDRecords_not_found(t *testing.T) {
 		"records_count",
 	})
 
-	mock.ExpectQuery(repository.FindByIdRecordString).WithArgs(1).WillReturnRows(row)
+	mock.ExpectQuery(repository.FindByIDRecordString).WithArgs(1).WillReturnRows(row)
 
 	repo := repository.NewProductSQL(mockDB)
 
-	productRecords, err := repo.FindByIdRecord(1)
+	productRecords, err := repo.FindByIDRecord(1)
 	assert.Error(t, err)
 	assert.Equal(t, internal.ErrProductIdNotFound, err)
 	assert.Empty(t, productRecords)

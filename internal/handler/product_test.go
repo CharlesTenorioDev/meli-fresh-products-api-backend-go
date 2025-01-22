@@ -14,7 +14,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -36,7 +36,7 @@ func (m *MockProductService) GetByID(id int) (internal.Product, error) {
 
 func (m *MockProductService) Create(product internal.Product) (internal.Product, error) {
 	args := m.Called(product)
-	product.Id = 1
+	product.ID = 1
 	return args.Get(0).(internal.Product), args.Error(1)
 }
 
@@ -50,14 +50,14 @@ func (m *MockProductService) Delete(id int) error {
 	return args.Error(0)
 }
 
-func (m *MockProductService) GetAllRecord() ([]internal.ProductRecordsJsonCount, error) {
+func (m *MockProductService) GetAllRecord() ([]internal.ProductRecordsJSONCount, error) {
 	args := m.Called()
-	return args.Get(0).([]internal.ProductRecordsJsonCount), args.Error(1)
+	return args.Get(0).([]internal.ProductRecordsJSONCount), args.Error(1)
 }
 
-func (m *MockProductService) GetByIdRecord(id int) (internal.ProductRecordsJsonCount, error) {
+func (m *MockProductService) GetByIDRecord(id int) (internal.ProductRecordsJSONCount, error) {
 	args := m.Called(id)
-	return args.Get(0).(internal.ProductRecordsJsonCount), args.Error(1)
+	return args.Get(0).(internal.ProductRecordsJSONCount), args.Error(1)
 }
 
 func Test_GetAll(t *testing.T) {
@@ -72,7 +72,7 @@ func Test_GetAll(t *testing.T) {
 			mockSetup: func(p *MockProductService) {
 				mockProduct := []internal.Product{
 					{
-						Id:                             1,
+						ID:                             1,
 						ProductCode:                    "Product A",
 						Description:                    "Test description",
 						Height:                         10.0,
@@ -81,11 +81,11 @@ func Test_GetAll(t *testing.T) {
 						ExpirationRate:                 1,
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
-						ProductTypeId:                  1,
-						SellerId:                       1,
+						ProductTypeID:                  1,
+						SellerID:                       1,
 					},
 					{
-						Id:                             2,
+						ID:                             2,
 						ProductCode:                    "Product B",
 						Description:                    "Test description",
 						Height:                         10.0,
@@ -94,8 +94,8 @@ func Test_GetAll(t *testing.T) {
 						ExpirationRate:                 1,
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
-						ProductTypeId:                  1,
-						SellerId:                       1,
+						ProductTypeID:                  1,
+						SellerID:                       1,
 					},
 				}
 				p.On("GetAll").Return(mockProduct, nil)
@@ -104,7 +104,7 @@ func Test_GetAll(t *testing.T) {
 			expectedBody: map[string]interface{}{
 				"data": []internal.Product{
 					{
-						Id:                             1,
+						ID:                             1,
 						ProductCode:                    "Product A",
 						Description:                    "Test description",
 						Height:                         10.0,
@@ -113,11 +113,11 @@ func Test_GetAll(t *testing.T) {
 						ExpirationRate:                 1,
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
-						ProductTypeId:                  1,
-						SellerId:                       1,
+						ProductTypeID:                  1,
+						SellerID:                       1,
 					},
 					{
-						Id:                             2,
+						ID:                             2,
 						ProductCode:                    "Product B",
 						Description:                    "Test description",
 						Height:                         10.0,
@@ -126,8 +126,8 @@ func Test_GetAll(t *testing.T) {
 						ExpirationRate:                 1,
 						RecommendedFreezingTemperature: 18,
 						FreezingRate:                   18,
-						ProductTypeId:                  1,
-						SellerId:                       1,
+						ProductTypeID:                  1,
+						SellerID:                       1,
 					},
 				},
 			},
@@ -167,8 +167,8 @@ func Test_GetAll(t *testing.T) {
 					}
 					assert.Equal(t, response["data"], actualResponse.Data)
 
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
@@ -196,7 +196,7 @@ func Test_GetByID(t *testing.T) {
 			name: "find_by_id_existent_status_200",
 			mockSetup: func(p *MockProductService) {
 				mockProduct := internal.Product{
-					Id:                             1,
+					ID:                             1,
 					ProductCode:                    "Product A",
 					Description:                    "Test description",
 					Height:                         10.0,
@@ -205,8 +205,8 @@ func Test_GetByID(t *testing.T) {
 					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
-					ProductTypeId:                  1,
-					SellerId:                       1,
+					ProductTypeID:                  1,
+					SellerID:                       1,
 				}
 				p.On("GetByID", 1).Return(mockProduct, nil)
 			},
@@ -214,7 +214,7 @@ func Test_GetByID(t *testing.T) {
 			expectedStatus: http.StatusOK,
 			expectedBody: map[string]interface{}{
 				"data": internal.Product{
-					Id:                             1,
+					ID:                             1,
 					ProductCode:                    "Product A",
 					Description:                    "Test description",
 					Height:                         10.0,
@@ -223,8 +223,8 @@ func Test_GetByID(t *testing.T) {
 					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
-					ProductTypeId:                  1,
-					SellerId:                       1,
+					ProductTypeID:                  1,
+					SellerID:                       1,
 				},
 			},
 		},
@@ -235,7 +235,7 @@ func Test_GetByID(t *testing.T) {
 			},
 			id:             "1",
 			expectedStatus: http.StatusNotFound,
-			expectedBody:   *rest_err.NewNotFoundError("product not found"),
+			expectedBody:   *resterr.NewNotFoundError("product not found"),
 		},
 		{
 			name:           "find_by_id_status_400",
@@ -273,8 +273,8 @@ func Test_GetByID(t *testing.T) {
 						t.Fatal(err)
 					}
 					assert.Equal(t, response["data"], actualResponse.Data)
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
@@ -303,7 +303,7 @@ func Test_Create(t *testing.T) {
 			name: "create_ok_status_201",
 			mockSetup: func(m *MockProductService) {
 				m.On("Create", mock.Anything).Return(internal.Product{
-					Id:                             1,
+					ID:                             1,
 					ProductCode:                    "Product A",
 					Description:                    "Test description",
 					Height:                         10.0,
@@ -312,8 +312,8 @@ func Test_Create(t *testing.T) {
 					ExpirationRate:                 1.0,
 					RecommendedFreezingTemperature: 18.0,
 					FreezingRate:                   18.0,
-					ProductTypeId:                  1,
-					SellerId:                       1,
+					ProductTypeID:                  1,
+					SellerID:                       1,
 					Width:                          10.0,
 				}, nil)
 			},
@@ -326,8 +326,8 @@ func Test_Create(t *testing.T) {
 				ExpirationRate:                 1,
 				RecommendedFreezingTemperature: 18,
 				FreezingRate:                   18,
-				ProductTypeId:                  int(1),
-				SellerId:                       1,
+				ProductTypeID:                  int(1),
+				SellerID:                       1,
 				Width:                          10.0,
 			},
 			expectedStatus: http.StatusCreated,
@@ -341,8 +341,8 @@ func Test_Create(t *testing.T) {
 					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
-					ProductTypeId:                  int(1),
-					SellerId:                       1,
+					ProductTypeID:                  int(1),
+					SellerID:                       1,
 					Width:                          10.0,
 				},
 			},
@@ -370,8 +370,8 @@ func Test_Create(t *testing.T) {
 				ExpirationRate:                 1.0,
 				RecommendedFreezingTemperature: 18.0,
 				FreezingRate:                   18.0,
-				ProductTypeId:                  1,
-				SellerId:                       1,
+				ProductTypeID:                  1,
+				SellerID:                       1,
 				Width:                          10.0,
 			},
 			expectedStatus:   http.StatusInternalServerError,
@@ -431,11 +431,11 @@ func Test_Create(t *testing.T) {
 // 		{
 // 			name: "should return not found error",
 // 			mockSetup: func(m *MockProductService) {
-// 				m.On("Delete", 1).Return(rest_err.NewNotFoundError("product not found"))
+// 				m.On("Delete", 1).Return(resterr.NewNotFoundError("product not found"))
 // 			},
 // 			id:                 "1",
 // 			expectedStatusCode: http.StatusNotFound,
-// 			expectedResponse:   *rest_err.NewNotFoundError("product not found"),
+// 			expectedResponse:   *resterr.NewNotFoundError("product not found"),
 // 		},
 // 		{
 // 			name: "should return internal server error",
@@ -478,8 +478,8 @@ func Test_Create(t *testing.T) {
 
 // 			if tt.expectedResponse != nil {
 // 				switch response := tt.expectedResponse.(type) {
-// 				case rest_err.RestErr:
-// 					var actualResponse rest_err.RestErr
+// 				case resterr.RestErr:
+// 					var actualResponse resterr.RestErr
 // 					err = json.NewDecoder(rec.Body).Decode(&actualResponse)
 // 					if err != nil {
 // 						t.Fatal(err)
