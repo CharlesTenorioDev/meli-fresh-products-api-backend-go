@@ -56,8 +56,8 @@ type SellersUpdateJSON struct {
 // @Tags Seller
 // @Produce json
 // @Success 200 {object} []SellersGetJson "List of sellers"
-// @Failure 404 {object} rest_err.RestErr "Sellers not found"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 404 {object} resterr.RestErr "Sellers not found"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/sellers [get]
 func (h *SellerDefault) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -91,9 +91,9 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 // @Produce json
 // @Param id path int true "Seller ID"
 // @Success 200 {object} SellersGetJson "Seller data"
-// @Failure 400 {object} rest_err.RestErr "Bad Request"
-// @Failure 404 {object} rest_err.RestErr "Seller Not Found"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 400 {object} resterr.RestErr "Bad Request"
+// @Failure 404 {object} resterr.RestErr "Seller Not Found"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/sellers/{id} [get]
 func (h *SellerDefault) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +101,7 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 			return
 		}
 
@@ -134,11 +134,11 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 // @Produce json
 // @Param seller body SellersPostJson true "Seller Create Request"
 // @Success 201 {object} map[string]interface{} "Created Seller Id"
-// @Failure 400 {object} rest_err.RestErr "Bad Request"
-// @Failure 404 {object} rest_err.RestErr "Seller not found" or "Locality not found"
-// @Failure 409 {object} rest_err.RestErr "Seller already exists" or "Seller with this CID already exists"
-// @Failure 422 {object} rest_err.RestErr "Unprocessable Entity"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 400 {object} resterr.RestErr "Bad Request"
+// @Failure 404 {object} resterr.RestErr "Seller not found" or "Locality not found"
+// @Failure 409 {object} resterr.RestErr "Seller already exists" or "Seller with this CID already exists"
+// @Failure 422 {object} resterr.RestErr "Unprocessable Entity"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/sellers [post]
 func (h *SellerDefault) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -146,7 +146,7 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 
 		err := request.JSON(r, &body)
 		if err != nil {
-			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError("request json invalid"))
 			return
 		}
 
@@ -181,10 +181,10 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 // @Param id path int true "Seller ID"
 // @Param seller body SellersUpdateJson true "Seller Update Request"
 // @Success 200 {object} SellersGetJson "Updated Seller data"
-// @Failure 400 {object} rest_err.RestErr "Seller invalid fields"
-// @Failure 404 {object} rest_err.RestErr "Seller not found"
-// @Failure 409 {object} rest_err.RestErr "Seller with this CID already exists"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 400 {object} resterr.RestErr "Seller invalid fields"
+// @Failure 404 {object} resterr.RestErr "Seller not found"
+// @Failure 409 {object} resterr.RestErr "Seller with this CID already exists"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/sellers/{id} [patch]
 func (h *SellerDefault) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -192,7 +192,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 			return
 		}
 
@@ -200,7 +200,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		err = request.JSON(r, &body)
 		if err != nil {
-			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError("request json invalid"))
 			return
 		}
 
@@ -238,9 +238,9 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 // @Produce json
 // @Param id path int true "Seller ID"
 // @Success 204 {object} nil "No Content"
-// @Failure 400 {object} rest_err.RestErr "Bad Request"
-// @Failure 404 {object} rest_err.RestErr "Seller not found"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 400 {object} resterr.RestErr "Bad Request"
+// @Failure 404 {object} resterr.RestErr "Seller not found"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/sellers/{id} [delete]
 func (h *SellerDefault) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -248,7 +248,7 @@ func (h *SellerDefault) Delete() http.HandlerFunc {
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError(err.Error()))
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 			return
 		}
 
@@ -263,36 +263,39 @@ func (h *SellerDefault) Delete() http.HandlerFunc {
 }
 
 func (h *SellerDefault) handleError(w http.ResponseWriter, err error) {
-
 	if errors.As(err, &internal.DomainError{}) {
 		var domainError internal.DomainError
 		errors.As(err, &domainError)
-		var restCauses []rest_err.Causes
+		restCauses := make([]resterr.Causes, 0)
 		for _, cause := range domainError.Causes {
-			restCauses = append(restCauses, rest_err.Causes{
+			restCauses = append(restCauses, resterr.Causes{
 				Field:   cause.Field,
 				Message: cause.Message,
 			})
 		}
-		response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestValidationError(domainError.Message, restCauses))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
+
 		return
 	}
 
 	if errors.Is(err, internal.ErrSellerInvalidFields) {
-		restErr := rest_err.NewBadRequestError(err.Error())
+		restErr := resterr.NewBadRequestError(err.Error())
 		response.JSON(w, restErr.Code, restErr)
+
 		return
 	}
 
 	if errors.Is(err, internal.ErrSellerConflict) || errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
-		response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+		response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
+
 		return
 	}
 
 	if errors.Is(err, internal.ErrSellerNotFound) || errors.Is(err, internal.ErrLocalityNotFound) {
-		response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
 		return
 	}
 
-	response.JSON(w, http.StatusInternalServerError, rest_err.NewInternalServerError("internal server error"))
+	response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError("internal server error"))
 }

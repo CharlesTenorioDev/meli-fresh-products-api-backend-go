@@ -305,6 +305,34 @@ func TestSellerDefault_Save(t *testing.T) {
 			},
 		},
 		{
+			name: "should return bad request error",
+			mockSetup: func(m *MockSellerService) {
+				m.On("Save", mock.Anything).Return(internal.DomainError{
+					Message: "Fields Invalid",
+					Causes: []internal.Causes{
+						{
+							Field:   "company_name",
+							Message: "Company Name is required",
+						},
+					},
+				})
+			},
+			requestBody: handler.SellersPostJSON{
+				CID:         123,
+				CompanyName: "",
+				Address:     "Rua 1",
+				Telephone:   "1234567890",
+				Locality:    1,
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse: *resterr.NewBadRequestValidationError("Fields Invalid", []resterr.Causes{
+				{
+					Field:   "company_name",
+					Message: "Company Name is required",
+				},
+			}),
+		},
+		{
 			name: "should return conflict error",
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(internal.ErrSellerConflict)
@@ -332,7 +360,7 @@ func TestSellerDefault_Save(t *testing.T) {
 				Locality:    1,
 			},
 			expectedStatusCode: http.StatusConflict,
-			expectedResponse:   *resterr.NewConflictError("seller already exists"),
+			expectedResponse:   *resterr.NewConflictError("seller with this CID already exists"),
 		},
 		{
 			name: "should return internal server error",
@@ -348,6 +376,15 @@ func TestSellerDefault_Save(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedResponse:   nil,
+		},
+		{
+			name: "should return unprocessable entity error",
+			mockSetup: func(m *MockSellerService) {
+				m.On("Save", mock.Anything).Return(nil)
+			},
+			requestBody:        `{p:"c"}`,
+			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedResponse:   *resterr.NewUnprocessableEntityError("request json invalid"),
 		},
 	}
 
@@ -466,7 +503,7 @@ func TestSellerDefault_Update(t *testing.T) {
 			id: "1",
 			requestBody: handler.SellersUpdateJSON{
 				CID:         intPtr(456),
-				CompanyName: stringPtr(""), // Nome da empresa inválido
+				CompanyName: stringPtr(""),
 				Address:     stringPtr("Rua 2"),
 				Telephone:   stringPtr("9876543210"),
 				Locality:    intPtr(2),
@@ -521,6 +558,15 @@ func TestSellerDefault_Update(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusInternalServerError,
 			expectedResponse:   nil,
+		},
+		{
+			name: "should return unprocessable entity error",
+			mockSetup: func(m *MockSellerService) {
+			},
+			id:                 "1",
+			requestBody:        `{p:"c"}`,
+			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedResponse:   *resterr.NewUnprocessableEntityError("request json invalid"),
 		},
 	}
 

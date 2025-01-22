@@ -30,7 +30,6 @@ type SellerPatch struct {
 }
 
 func (sl *Seller) Validate() (causes []Causes) {
-
 	if validator.IntIsNegative(sl.ID) || validator.IntIsZero(sl.ID) {
 		causes = append(causes, Causes{
 			Field:   "id",
@@ -71,7 +70,7 @@ func (sl *Seller) Validate() (causes []Causes) {
 		})
 	}
 
-	return
+	return causes
 }
 
 var (
