@@ -92,7 +92,7 @@ func (s *SectionService) Save(section *internal.Section) error {
 	return nil
 }
 
-func (s *SectionService) Update(id int, updates map[string]interface{}) (internal.Section, error) {
+func (s *SectionService) Update(id int, updates map[string]any) (internal.Section, error) {
 	section, err := s.FindByID(id)
 	if err != nil {
 		return internal.Section{}, internal.ErrSectionNotFound
@@ -106,6 +106,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 				if err != nil {
 					return fmt.Errorf("invalid value for %s: %v", key, err)
 				}
+
 				*target = value
 			case float64:
 				*target = int(v)
@@ -113,6 +114,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 				return fmt.Errorf("invalid type for %s: expected string or float64, got %T", key, v)
 			}
 		}
+
 		return nil
 	}
 
@@ -124,6 +126,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 				if err != nil {
 					return fmt.Errorf("invalid value for %s: %v", key, err)
 				}
+
 				*target = value
 			case float64:
 				*target = v
@@ -131,6 +134,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 				return fmt.Errorf("invalid type for %s: expected string or float64, got %T", key, v)
 			}
 		}
+
 		return nil
 	}
 

@@ -37,12 +37,12 @@ func (s *ProductBatchService) Save(prodBatch *internal.ProductBatch) error {
 		return internal.ErrProductBatchNumberAlreadyInUse
 	}
 
-	_, err = s.rpP.FindByID(prodBatch.ProductId)
+	_, err = s.rpP.FindByID(prodBatch.ProductID)
 	if err != nil {
 		return internal.ErrProductNotFound
 	}
 
-	_, err = s.rpS.FindByID(prodBatch.SectionId)
+	_, err = s.rpS.FindByID(prodBatch.SectionID)
 	if err != nil {
 		return internal.ErrSectionNotFound
 	}

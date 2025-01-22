@@ -10,7 +10,7 @@ const (
 	AllInboundsQuery = "SELECT `id`, `order_date`, `order_number`, `employee_id`, `product_batch_id`, `warehouse_id` FROM `inbound_orders`;"
 )
 
-// create a new instance of the inbound orders repository
+// InboundOrdersMysql create a new instance of the inbound orders repository
 type InboundOrdersMysql struct {
 	db *sql.DB
 }
@@ -20,30 +20,31 @@ func NewInboundOrderMysql(db *sql.DB) *InboundOrdersMysql {
 }
 
 func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err error) {
-
-	// validate if order number already exists
 	var exists bool
+
 	err = rp.db.QueryRow("SELECT 1 FROM `inbound_orders` WHERE `order_number` = ?", io.OrderNumber).Scan(&exists) //check 1 line
 	if err != nil && err != sql.ErrNoRows {
-		return
+		return id, err
 	}
+
 	if exists {
 		return 0, internal.ErrOrderNumberAlreadyExists
 	}
 
-	// validate if employee exists
 	var empExists bool
-	err = rp.db.QueryRow("SELECT 1 FROM `employees` WHERE `id` = ?", io.EmployeeId).Scan(&empExists) //check 1 line
+
+	err = rp.db.QueryRow("SELECT 1 FROM `employees` WHERE `id` = ?", io.EmployeeID).Scan(&empExists) //check 1 line
 	if err != nil && err != sql.ErrNoRows {
-		return
+		return id, err
 	}
+
 	if !empExists {
 		return 0, internal.ErrEmployeeNotFound
 	}
 
 	res, err := rp.db.Exec(
 		"INSERT INTO `inbound_orders` (`order_date`, `order_number`, `employee_id`, `product_batch_id`, `warehouse_id`) VALUES (?, ?, ?, ?, ?)",
-		io.OrderDate, io.OrderNumber, io.EmployeeId, io.ProductBatchId, io.WarehouseId,
+		io.OrderDate, io.OrderNumber, io.EmployeeID, io.ProductBatchID, io.WarehouseID,
 	)
 	if err != nil {
 		return id, err
@@ -51,7 +52,7 @@ func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err e
 
 	id, err = res.LastInsertId()
 
-	return
+	return id, err
 }
 
 func (rp *InboundOrdersMysql) FindAll() (inbounds []internal.InboundOrders, err error) {
@@ -63,14 +64,14 @@ func (rp *InboundOrdersMysql) FindAll() (inbounds []internal.InboundOrders, err 
 
 	for row.Next() {
 		var inboundOrder internal.InboundOrders
-		err = row.Scan(&inboundOrder.Id, &inboundOrder.OrderDate, &inboundOrder.OrderNumber, &inboundOrder.EmployeeId, &inboundOrder.ProductBatchId, &inboundOrder.WarehouseId)
+		err = row.Scan(&inboundOrder.ID, &inboundOrder.OrderDate, &inboundOrder.OrderNumber, &inboundOrder.EmployeeID, &inboundOrder.ProductBatchID, &inboundOrder.WarehouseID)
 
 		if err != nil {
 			return
 		}
 
 		inbounds = append(inbounds, inboundOrder)
-
 	}
+
 	return
 }

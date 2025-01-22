@@ -9,22 +9,23 @@ import (
 )
 
 const (
-	localFileJson = "db/section.json"
+	localFileJSON = "db/section.json"
 )
 
 func ReadAllSectionsToFile() ([]*internal.Section, error) {
 	var sectionList []*internal.Section
 
-	file, err := os.Open(localFileJson)
+	file, err := os.Open(localFileJSON)
 	if err != nil {
 		if os.IsNotExist(err) {
-			file, err = os.Create(localFileJson)
+			file, err = os.Create(localFileJSON)
 			if err != nil {
 				return nil, err
 			}
 			defer file.Close()
 
 			initialData := []internal.Section{}
+
 			writer := json.NewEncoder(file)
 			if err := writer.Encode(initialData); err != nil {
 				return nil, err
@@ -32,16 +33,19 @@ func ReadAllSectionsToFile() ([]*internal.Section, error) {
 
 			return sectionList, nil
 		}
+
 		return nil, err
 	}
 	defer file.Close()
 
 	reader := json.NewDecoder(file)
+
 	err = reader.Decode(&sectionList)
 	if err != nil {
 		if err == io.EOF {
 			return nil, nil
 		}
+
 		return nil, err
 	}
 

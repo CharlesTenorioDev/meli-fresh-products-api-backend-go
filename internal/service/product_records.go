@@ -2,10 +2,9 @@ package service
 
 import (
 	"errors"
-	"fmt"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type ProductRecordsDefault struct {
@@ -24,32 +23,34 @@ func NewProductRecordsDefault(prodRecRepo internal.ProductRecordsRepository, pro
 	}
 }
 
-// Implementação da função Create
+// Create Implementação da função
 func (pr *ProductRecordsDefault) Create(productRec internal.ProductRecords) (internal.ProductRecords, error) {
 	if err := ValidateProductRec(productRec); err != nil {
 		return productRec, err
 	}
-	product, err := pr.productRepo.FindByID(productRec.ProductID)
-	fmt.Printf("Product found: %+v\n", product)
+
+	_, err := pr.productRepo.FindByID(productRec.ProductID)
 	if err != nil {
 		return productRec, ErrProductNotExists
 	}
+
 	return pr.productRecRepo.Save(productRec)
 }
 
-// Implementação da função GetAll
+// GetAll Implementação da função
 func (pr *ProductRecordsDefault) GetAll() ([]internal.ProductRecords, error) {
 	productRecords, err := pr.productRecRepo.FindAll()
 	if err != nil {
-		return nil, rest_err.NewInternalServerError("Erro ao buscar todos os registros de produtos")
+		return nil, resterr.NewInternalServerError("Erro ao buscar todos os registros de produtos")
 	}
+
 	return productRecords, nil
 }
 
-// Implementação da função GetByID
+// GetByID Implementação da função
 func (pr *ProductRecordsDefault) GetByID(id int) (internal.ProductRecords, error) {
 	if id <= 0 {
-		return internal.ProductRecords{}, rest_err.NewBadRequestError("O ID deve ser válido e maior que zero")
+		return internal.ProductRecords{}, resterr.NewBadRequestError("O ID deve ser válido e maior que zero")
 	}
 
 	productRecord, err := pr.productRecRepo.FindByID(id)
@@ -66,5 +67,6 @@ func ValidateProductRec(productRec internal.ProductRecords) error {
 		productRec.SalePrice <= 0 {
 		return ErrProductUnprocessableEntity
 	}
+
 	return nil
 }

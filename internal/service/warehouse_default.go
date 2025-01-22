@@ -67,6 +67,7 @@ func (s *WarehouseDefault) Save(warehouse *internal.Warehouse) (err error) {
 	}
 
 	err = s.rp.Save(warehouse)
+
 	return
 }
 
@@ -92,22 +93,27 @@ func (s *WarehouseDefault) Update(id int, warehousePatch *internal.WarehousePatc
 
 		warehouse.WarehouseCode = *warehousePatch.WarehouseCode
 	}
+
 	if warehousePatch.Address != nil {
 		warehouse.Address = *warehousePatch.Address
 	}
+
 	if warehousePatch.Telephone != nil {
 		warehouse.Telephone = *warehousePatch.Telephone
 	}
+
 	if warehousePatch.MinimumCapacity != nil {
 		warehouse.MinimumCapacity = *warehousePatch.MinimumCapacity
 	}
+
 	if warehousePatch.MinimumTemperature != nil {
 		warehouse.MinimumTemperature = *warehousePatch.MinimumTemperature
 	}
 
 	// Save the updated warehouse
 	err = s.rp.Update(&warehouse)
-	return
+
+	return warehouse, err
 }
 
 // Delete deletes a warehouse
@@ -118,5 +124,6 @@ func (s *WarehouseDefault) Delete(id int) (err error) {
 	}
 
 	err = s.rp.Delete(id)
+
 	return
 }
