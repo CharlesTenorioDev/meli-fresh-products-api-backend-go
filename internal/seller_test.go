@@ -1,96 +1,161 @@
-package internal_test
+package internal
 
 import (
-	"errors"
-	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"testing"
-
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
-func TestSeller_Validate(t *testing.T) {
+// TestSellerValidate tests the Validate method of the Seller struct
+func TestSellerValidate(t *testing.T) {
 	tests := []struct {
 		name    string
-		seller  internal.Seller
+		seller  Seller
 		wantErr bool
-		err     error
+		causes  []Causes
 	}{
 		{
 			name: "valid seller",
-			seller: internal.Seller{
-				CID:         123,
-				CompanyName: "Test Seller",
-				Address:     "Rua 1",
-				Telephone:   "1234567890",
+			seller: Seller{
+				ID:          1,
+				CID:         1,
+				CompanyName: "Test Company",
+				Address:     "Test Address",
+				Telephone:   "12 34546-7890",
 				Locality:    1,
 			},
 			wantErr: false,
-			err:     nil,
+			causes:  nil,
+		},
+		{
+			name: "invalid seller - negative ID",
+			seller: Seller{
+				ID:          -1,
+				CID:         1,
+				CompanyName: "Test Company",
+				Address:     "Test Address",
+				Telephone:   "12 34456-7890",
+				Locality:    1,
+			},
+			wantErr: true,
+			causes: []Causes{
+				{
+					Field:   "id",
+					Message: "Seller ID is required",
+				},
+			},
+		},
+		{
+			name: "invalid seller - missing ID",
+			seller: Seller{
+				CID:         1,
+				CompanyName: "Test Company",
+				Address:     "Test Address",
+				Telephone:   "12 34456-7890",
+				Locality:    1,
+			},
+			wantErr: true,
+			causes: []Causes{
+				{
+					Field:   "id",
+					Message: "Seller ID is required",
+				},
+			},
 		},
 		{
 			name: "invalid seller - missing CID",
-			seller: internal.Seller{
-				CompanyName: "Test Seller",
-				Address:     "Rua 1",
-				Telephone:   "1234567890",
+			seller: Seller{
+				ID:          1,
+				CompanyName: "Test Company",
+				Address:     "Test Address",
+				Telephone:   "12 34456-7890",
 				Locality:    1,
 			},
 			wantErr: true,
-			err:     errors.Join(errors.New("seller.CID is required")),
+			causes: []Causes{
+				{
+					Field:   "cid",
+					Message: "Company ID is required",
+				},
+			},
 		},
 		{
-			name: "invalid seller - missing CompanyName",
-			seller: internal.Seller{
-				CID:       123,
-				Address:   "Rua 1",
-				Telephone: "1234567890",
+			name: "invalid seller - missing company name",
+			seller: Seller{
+				ID:        1,
+				CID:       1,
+				Address:   "Test Address",
+				Telephone: "12 34456-7890",
 				Locality:  1,
 			},
 			wantErr: true,
-			err:     errors.Join(errors.New("seller.CompanyName is required")),
+			causes: []Causes{
+				{
+					Field:   "company_name",
+					Message: "Company name is required",
+				},
+			},
 		},
 		{
-			name: "invalid seller - missing Address",
-			seller: internal.Seller{
-				CID:         123,
-				CompanyName: "Test Seller",
-				Telephone:   "1234567890",
+			name: "invalid seller - missing address",
+			seller: Seller{
+				ID:          1,
+				CID:         1,
+				CompanyName: "Test Company",
+				Telephone:   "12 34456-7890",
 				Locality:    1,
 			},
 			wantErr: true,
-			err:     errors.Join(errors.New("seller.Address is required")),
+			causes: []Causes{
+				{
+					Field:   "address",
+					Message: "Address cannot be empty",
+				},
+			},
 		},
 		{
-			name: "invalid seller - missing Telephone",
-			seller: internal.Seller{
-				CID:         123,
-				CompanyName: "Test Seller",
-				Address:     "Rua 1",
+			name: "invalid seller - invalid telephone number",
+			seller: Seller{
+				ID:          1,
+				CID:         1,
+				CompanyName: "Test Company",
+				Address:     "Test Address",
+				Telephone:   "1234432fds",
 				Locality:    1,
 			},
 			wantErr: true,
-			err:     errors.Join(errors.New("seller.Telephone is required")),
+			causes: []Causes{
+				{
+					Field:   "telephone",
+					Message: `Telephone number is invalid, should be formatted as "XX XXXXX-XXXX"`,
+				},
+			},
 		},
 		{
-			name: "invalid seller - missing Locality",
-			seller: internal.Seller{
-				CID:         123,
-				CompanyName: "Test Seller",
-				Address:     "Rua 1",
-				Telephone:   "1234567890",
+			name: "invalid seller - missing locality",
+			seller: Seller{
+				ID:          1,
+				CID:         1,
+				CompanyName: "Test Company",
+				Address:     "Test Address",
+				Telephone:   "21 98888-8888",
 			},
 			wantErr: true,
-			err:     errors.Join(errors.New("seller.Locality is required")),
+			causes: []Causes{
+				{
+					Field:   "locality_id",
+					Message: "Locality ID is required",
+				},
+			},
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := tt.seller.Validate()
+			causes := tt.seller.Validate()
 			if tt.wantErr {
-				assert.Error(t, err)
-				assert.Equal(t, tt.err, err)
+				assert.Equal(t, tt.causes, causes)
 			} else {
-				assert.NoError(t, err)
+				assert.Nil(t, causes)
 			}
 		})
 	}

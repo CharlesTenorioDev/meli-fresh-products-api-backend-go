@@ -2,6 +2,7 @@ package internal
 
 import (
 	"errors"
+	"github.com/meli-fresh-products-api-backend-t1/utils/validator"
 )
 
 // Seller is a struct that contains the seller's information
@@ -28,24 +29,49 @@ type SellerPatch struct {
 	Locality    *int
 }
 
-func (seller *Seller) Validate() error {
-	var err error
-	if seller.CID == 0 {
-		return errors.Join(err, errors.New("seller.CID is required"))
+func (sl *Seller) Validate() (causes []Causes) {
+
+	if validator.IntIsNegative(sl.ID) || validator.IntIsZero(sl.ID) {
+		causes = append(causes, Causes{
+			Field:   "id",
+			Message: "Seller ID is required",
+		})
 	}
-	if seller.CompanyName == "" {
-		return errors.Join(err, errors.New("seller.CompanyName is required"))
+
+	if validator.IntIsNegative(sl.CID) || validator.IntIsZero(sl.CID) {
+		causes = append(causes, Causes{
+			Field:   "cid",
+			Message: "Company ID is required",
+		})
 	}
-	if seller.Address == "" {
-		return errors.Join(err, errors.New("seller.Address is required"))
+
+	if !validator.String(sl.CompanyName, 1, 255) {
+		causes = append(causes, Causes{
+			Field:   "company_name",
+			Message: "Company name is required",
+		})
 	}
-	if seller.Telephone == "" {
-		return errors.Join(err, errors.New("seller.Telephone is required"))
+	if !validator.String(sl.Address, 1, 255) {
+		causes = append(causes, Causes{
+			Field:   "address",
+			Message: "Address cannot be empty",
+		})
 	}
-	if seller.Locality == 0 {
-		return errors.Join(err, errors.New("seller.Locality is required"))
+	if !validator.IsTelephone(sl.Telephone) {
+		causes = append(causes, Causes{
+			Field:   "telephone",
+			Message: `Telephone number is invalid, should be formatted as "XX XXXXX-XXXX"`,
+		})
 	}
-	return err
+
+	if validator.IntIsNegative(sl.Locality) || validator.IntIsZero(sl.Locality) {
+		causes = append(causes, Causes{
+			Field:   "locality_id",
+			Message: "Locality ID is required",
+		})
+	}
+
+	return
 }
 
 var (
