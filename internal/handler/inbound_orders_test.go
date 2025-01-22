@@ -72,9 +72,9 @@ func (suite *InboundOrdersTestSuite) TestInboundOrdersHandler_Create() {
 		inbound := internal.InboundOrders{
 			OrderDate:      "2025-01-01",
 			OrderNumber:    "ORD5555",
-			EmployeeId:     1,
-			ProductBatchId: 1,
-			WarehouseId:    1,
+			EmployeeID:     1,
+			ProductBatchID: 1,
+			WarehouseID:    1,
 		}
 		b, err := json.Marshal(inbound)
 		require.NoError(t, err)
@@ -113,9 +113,9 @@ func (suite *InboundOrdersTestSuite) TestInboundOrdersHandler_Create() {
 		inbound := internal.InboundOrders{
 			OrderDate:      "2025-01-01",
 			OrderNumber:    "ORD001",
-			EmployeeId:     1,
-			ProductBatchId: 1,
-			WarehouseId:    1,
+			EmployeeID:     1,
+			ProductBatchID: 1,
+			WarehouseID:    1,
 		}
 
 		b, err := json.Marshal(inbound)
@@ -133,9 +133,9 @@ func (suite *InboundOrdersTestSuite) TestInboundOrdersHandler_Create() {
 		inbound := internal.InboundOrders{
 			OrderDate:      "2025-01-01",
 			OrderNumber:    "ORD002",
-			EmployeeId:     999,
-			ProductBatchId: 1,
-			WarehouseId:    1,
+			EmployeeID:     999,
+			ProductBatchID: 1,
+			WarehouseID:    1,
 		}
 		b, err := json.Marshal(inbound)
 		require.NoError(t, err)

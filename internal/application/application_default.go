@@ -28,14 +28,15 @@ func NewServerChi(cfg *ConfigServerChi) *ServerChi {
 		ServerAddress: ":8080",
 		Dsn:           "",
 	}
+
 	if cfg != nil {
 		if cfg.ServerAddress != "" {
 			defaultConfig.ServerAddress = cfg.ServerAddress
 		}
+
 		if cfg.Dsn != "" {
 			defaultConfig.Dsn = cfg.Dsn
 		}
-
 	}
 
 	return &ServerChi{
@@ -53,10 +54,9 @@ type ServerChi struct {
 
 // Run is a method that runs the application
 func (a *ServerChi) Run() (err error) {
-
 	db, err := sql.Open("mysql", a.dsn)
 	if err != nil {
-		return
+		return err
 	}
 
 	defer db.Close()
@@ -64,7 +64,7 @@ func (a *ServerChi) Run() (err error) {
 	// - database: ping
 	err = db.Ping()
 	if err != nil {
-		return
+		return err
 	}
 
 	rt := chi.NewRouter()
@@ -128,7 +128,8 @@ func (a *ServerChi) Run() (err error) {
 	})
 
 	err = http.ListenAndServe(a.serverAddress, rt)
-	return
+
+	return err
 }
 
 func localitiesRoutes(r chi.Router, lcRepository internal.LocalityRepository) {

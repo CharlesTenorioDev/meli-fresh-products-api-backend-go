@@ -26,6 +26,7 @@ func (r *ProductTypeMysql) FindByID(id int) (internal.ProductType, error) {
 		id = ?`
 
 	var pt internal.ProductType
+
 	err := r.db.QueryRow(query, id).Scan(
 		&pt.ID,
 		&pt.Description,
@@ -34,6 +35,7 @@ func (r *ProductTypeMysql) FindByID(id int) (internal.ProductType, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return pt, internal.ErrProductTypeNotFound
 		}
+
 		return pt, err
 	}
 

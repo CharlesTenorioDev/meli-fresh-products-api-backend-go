@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -36,7 +37,6 @@ func (s *SellerServiceDefault) FindByID(id int) (internal.Seller, error) {
 }
 
 func (s *SellerServiceDefault) Save(seller *internal.Seller) error {
-
 	sellerCid, err := s.rp.FindByCID(seller.CID)
 	if err != nil && !errors.Is(err, internal.ErrSellerNotFound) {
 		return err
@@ -55,6 +55,7 @@ func (s *SellerServiceDefault) Save(seller *internal.Seller) error {
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -69,9 +70,11 @@ func (s *SellerServiceDefault) Update(id int, updatedSeller internal.SellerPatch
 		if err != nil && !errors.Is(err, internal.ErrSellerNotFound) {
 			return internal.Seller{}, err
 		}
+
 		if *updatedSeller.CID == sellerCid.CID && actualSeller.ID != sellerCid.ID {
 			return internal.Seller{}, internal.ErrSellerCIDAlreadyExists
 		}
+
 		actualSeller.CID = *updatedSeller.CID
 	}
 
@@ -92,6 +95,7 @@ func (s *SellerServiceDefault) Update(id int, updatedSeller internal.SellerPatch
 		if err != nil {
 			return internal.Seller{}, internal.ErrLocalityNotFound
 		}
+
 		actualSeller.Locality = *updatedSeller.Locality
 	}
 
