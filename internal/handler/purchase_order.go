@@ -44,6 +44,19 @@ type PurchaseOrderHandler struct {
 }
 
 // Create creates a new purchase order
+// @Summary Create a new purchase order
+// @Description Handles the creation of a new purchase order to the database
+// @Tags PurchaseOrder
+// @Accept json
+// @Produce json
+// @Param request body handler.PurchaseOrderCreateRequest true "Purchase Order Create Request"
+// @Success 201 {object} handler.PurchaseOrderJSON "Created Purchase Order"
+// @Failure 400 {object} rest_err.RestErr "Invalid data"
+// @Failure 422 {object} rest_err.RestErr "Purchase Order inputs are Invalid"
+// @Failure 404 {object} rest_err.RestErr "Product records or Buyer not found"
+// @Failure 409 {object} rest_err.RestErr "Purchase order number already exists"
+// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Router /api/v1/purchase-orders [post]
 func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var requestInput *PurchaseOrderCreateRequest
