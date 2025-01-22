@@ -18,6 +18,10 @@ type SectionMysql struct {
 func (r *SectionMysql) FindAll() ([]internal.Section, error) {
 	rows, err := r.db.Query("SELECT `id`, `section_number`, `current_temperature`, `minimum_temperature`, `current_capacity`, `minimum_capacity`, `maximum_capacity`, `warehouse_id`, `product_type_id` FROM sections")
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrSectionNotFound
+		}
+
 		return nil, err
 	}
 	defer rows.Close()
@@ -37,6 +41,10 @@ func (r *SectionMysql) FindAll() ([]internal.Section, error) {
 
 	err = rows.Err()
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrSectionNotFound
+		}
+
 		return nil, err
 	}
 

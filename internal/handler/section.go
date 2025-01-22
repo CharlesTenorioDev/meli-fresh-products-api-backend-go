@@ -51,7 +51,14 @@ type SectionHandler struct {
 func (h *SectionHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	sections, err := h.sv.FindAll()
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+		if errors.Is(err, internal.ErrSectionNotFound) {
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("section not found"))
+
+			return
+		}
+
+		response.JSON(w, http.StatusInternalServerError, nil)
+
 		return
 	}
 
@@ -75,6 +82,7 @@ func (h *SectionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
@@ -82,7 +90,14 @@ func (h *SectionHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	section, err = h.sv.FindByID(id)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+		if errors.Is(err, internal.ErrSectionNotFound) {
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
+			return
+		}
+
+		response.JSON(w, http.StatusInternalServerError, nil)
+
 		return
 	}
 
