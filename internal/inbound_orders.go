@@ -5,12 +5,12 @@ import "errors"
 var ErrOrderNumberAlreadyExists = errors.New("order number already exists")
 
 type InboundOrders struct {
-	Id             int    `json:"id"`
+	ID             int    `json:"id"`
 	OrderDate      string `json:"order_date"`
 	OrderNumber    string `json:"order_number"`
-	EmployeeId     int    `json:"employee_id"`
-	ProductBatchId int    `json:"product_batch_id"`
-	WarehouseId    int    `json:"warehouse_id"`
+	EmployeeID     int    `json:"employee_id"`
+	ProductBatchID int    `json:"product_batch_id"`
+	WarehouseID    int    `json:"warehouse_id"`
 }
 
 type InboundOrderService interface {
@@ -23,11 +23,11 @@ type InboundOrdersRepository interface {
 	FindAll() ([]InboundOrders, error)
 }
 
-// validate required fields
+// ValidateFieldsOk validates required fields
 func (io *InboundOrders) ValidateFieldsOk() bool {
-
-	if io.OrderDate == "" || io.OrderNumber == "" || io.EmployeeId == 0 || io.ProductBatchId == 0 || io.WarehouseId == 0 {
+	if io.OrderDate == "" || io.OrderNumber == "" || io.EmployeeID == 0 || io.ProductBatchID == 0 || io.WarehouseID == 0 {
 		return false
 	}
+
 	return true
 }

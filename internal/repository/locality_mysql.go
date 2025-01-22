@@ -29,16 +29,18 @@ type LocalityMysql struct {
 	db *sql.DB
 }
 
-func (r *LocalityMysql) ReportCarries(localityId int) (amountOfCarries int, e error) {
+func (r *LocalityMysql) ReportCarries(localityID int) (amountOfCarries int, e error) {
 	row := r.db.QueryRow(
 		"SELECT COUNT(c.locality_id) carries_registered FROM carries c WHERE locality_id = ?",
-		localityId,
+		localityID,
 	)
 
-	row.Scan(&amountOfCarries)
-	if amountOfCarries == 0 {
+	e = row.Scan(&amountOfCarries)
+
+	if amountOfCarries == 0 || e != nil {
 		e = sql.ErrNoRows
 	}
+
 	return
 }
 
@@ -50,11 +52,15 @@ func (r *LocalityMysql) GetAmountOfCarriesForEveryLocality() (c []internal.Carri
 
 	for rows.Next() {
 		var carryCountPerLocality internal.CarriesCountPerLocality
-		rows.Scan(
+
+		e = rows.Scan(
 			&carryCountPerLocality.CarriesCount,
-			&carryCountPerLocality.LocalityId,
+			&carryCountPerLocality.LocalityID,
 			&carryCountPerLocality.LocalityName,
 		)
+		if e != nil {
+			return
+		}
 
 		c = append(c, carryCountPerLocality)
 	}
@@ -88,18 +94,18 @@ func (r *LocalityMysql) ReportSellers() (localities []internal.Locality, err err
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrLocalityNotFound
 		}
-		return
+
+		return localities, err
 	}
 
 	for rows.Next() {
-		// create a new seller
 		var locality internal.Locality
+
 		err = rows.Scan(&locality.ID, &locality.LocalityName, &locality.ProvinceName, &locality.CountryName, &locality.Sellers)
 		if err != nil {
-			return
+			return localities, err
 		}
 
-		// append the seller to the slice
 		localities = append(localities, locality)
 	}
 
@@ -108,10 +114,11 @@ func (r *LocalityMysql) ReportSellers() (localities []internal.Locality, err err
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrLocalityNotFound
 		}
-		return
+
+		return localities, err
 	}
 
-	return
+	return localities, err
 }
 
 // ReportSellersByID returns a seller from the database by its id
@@ -144,5 +151,6 @@ func (r *LocalityMysql) FindByID(id int) (locality internal.Locality, err error)
 			err = internal.ErrLocalityNotFound
 		}
 	}
+
 	return
 }

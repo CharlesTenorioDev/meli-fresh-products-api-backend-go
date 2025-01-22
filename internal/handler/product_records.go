@@ -8,27 +8,40 @@ import (
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type ProductRecordsHandlerDefault struct {
 	pd internal.ProductRecordsService
 }
 
-// Construtor do handler
+// NewProductRecordsDefault creates a new instance of ProductRecordsHandlerDefault.
 func NewProductRecordsDefault(pd internal.ProductRecordsService) *ProductRecordsHandlerDefault {
 	return &ProductRecordsHandlerDefault{
 		pd: pd,
 	}
 }
 
-// Handler para criar um Product Record
+
+// Create handles the creation of a Product Record.
+// Create godoc
+// @Summary Create a product record
+// @Description Creates a new product record with details on the database.
+// @Tags ProductRecords
+// @Accept json
+// @Produce json
+// @Param product_record body internal.ProductRecords true "Product Record Data"
+// @Success 201 {object} map[string]interface{} "Created product record"
+// @Failure 422 {object} rest_err.RestErr "Invalid JSON"
+// @Failure 409 {object} rest_err.RestErr "Error ID doesn't exists"
+// @Router /api/v1/productRecords [post]
 func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var productRec internal.ProductRecords
 
 	// Decodifica o corpo da requisição JSON
 	if err := json.NewDecoder(r.Body).Decode(&productRec); err != nil {
 		response.JSON(w, http.StatusUnprocessableEntity, "JSON inválido")
+
 		return
 	}
 
@@ -36,21 +49,24 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 	createdProductRec, err := h.pd.Create(productRec)
 	if err != nil {
 		if errors.Is(err, service.ErrProductUnprocessableEntity) {
-			response.JSON(w, http.StatusUnprocessableEntity, rest_err.NewUnprocessableEntityError(err.Error()))
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
+
 		if errors.Is(err, service.ErrProductNotExists) {
-			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}
+
 		return
 	}
-	productRecJson := internal.ProductRecordsJson{
+
+	productRecJSON := internal.ProductRecordsJSON{
 		LastUpdateDate: createdProductRec.LastUpdateDate,
 		PurchasePrice:  createdProductRec.PurchasePrice,
 		SalePrice:      createdProductRec.SalePrice,
 		ProductID:      createdProductRec.ProductID,
 	}
 	// Retorna o registro criado com status 201
-	response.JSON(w, http.StatusCreated, map[string]interface{}{
-		"data": productRecJson,
+	response.JSON(w, http.StatusCreated, map[string]any{
+		"data": productRecJSON,
 	})
 }

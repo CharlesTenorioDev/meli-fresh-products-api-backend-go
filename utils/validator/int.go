@@ -20,6 +20,6 @@ func IntIsLessThan(i int, j int) bool {
 	return i < j
 }
 
-func IntBetween(i, min, max int) bool {
-	return i >= min && i <= max
+func IntBetween(i, minV, maxV int) bool {
+	return i >= minV && i <= maxV
 }

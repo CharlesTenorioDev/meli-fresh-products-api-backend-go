@@ -14,7 +14,7 @@ const (
 
 var (
 	ErrCidAlreadyExists = errors.New("carry with this cid already exists")
-	ErrNoSuchLocalityId = errors.New("there's no such locality id")
+	ErrNoSuchLocalityID = errors.New("there's no such locality id")
 )
 
 type CarriesMysql struct {
@@ -33,13 +33,14 @@ func (r *CarriesMysql) FindAll() (carries []internal.Carries, e error) {
 
 	for rows.Next() {
 		var carry internal.Carries
+
 		e = rows.Scan(
-			&carry.Id,
+			&carry.ID,
 			&carry.Cid,
 			&carry.CompanyName,
 			&carry.Address,
 			&carry.PhoneNumber,
-			&carry.LocalityId,
+			&carry.LocalityID,
 		)
 		if e != nil {
 			return
@@ -51,10 +52,10 @@ func (r *CarriesMysql) FindAll() (carries []internal.Carries, e error) {
 	return
 }
 
-func (r *CarriesMysql) Create(carry internal.Carries) (lastId int64, e error) {
+func (r *CarriesMysql) Create(carry internal.Carries) (lastID int64, e error) {
 	res, e := r.db.Exec(
 		"INSERT INTO carries (`cid`, `company_name`, `address`, `phone_number`, `locality_id`) VALUES (?, ?, ?, ?, ?)",
-		carry.Cid, carry.CompanyName, carry.Address, carry.PhoneNumber, carry.LocalityId,
+		carry.Cid, carry.CompanyName, carry.Address, carry.PhoneNumber, carry.LocalityID,
 	)
 	if e != nil {
 		mysqlErr, ok := e.(*mysql.MySQLError)
@@ -63,12 +64,14 @@ func (r *CarriesMysql) Create(carry internal.Carries) (lastId int64, e error) {
 			case 1062:
 				e = ErrCidAlreadyExists
 			case 1452:
-				e = ErrNoSuchLocalityId
+				e = ErrNoSuchLocalityID
 			}
 		}
+
 		return
 	}
 
-	lastId, e = res.LastInsertId()
+	lastID, e = res.LastInsertId()
+
 	return
 }

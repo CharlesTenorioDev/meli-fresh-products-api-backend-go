@@ -38,10 +38,10 @@ func (l *LocalityDefault) FindByID(id int) (locality internal.Locality, err erro
 	return l.rp.FindByID(id)
 }
 
-func (sv *LocalityDefault) ReportCarries(localityId int) (int, error) {
-	return sv.rp.ReportCarries(localityId)
+func (l *LocalityDefault) ReportCarries(localityID int) (int, error) {
+	return l.rp.ReportCarries(localityID)
 }
 
-func (sv *LocalityDefault) GetAmountOfCarriesForEveryLocality() ([]internal.CarriesCountPerLocality, error) {
-	return sv.rp.GetAmountOfCarriesForEveryLocality()
+func (l *LocalityDefault) GetAmountOfCarriesForEveryLocality() ([]internal.CarriesCountPerLocality, error) {
+	return l.rp.GetAmountOfCarriesForEveryLocality()
 }
