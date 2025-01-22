@@ -7,7 +7,7 @@ import (
 var (
 	ErrProductNotFound       = errors.New("product not found")
 	ErroProductConflit       = errors.New("product conflict")
-	ErroProductConflitEntity = errors.New("Product has a dependency on another entity and needs to be deleted first.")
+	ErroProductConflitEntity = errors.New("product has a dependency on another entity and needs to be deleted first.")
 
 	ErrProductTypeIdNotFound      = errors.New("product-type ID not found")
 	ErrSellerIdNotFound           = errors.New("seller ID not found")
