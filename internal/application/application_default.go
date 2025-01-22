@@ -10,9 +10,8 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
 	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
-	httpSwagger "github.com/swaggo/http-swagger"
-
 	_ "github.com/meli-fresh-products-api-backend-t1/swagger/docs"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 // ConfigServerChi is a struct that represents the configuration for ServerChi

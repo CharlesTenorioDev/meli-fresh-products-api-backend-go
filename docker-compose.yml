@@ -16,7 +16,9 @@ services:
       timeout: 15s
       retries: 5
   api:
-    image: cosmtrek/air
+    build: 
+      context: .
+      dockerfile: Dockerfile
     container_name: api
     working_dir: /meli-api
     depends_on:
@@ -27,4 +29,6 @@ services:
     ports:
       - '8080:8080'
     volumes:
-      - ./:/meli-api
+      - .:/meli-api
+      - /go/pkg/mod:/go/pkg/mod
+    command: sh -c "air -c .air.toml"

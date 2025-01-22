@@ -1,4 +1,4 @@
- package handler_test
+package handler_test
 
 // import (
 // 	"bytes"
@@ -155,8 +155,8 @@
 // 					}
 // 					assert.Equal(t, response["data"], actualResponse.Data)
 
-// 				case rest_err.RestErr:
-// 					var actualResponse rest_err.RestErr
+// 				case resterr.RestErr:
+// 					var actualResponse resterr.RestErr
 // 					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
 // 					if err != nil {
 // 						t.Fatal(err)
@@ -264,8 +264,8 @@
 // 						t.Fatal(err)
 // 					}
 // 					assert.Equal(t, response["data"], actualResponse.Data)
-// 				case rest_err.RestErr:
-// 					var actualResponse rest_err.RestErr
+// 				case resterr.RestErr:
+// 					var actualResponse resterr.RestErr
 // 					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
 // 					if err != nil {
 // 						t.Fatal(err)
@@ -379,8 +379,8 @@
 // 						t.Fatal(err)
 // 					}
 // 					assert.Equal(t, response["data"], actualResponse.Data)
-// 				case rest_err.RestErr:
-// 					var actualResponse rest_err.RestErr
+// 				case resterr.RestErr:
+// 					var actualResponse resterr.RestErr
 // 					err = json.NewDecoder(rec.Body).Decode(&actualResponse)
 // 					if err != nil {
 // 						t.Fatal(err)
@@ -461,8 +461,8 @@
 
 // 			if tt.expectedResponse != nil {
 // 				switch response := tt.expectedResponse.(type) {
-// 				case rest_err.RestErr:
-// 					var actualResponse rest_err.RestErr
+// 				case resterr.RestErr:
+// 					var actualResponse resterr.RestErr
 // 					err = json.NewDecoder(rec.Body).Decode(&actualResponse)
 // 					if err != nil {
 // 						t.Fatal(err)
