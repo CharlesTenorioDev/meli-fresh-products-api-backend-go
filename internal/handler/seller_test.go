@@ -113,7 +113,7 @@ func TestSellerDefault_GetAll(t *testing.T) {
 				m.On("FindAll").Return([]internal.Seller{}, internal.ErrSellerNotFound)
 			},
 			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   *rest_err.NewNotFoundError("sellers not found"),
+			expectedResponse:   *rest_err.NewNotFoundError("seller not found"),
 		},
 		{
 			name: "should return internal server error",
@@ -121,7 +121,7 @@ func TestSellerDefault_GetAll(t *testing.T) {
 				m.On("FindAll").Return([]internal.Seller{}, errors.New("internal server error"))
 			},
 			expectedStatusCode: http.StatusInternalServerError,
-			expectedResponse:   nil, // Não há resposta esperada específica para erro interno
+			expectedResponse:   nil,
 		},
 	}
 
@@ -304,20 +304,6 @@ func TestSellerDefault_Save(t *testing.T) {
 			},
 		},
 		{
-			name: "should return unprocessable entity error",
-			mockSetup: func(m *MockSellerService) {
-			},
-			requestBody: handler.SellersPostJson{
-				CID:         123,
-				CompanyName: "", // Nome da empresa inválido
-				Address:     "Rua 1",
-				Telephone:   "1234567890",
-				Locality:    1,
-			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
-			expectedResponse:   *rest_err.NewUnprocessableEntityError("seller.CompanyName is required"),
-		},
-		{
 			name: "should return conflict error",
 			mockSetup: func(m *MockSellerService) {
 				m.On("Save", mock.Anything).Return(internal.ErrSellerConflict)
@@ -331,6 +317,21 @@ func TestSellerDefault_Save(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   *rest_err.NewConflictError("seller already exists"),
+		},
+		{
+			name: "should return cid conflict error",
+			mockSetup: func(m *MockSellerService) {
+				m.On("Save", mock.Anything).Return(internal.ErrSellerCIDAlreadyExists)
+			},
+			requestBody: handler.SellersPostJson{
+				CID:         123,
+				CompanyName: "Test Seller",
+				Address:     "Rua 1",
+				Telephone:   "1234567890",
+				Locality:    1,
+			},
+			expectedStatusCode: http.StatusConflict,
+			expectedResponse:   *rest_err.NewConflictError("seller with this CID already exists"),
 		},
 		{
 			name: "should return internal server error",
