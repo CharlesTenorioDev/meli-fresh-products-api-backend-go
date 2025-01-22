@@ -49,7 +49,7 @@ func (r *employeeRepositoryMock) ReportInboundOrdersByID(employeeID int) (io int
 	return args.Get(0).(internal.InboundOrdersPerEmployee), args.Error(1)
 }
 
-func TestCreate_Employee(t *testing.T) {
+func TestCreate_EmployeeUnitTestService(t *testing.T) {
 	defaultEmployee := internal.Employee{
 		ID:           0,
 		CardNumberID: "abcdef",
@@ -83,9 +83,35 @@ func TestCreate_Employee(t *testing.T) {
 
 		require.ErrorIs(t, err, service.ErrCardNumberIDInUse)
 	})
+	t.Run("create an employee with warehouse that does not exist", func(t *testing.T) {
+		rpWarehouse := new(warehouseRepositoryMock)
+		rp := new(employeeRepositoryMock)
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rpWarehouse.On("FindByID", 14).Return(internal.Warehouse{}, internal.ErrWarehouseRepositoryNotFound)
+		rp.On("GetAll").Return([]internal.Employee{}, nil)
+		err := sv.Save(&defaultEmployee)
+
+		require.Error(t, err)
+	})
+	t.Run("create an employee without the required fields", func(t *testing.T) {
+		emp := internal.Employee{
+			ID:           0,
+			CardNumberID: "",
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			WarehouseID:  14,
+		}
+		rpWarehouse := new(warehouseRepositoryMock)
+		rp := new(employeeRepositoryMock)
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("GetAll").Return([]internal.Employee{}, nil)
+		err := sv.Save(&emp)
+
+		require.Error(t, err)
+	})
 }
 
-func TestRead_Employee(t *testing.T) {
+func TestRead_EmployeeUnitTestService(t *testing.T) {
 	expectedEmployees := []internal.Employee{
 		{
 			ID:        1,
@@ -135,9 +161,19 @@ func TestRead_Employee(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, expectedEmployee, employee)
 	})
+	t.Run("reading every employee fails", func(t *testing.T) {
+		rpWarehouse := new(warehouseRepositoryMock)
+		rp := new(employeeRepositoryMock)
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("GetAll").Return([]internal.Employee{}, internal.ErrEmployeeNotFound)
+
+		_, err := sv.GetAll()
+
+		require.Error(t, err)
+	})
 }
 
-func TestUpdate_Employee(t *testing.T) {
+func TestUpdate_EmployeeUnitTestService(t *testing.T) {
 	t.Run("update employee with id 1 (does not exist)", func(t *testing.T) {
 		rpWarehouse := new(warehouseRepositoryMock)
 		rp := new(employeeRepositoryMock)
@@ -182,7 +218,7 @@ func TestUpdate_Employee(t *testing.T) {
 	})
 }
 
-func TestDelete_Employee(t *testing.T) {
+func TestDelete_EmployeeUnitTestService(t *testing.T) {
 	t.Run("user does not exist", func(t *testing.T) {
 		rpWarehouse := new(warehouseRepositoryMock)
 		rp := new(employeeRepositoryMock)
