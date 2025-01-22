@@ -5,31 +5,35 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-type warehouseRepositoryMock struct {
+func NewWarehouseRepositoryMock() *WarehouseRepositoryMock {
+	return &WarehouseRepositoryMock{}
+}
+
+type WarehouseRepositoryMock struct {
 	mock.Mock
 }
 
-func (r *warehouseRepositoryMock) FindAll() ([]internal.Warehouse, error) {
+func (r *WarehouseRepositoryMock) FindAll() ([]internal.Warehouse, error) {
 	args := r.Called()
 	return args.Get(0).([]internal.Warehouse), args.Error(1)
 }
 
-func (r *warehouseRepositoryMock) FindByID(id int) (internal.Warehouse, error) {
+func (r *WarehouseRepositoryMock) FindByID(id int) (internal.Warehouse, error) {
 	args := r.Called(id)
 	return args.Get(0).(internal.Warehouse), args.Error(1)
 }
 
-func (r *warehouseRepositoryMock) Save(warehouse *internal.Warehouse) error {
+func (r *WarehouseRepositoryMock) Save(warehouse *internal.Warehouse) error {
 	args := r.Called(warehouse)
 	return args.Error(0)
 }
 
-func (r *warehouseRepositoryMock) Update(warehouse *internal.Warehouse) error {
+func (r *WarehouseRepositoryMock) Update(warehouse *internal.Warehouse) error {
 	args := r.Called(warehouse)
 	return args.Error(0)
 }
 
-func (r *warehouseRepositoryMock) Delete(id int) error {
+func (r *WarehouseRepositoryMock) Delete(id int) error {
 	args := r.Called(id)
 	return args.Error(0)
 }

@@ -10,41 +10,45 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-type employeeRepositoryMock struct {
+func NewEmployeeRepositoryMock() *EmployeeRepositoryMock {
+	return &EmployeeRepositoryMock{}
+}
+
+type EmployeeRepositoryMock struct {
 	mock.Mock
 }
 
-func (r *employeeRepositoryMock) GetAll() (db []internal.Employee, err error) {
+func (r *EmployeeRepositoryMock) GetAll() (db []internal.Employee, err error) {
 	args := r.Called()
 	return args.Get(0).([]internal.Employee), args.Error(1)
 }
 
-func (r *employeeRepositoryMock) GetByID(id int) (emp internal.Employee, err error) {
+func (r *EmployeeRepositoryMock) GetByID(id int) (emp internal.Employee, err error) {
 	args := r.Called(id)
 	return args.Get(0).(internal.Employee), args.Error(1)
 }
 
-func (r *employeeRepositoryMock) Save(emp *internal.Employee) (int, error) {
+func (r *EmployeeRepositoryMock) Save(emp *internal.Employee) (int, error) {
 	args := r.Called(emp)
 	return args.Get(0).(int), args.Error(1)
 }
 
-func (r *employeeRepositoryMock) Update(id int, employee internal.Employee) error {
+func (r *EmployeeRepositoryMock) Update(id int, employee internal.Employee) error {
 	args := r.Called(id, employee)
 	return args.Error(0)
 }
 
-func (r *employeeRepositoryMock) Delete(id int) error {
+func (r *EmployeeRepositoryMock) Delete(id int) error {
 	args := r.Called(id)
 	return args.Error(0)
 }
 
-func (r *employeeRepositoryMock) CountInboundOrdersPerEmployee() (io []internal.InboundOrdersPerEmployee, err error) {
+func (r *EmployeeRepositoryMock) CountInboundOrdersPerEmployee() (io []internal.InboundOrdersPerEmployee, err error) {
 	args := r.Called()
 	return args.Get(0).([]internal.InboundOrdersPerEmployee), args.Error(1)
 }
 
-func (r *employeeRepositoryMock) ReportInboundOrdersByID(employeeID int) (io internal.InboundOrdersPerEmployee, err error) {
+func (r *EmployeeRepositoryMock) ReportInboundOrdersByID(employeeID int) (io internal.InboundOrdersPerEmployee, err error) {
 	args := r.Called(employeeID)
 	return args.Get(0).(internal.InboundOrdersPerEmployee), args.Error(1)
 }
@@ -58,8 +62,8 @@ func TestCreate_EmployeeUnitTestService(t *testing.T) {
 		WarehouseID:  14,
 	}
 	t.Run("create an employee successfully", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rpWarehouse.On("FindByID", 14).Return(internal.Warehouse{
 			ID: 14,
@@ -71,8 +75,8 @@ func TestCreate_EmployeeUnitTestService(t *testing.T) {
 		require.NoError(t, err)
 	})
 	t.Run("create an employee with conflict", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetAll").Return([]internal.Employee{
 			{
@@ -84,8 +88,8 @@ func TestCreate_EmployeeUnitTestService(t *testing.T) {
 		require.ErrorIs(t, err, service.ErrCardNumberIDInUse)
 	})
 	t.Run("create an employee with warehouse that does not exist", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rpWarehouse.On("FindByID", 14).Return(internal.Warehouse{}, internal.ErrWarehouseRepositoryNotFound)
 		rp.On("GetAll").Return([]internal.Employee{}, nil)
@@ -101,8 +105,8 @@ func TestCreate_EmployeeUnitTestService(t *testing.T) {
 			LastName:     "Nacarelli",
 			WarehouseID:  14,
 		}
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetAll").Return([]internal.Employee{}, nil)
 		err := sv.Save(&emp)
@@ -125,8 +129,8 @@ func TestRead_EmployeeUnitTestService(t *testing.T) {
 		},
 	}
 	t.Run("read every employee", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetAll").Return(expectedEmployees, nil)
 
@@ -136,8 +140,8 @@ func TestRead_EmployeeUnitTestService(t *testing.T) {
 		require.Equal(t, expectedEmployees, employees)
 	})
 	t.Run("read employee with id 1 (does not exist)", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetByID", 1).Return(internal.Employee{}, fmt.Errorf("employee not found"))
 
@@ -151,8 +155,8 @@ func TestRead_EmployeeUnitTestService(t *testing.T) {
 			FirstName: "Mocked",
 			LastName:  "Database",
 		}
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetByID", 2).Return(expectedEmployee, nil)
 
@@ -162,8 +166,8 @@ func TestRead_EmployeeUnitTestService(t *testing.T) {
 		require.Equal(t, expectedEmployee, employee)
 	})
 	t.Run("reading every employee fails", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetAll").Return([]internal.Employee{}, internal.ErrEmployeeNotFound)
 
@@ -175,8 +179,8 @@ func TestRead_EmployeeUnitTestService(t *testing.T) {
 
 func TestUpdate_EmployeeUnitTestService(t *testing.T) {
 	t.Run("update employee with id 1 (does not exist)", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetAll").Return([]internal.Employee{}, nil)
 		employee := internal.Employee{
@@ -195,8 +199,8 @@ func TestUpdate_EmployeeUnitTestService(t *testing.T) {
 			CardNumberID: "fedcba",
 			WarehouseID:  14,
 		}
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rpWarehouse.On("FindByID", 14).Return(internal.Warehouse{
 			ID: 14,
@@ -220,8 +224,8 @@ func TestUpdate_EmployeeUnitTestService(t *testing.T) {
 
 func TestDelete_EmployeeUnitTestService(t *testing.T) {
 	t.Run("user does not exist", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetByID", 1).Return(internal.Employee{}, internal.ErrEmployeeNotFound)
 
@@ -230,8 +234,8 @@ func TestDelete_EmployeeUnitTestService(t *testing.T) {
 		require.ErrorIs(t, err, service.ErrEmployeeNotFound)
 	})
 	t.Run("user does exist", func(t *testing.T) {
-		rpWarehouse := new(warehouseRepositoryMock)
-		rp := new(employeeRepositoryMock)
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
 		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
 		rp.On("GetByID", 1).Return(internal.Employee{}, nil)
 		rp.On("Delete", 1).Return(nil)

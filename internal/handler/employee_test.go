@@ -47,6 +47,10 @@ func init() {
 	txdb.Register("txdb_employee", "mysql", cfg.FormatDSN())
 }
 
+func NewMockEmployeeService() *MockEmployeeService {
+	return &MockEmployeeService{}
+}
+
 type MockEmployeeService struct {
 	mock.Mock
 }
@@ -303,7 +307,7 @@ func TestHandler_CreateEmployeeUnitTest(t *testing.T) {
 		expectedRes := CreatedRes{
 			Data: emp,
 		}
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Save", &emp).Return(nil)
 		b, _ := json.Marshal(emp)
 		hd := handler.NewEmployeeDefault(sv)
@@ -320,11 +324,12 @@ func TestHandler_CreateEmployeeUnitTest(t *testing.T) {
 		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
 		require.NoError(t, err)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
+		sv.AssertNumberOfCalls(t, "Save", 1)
 		require.Equal(t, expectedRes, actualRes)
 	})
 	t.Run("create fails with 422", func(t *testing.T) {
 		expectedStatus := http.StatusUnprocessableEntity
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Save", &emp).Return(errors.New("unprocessable entity"))
 		hd := handler.NewEmployeeDefault(sv)
 		b, _ := json.Marshal(emp)
@@ -337,11 +342,12 @@ func TestHandler_CreateEmployeeUnitTest(t *testing.T) {
 
 		hd.Create(res, req)
 
+		sv.AssertNumberOfCalls(t, "Save", 1)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 	t.Run("create fails with 409", func(t *testing.T) {
 		expectedStatus := http.StatusConflict
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Save", &emp).Return(service.ErrCardNumberIDInUse)
 		hd := handler.NewEmployeeDefault(sv)
 		b, _ := json.Marshal(emp)
@@ -354,11 +360,12 @@ func TestHandler_CreateEmployeeUnitTest(t *testing.T) {
 
 		hd.Create(res, req)
 
+		sv.AssertNumberOfCalls(t, "Save", 1)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 	t.Run("create with invalid body", func(t *testing.T) {
 		expectedStatus := http.StatusBadRequest
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(
 			http.MethodPost,
@@ -369,11 +376,12 @@ func TestHandler_CreateEmployeeUnitTest(t *testing.T) {
 
 		hd.Create(res, req)
 
+		sv.AssertNumberOfCalls(t, "Save", 0)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 	t.Run("create fails because employee already in use", func(t *testing.T) {
 		expectedStatus := http.StatusConflict
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Save", &emp).Return(service.ErrEmployeeInUse)
 		hd := handler.NewEmployeeDefault(sv)
 		b, _ := json.Marshal(emp)
@@ -386,6 +394,7 @@ func TestHandler_CreateEmployeeUnitTest(t *testing.T) {
 
 		hd.Create(res, req)
 
+		sv.AssertNumberOfCalls(t, "Save", 1)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 }
@@ -416,7 +425,7 @@ func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
 		expectedRes := GetAllRes{
 			Data: employeeDb,
 		}
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("GetAll").Return(employeeDb, nil)
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -427,6 +436,7 @@ func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
 		var actualRes GetAllRes
 		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
 		require.NoError(t, err)
+		sv.AssertNumberOfCalls(t, "GetAll", 1)
 		require.Equal(t, expectedRes, actualRes)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
@@ -439,7 +449,7 @@ func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
 		expectedRes := GetByIDRes{
 			Data: "employee not found",
 		}
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("GetByID", 1).Return(internal.Employee{}, errors.New("employee not found"))
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodGet, "/{id}", nil)
@@ -453,6 +463,7 @@ func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
 		var actualRes GetByIDRes
 		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
 		require.NoError(t, err)
+		sv.AssertNumberOfCalls(t, "GetByID", 1)
 		require.Equal(t, expectedRes, actualRes)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
@@ -472,7 +483,7 @@ func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
 		expectedRes := GetByIDRes{
 			Data: employee,
 		}
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("GetByID", 1).Return(employee, nil)
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodGet, "/{id}", nil)
@@ -486,12 +497,13 @@ func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
 		var actualRes GetByIDRes
 		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
 		require.NoError(t, err)
+		sv.AssertNumberOfCalls(t, "GetByID", 1)
 		require.Equal(t, expectedRes, actualRes)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 	t.Run("fetching every employee fails", func(t *testing.T) {
 		expectedStatus := http.StatusInternalServerError
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("GetAll").Return([]internal.Employee{}, errors.New("internal server error"))
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodGet, "/", nil)
@@ -499,11 +511,12 @@ func TestHandler_ReadEmployeeUnitTest(t *testing.T) {
 
 		hd.GetAll(res, req)
 
+		sv.AssertNumberOfCalls(t, "GetAll", 1)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 	t.Run("fetch employee by id (invalid)", func(t *testing.T) {
 		expectedStatus := http.StatusBadRequest
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodGet, "/{id}", nil)
 		rctx := chi.NewRouteContext()
@@ -534,7 +547,7 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 		expectedRes := UpdateRes{
 			Data: employee,
 		}
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Update", employee).Return(nil)
 		sv.On("GetByID", 1).Return(employee, nil)
 		b, _ := json.Marshal(employee)
@@ -550,6 +563,8 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 		var actualRes UpdateRes
 		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
 		require.NoError(t, err)
+		sv.AssertNumberOfCalls(t, "Update", 1)
+		sv.AssertNumberOfCalls(t, "GetByID", 1)
 		require.Equal(t, expectedRes, actualRes)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
@@ -569,7 +584,7 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 		expectedRes := UpdateRes{
 			Data: service.ErrEmployeeNotFound.Error(),
 		}
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Update", employee).Return(service.ErrEmployeeNotFound)
 		b, _ := json.Marshal(employee)
 		hd := handler.NewEmployeeDefault(sv)
@@ -583,13 +598,14 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 
 		var actualRes UpdateRes
 		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
+		sv.AssertNumberOfCalls(t, "Update", 1)
 		require.NoError(t, err)
 		require.Equal(t, expectedRes, actualRes)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 	t.Run("update fails because invalid id", func(t *testing.T) {
 		expectedStatus := http.StatusBadRequest
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodPatch, "/{id}", strings.NewReader(""))
 		rctx := chi.NewRouteContext()
@@ -617,7 +633,7 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 		expectedRes := UpdateRes{
 			Data: service.ErrConflictInEmployee.Error(),
 		}
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Update", employee).Return(service.ErrConflictInEmployee)
 		b, _ := json.Marshal(employee)
 		hd := handler.NewEmployeeDefault(sv)
@@ -632,6 +648,7 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 		var actualRes UpdateRes
 		err := json.Unmarshal(res.Body.Bytes(), &actualRes)
 		require.NoError(t, err)
+		sv.AssertNumberOfCalls(t, "Update", 1)
 		require.Equal(t, expectedRes, actualRes)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
@@ -640,7 +657,7 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 func TestHandler_DeleteEmployeeUnitTest(t *testing.T) {
 	t.Run("delete successfully (204)", func(t *testing.T) {
 		expectedStatus := http.StatusNoContent
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Delete", 1).Return(nil)
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodDelete, "/{id}", nil)
@@ -651,13 +668,14 @@ func TestHandler_DeleteEmployeeUnitTest(t *testing.T) {
 
 		hd.Delete(res, req)
 
+		sv.AssertNumberOfCalls(t, "Delete", 1)
 		require.Equal(t, 0, res.Body.Len())
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 	t.Run("delete fails (404)", func(t *testing.T) {
 		expectedStatus := http.StatusNotFound
 		expectedRes := `{"data":"employee not found"}`
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		sv.On("Delete", 1).Return(errors.New("employee not found"))
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodDelete, "/{id}", nil)
@@ -668,12 +686,13 @@ func TestHandler_DeleteEmployeeUnitTest(t *testing.T) {
 
 		hd.Delete(res, req)
 
+		sv.AssertNumberOfCalls(t, "Delete", 1)
 		require.Equal(t, expectedRes, string(res.Body.Bytes()))
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
 	t.Run("delete fails because of invalid id", func(t *testing.T) {
 		expectedStatus := http.StatusBadRequest
-		sv := new(MockEmployeeService)
+		sv := NewMockEmployeeService()
 		hd := handler.NewEmployeeDefault(sv)
 		req := httptest.NewRequest(http.MethodDelete, "/{id}", strings.NewReader(""))
 		rctx := chi.NewRouteContext()
