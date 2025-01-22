@@ -22,7 +22,19 @@ func NewProductRecordsDefault(pd internal.ProductRecordsService) *ProductRecords
 	}
 }
 
+
 // Create handles the creation of a Product Record.
+// Create godoc
+// @Summary Create a product record
+// @Description Creates a new product record with details on the database.
+// @Tags ProductRecords
+// @Accept json
+// @Produce json
+// @Param product_record body internal.ProductRecords true "Product Record Data"
+// @Success 201 {object} map[string]interface{} "Created product record"
+// @Failure 422 {object} rest_err.RestErr "Invalid JSON"
+// @Failure 409 {object} rest_err.RestErr "Error ID doesn't exists"
+// @Router /api/v1/productRecords [post]
 func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var productRec internal.ProductRecords
 

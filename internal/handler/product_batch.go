@@ -35,6 +35,17 @@ type RequestProductBatchJSON struct {
 	SectionID          int     `json:"section_id"`
 }
 
+// GetByID godoc
+// @Summary Get product batch by Id
+// @Description Fetch the details of a product batch using its unique Id
+// @Tags ProductBatch
+// @Accept json
+// @Produce json
+// @Param id path int true "Product Batch ID"
+// @Success 200 {object} map[string]any "Product batch data"
+// @Failure 400 {object} rest_err.RestErr "Invalid Id format"
+// @Failure 404 {object} rest_err.RestErr "Product-batch not found"
+// @Router /api/v1/product_batches/{id} [get]
 func (h *ProductBatchHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(chi.URLParam(r, "id"))
 	if err != nil {
@@ -57,6 +68,18 @@ func (h *ProductBatchHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Create godoc
+// @Summary Create a new product batch
+// @Description Create a new product batch on the database
+// @Tags ProductBatch
+// @Accept json
+// @Produce json
+// @Param product_batch body RequestProductBatchJSON true "Product batch details"
+// @Success 201 {object} map[string]any "Created product batch"
+// @Failure 400 {object} rest_err.RestErr "Invalid input format"
+// @Failure 409 {object} rest_err.RestErr "Product-batch with given product-batch number already registered" or "Product-batch already exists"
+// @Failure 422 {object} rest_err.RestErr "Couldn't parse product-batch"
+// @Router /api/v1/product_batches [post]
 func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {
 	var prodBatchJSON RequestProductBatchJSON
 	if err := json.NewDecoder(r.Body).Decode(&prodBatchJSON); err != nil {
