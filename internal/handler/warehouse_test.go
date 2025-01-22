@@ -470,6 +470,47 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			},
 			expectedMockCalls: 1,
 		},
+		{
+			description: "case 5 - error: Attempt to update a warehouse with an existing warehouse code",
+			method:      "PATCH",
+			url:         endpointWarehouse,
+			id:          "1",
+			body:        `{"warehouse_code":"W2"}`,
+			expectedBody: `{
+				"message": "warehouse already exists",
+				"error": "conflict",
+				"code": 409,
+				"causes": null
+			}`,
+			expectedCode:   http.StatusConflict,
+			expectedHeader: jsonHeader,
+			mock: func() *WarehouseServiceMock {
+				mk := NewWarehouseServiceMock()
+				mk.On("Update", mock.AnythingOfType("*internal.WarehousePatchUpdate")).Return(internal.Warehouse{}, internal.ErrWarehouseRepositoryDuplicated)
+				return mk
+			},
+			expectedMockCalls: 1,
+		},
+		{
+			description: "case 6 - error: Attempt to update a warehouse with an invalid id",
+			method:      "PATCH",
+			url:         endpointWarehouse,
+			id:          "invalid",
+			body:        `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":-20}`,
+			expectedBody: `{
+				"message": "Invalid ID format",
+				"error": "bad_request",
+				"code": 400,
+				"causes": null
+			}`,
+			expectedCode:   http.StatusBadRequest,
+			expectedHeader: jsonHeader,
+			mock: func() *WarehouseServiceMock {
+				mk := NewWarehouseServiceMock()
+				return mk
+			},
+			expectedMockCalls: 0,
+		},
 	}
 
 	for _, tc := range cases {
@@ -553,6 +594,25 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 				return mk
 			},
 			expectedMockCalls: 1,
+		},
+		{
+			description:  "case 4 - error: Attempt to delete a warehouse with an invalid id",
+			method:       "DELETE",
+			url:          endpointWarehouse,
+			id:           "invalid",
+			expectedCode: http.StatusBadRequest,
+			expectedBody: `{
+				"message": "Invalid ID format",
+				"error": "bad_request",
+				"code": 400,
+				"causes": null
+			}`,
+			expectedHeader: jsonHeader,
+			mock: func() *WarehouseServiceMock {
+				mk := NewWarehouseServiceMock()
+				return mk
+			},
+			expectedMockCalls: 0,
 		},
 	}
 
