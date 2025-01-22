@@ -28,12 +28,12 @@ func (r *BuyerMysqlRepository) GetAll() (db map[int]internal.Buyer) {
 	// iterating over the rows
 	for rows.Next() {
 		var buyer internal.Buyer
-		rows.Scan(&buyer.ID, &buyer.CardNumberId, &buyer.FirstName, &buyer.LastName)
+
+		_ = rows.Scan(&buyer.ID, &buyer.CardNumberID, &buyer.FirstName, &buyer.LastName) // TODO Actually check the error
 		db[buyer.ID] = buyer
 	}
 
 	return
-
 }
 
 func (r *BuyerMysqlRepository) Add(buyer *internal.Buyer) {
@@ -43,7 +43,7 @@ func (r *BuyerMysqlRepository) Add(buyer *internal.Buyer) {
 		VALUES (?, ?, ?)
 	`
 
-	result, _ := r.db.Exec(query, (*buyer).CardNumberId, (*buyer).FirstName, (*buyer).LastName)
+	result, _ := r.db.Exec(query, (*buyer).CardNumberID, (*buyer).FirstName, (*buyer).LastName)
 
 	// Get the ID of the last inserted purchase order
 	id, _ := result.LastInsertId()
@@ -63,14 +63,11 @@ func (r *BuyerMysqlRepository) Update(id int, buyer internal.BuyerPatch) {
 		WHERE
 			id = ?;
 	`
-	// executing the query
 	row := r.db.QueryRow(query, id)
 
 	var b internal.Buyer
-	// scanning the row
-	row.Scan(&b.ID, &b.CardNumberId, &b.FirstName, &b.LastName)
+	_ = row.Scan(&b.ID, &b.CardNumberID, &b.FirstName, &b.LastName) // TODO Actually check the error
 
-	// applying the patch
 	buyer.Patch(&b)
 
 	query = `
@@ -81,8 +78,7 @@ func (r *BuyerMysqlRepository) Update(id int, buyer internal.BuyerPatch) {
 			id = ?;
 	`
 
-	// applying the patch
-	r.db.Exec(query, buyer.CardNumberId, buyer.FirstName, buyer.LastName, id)
+	_, _ = r.db.Exec(query, buyer.CardNumberID, buyer.FirstName, buyer.LastName, id) // TODO: Actually check the error
 }
 
 func (r *BuyerMysqlRepository) Delete(id int) {
@@ -92,7 +88,7 @@ func (r *BuyerMysqlRepository) Delete(id int) {
 		WHERE
 			id = ?;
 	`
-	r.db.Exec(query, id)
+	_, _ = r.db.Exec(query, id) // TODO Actually check the error
 }
 
 func (r *BuyerMysqlRepository) ReportPurchaseOrders() (purchaseOrders []internal.PurchaseOrdersByBuyer, err error) {
@@ -101,7 +97,7 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrders() (purchaseOrders []internal
 			b.id, b.card_number_id, b.first_name, b.last_name, COUNT(po.id) as purchase_orders_count
 		FROM
 			buyers as b
-		INNER JOIN
+		LEFT JOIN
 			purchase_orders as po ON po.buyer_id = b.id
 		GROUP BY
 			b.id;
@@ -116,28 +112,30 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrders() (purchaseOrders []internal
 	// iterating over the rows
 	for rows.Next() {
 		var purchaseOrder internal.PurchaseOrdersByBuyer
-		err = rows.Scan(&purchaseOrder.BuyerID, &purchaseOrder.CardNumberId, &purchaseOrder.FirstName, &purchaseOrder.LastName, &purchaseOrder.PurchaseOrdersCount)
+
+		err = rows.Scan(&purchaseOrder.BuyerID, &purchaseOrder.CardNumberID, &purchaseOrder.FirstName, &purchaseOrder.LastName, &purchaseOrder.PurchaseOrdersCount)
 		if err != nil {
-			return
+			return purchaseOrders, err
 		}
+
 		purchaseOrders = append(purchaseOrders, purchaseOrder)
 	}
 
 	err = rows.Err()
 	if err != nil {
-		return
+		return purchaseOrders, err
 	}
 
-	return
+	return purchaseOrders, err
 }
 
-func (r *BuyerMysqlRepository) ReportPurchaseOrdersById(id int) (purchaseOrders []internal.PurchaseOrdersByBuyer, err error) {
+func (r *BuyerMysqlRepository) ReportPurchaseOrdersByID(id int) (purchaseOrders []internal.PurchaseOrdersByBuyer, err error) {
 	query := `
 		SELECT
 			b.id, b.card_number_id, b.first_name, b.last_name, COUNT(po.id) as purchase_orders_count
 		FROM
 			buyers as b
-		INNER JOIN
+		LEFT JOIN
 			purchase_orders as po ON po.buyer_id = b.id
 		GROUP BY
 			b.id
@@ -150,22 +148,25 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrdersById(id int) (purchaseOrders 
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	// iterating over the rows
 	for rows.Next() {
 		var purchaseOrder internal.PurchaseOrdersByBuyer
-		err = rows.Scan(&purchaseOrder.BuyerID, &purchaseOrder.CardNumberId, &purchaseOrder.FirstName, &purchaseOrder.LastName, &purchaseOrder.PurchaseOrdersCount)
+
+		err = rows.Scan(&purchaseOrder.BuyerID, &purchaseOrder.CardNumberID, &purchaseOrder.FirstName, &purchaseOrder.LastName, &purchaseOrder.PurchaseOrdersCount)
 		if err != nil {
-			return
+			return purchaseOrders, err
 		}
+
 		purchaseOrders = append(purchaseOrders, purchaseOrder)
 	}
 
 	err = rows.Err()
 	if err != nil {
-		return
+		return purchaseOrders, err
 	}
 
-	return
+	return purchaseOrders, err
 }

@@ -3,10 +3,10 @@ package internal
 import "errors"
 
 var (
-	ProductBatchNotFound            = errors.New("product-batch not found")
-	ProductBatchAlreadyExists       = errors.New("product-batch already exists")
-	ProductBatchNumberAlreadyInUse  = errors.New("product-batch with given product-batch number already registered")
-	ProductBatchUnprocessableEntity = errors.New("couldn't parse product-batch")
+	ErrProductBatchNotFound            = errors.New("product-batch not found")
+	ErrProductBatchAlreadyExists       = errors.New("product-batch already exists")
+	ErrProductBatchNumberAlreadyInUse  = errors.New("product-batch with given product-batch number already registered")
+	ErrProductBatchUnprocessableEntity = errors.New("couldn't parse product-batch")
 )
 
 type ProductBatch struct {
@@ -19,8 +19,8 @@ type ProductBatch struct {
 	ManufacturingDate  string  `json:"manufacturing_date"`
 	ManufacturingHour  int     `json:"manufacturing_hour"`
 	MinumumTemperature float64 `json:"minumum_temperature"`
-	ProductId          int     `json:"product_id"`
-	SectionId          int     `json:"section_id"`
+	ProductID          int     `json:"product_id"`
+	SectionID          int     `json:"section_id"`
 }
 
 type ProductBatchRepository interface {
@@ -43,9 +43,10 @@ func (pb *ProductBatch) Ok() bool {
 		pb.ManufacturingDate == "" ||
 		pb.ManufacturingHour < 0 ||
 		pb.MinumumTemperature < -273 ||
-		pb.ProductId <= 0 ||
-		pb.SectionId <= 0 {
+		pb.ProductID <= 0 ||
+		pb.SectionID <= 0 {
 		return false
 	}
+
 	return true
 }

@@ -1,0 +1,1781 @@
+basePath: /
+definitions:
+  handler.LocalityPostJson:
+    properties:
+      country_name:
+        type: string
+      locality_id:
+        type: integer
+      locality_name:
+        type: string
+      province_name:
+        type: string
+    type: object
+  handler.PurchaseOrderCreateRequest:
+    properties:
+      buyer_id:
+        type: integer
+      order_date:
+        type: string
+      order_number:
+        type: string
+      product_record_id:
+        type: integer
+      tracking_code:
+        type: string
+    type: object
+  handler.PurchaseOrderJSON:
+    properties:
+      buyer_id:
+        type: integer
+      id:
+        type: integer
+      order_date:
+        type: string
+      order_number:
+        type: string
+      product_record_id:
+        type: integer
+      tracking_code:
+        type: string
+    type: object
+  handler.RequestProductBatchJSON:
+    properties:
+      batch_number:
+        type: integer
+      current_quantity:
+        type: integer
+      current_temperature:
+        type: number
+      due_date:
+        type: string
+      initial_quantity:
+        type: integer
+      manufacturing_date:
+        type: string
+      manufacturing_hour:
+        type: integer
+      minumum_temperature:
+        type: number
+      product_id:
+        type: integer
+      section_id:
+        type: integer
+    type: object
+  handler.RequestSectionJSON:
+    properties:
+      current_capacity:
+        type: integer
+      current_temperature:
+        type: number
+      maximum_capacity:
+        type: integer
+      minimum_capacity:
+        type: integer
+      minimum_temperature:
+        type: number
+      product_type_id:
+        type: integer
+      section_number:
+        type: integer
+      warehouse_id:
+        type: integer
+    type: object
+  handler.ResponseReportProd:
+    properties:
+      products_count:
+        type: integer
+      section_id:
+        type: integer
+      section_number:
+        type: integer
+    type: object
+  handler.SellersGetJson:
+    properties:
+      address:
+        type: string
+      cid:
+        type: integer
+      company_name:
+        type: string
+      id:
+        type: integer
+      locality_id:
+        type: integer
+      telephone:
+        type: string
+    type: object
+  handler.SellersPostJson:
+    properties:
+      address:
+        type: string
+      cid:
+        type: integer
+      company_name:
+        type: string
+      locality_id:
+        type: integer
+      telephone:
+        type: string
+    type: object
+  handler.SellersUpdateJson:
+    properties:
+      address:
+        type: string
+      cid:
+        type: integer
+      company_name:
+        type: string
+      locality_id:
+        type: integer
+      telephone:
+        type: string
+    type: object
+  handler.WarehouseCreateRequest:
+    properties:
+      address:
+        type: string
+      minimum_capacity:
+        type: integer
+      minimum_temperature:
+        type: number
+      telephone:
+        type: string
+      warehouse_code:
+        type: string
+    type: object
+  handler.WarehouseJSON:
+    properties:
+      address:
+        type: string
+      id:
+        type: integer
+      minimum_capacity:
+        type: integer
+      minimum_temperature:
+        type: number
+      telephone:
+        type: string
+      warehouse_code:
+        type: string
+    type: object
+  internal.Buyer:
+    properties:
+      card_number_id:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+    type: object
+  internal.BuyerPatch:
+    properties:
+      card_number_id:
+        type: string
+      first_name:
+        type: string
+      last_name:
+        type: string
+    type: object
+  internal.Carries:
+    properties:
+      address:
+        type: string
+      cid:
+        type: string
+      company_name:
+        type: string
+      id:
+        type: integer
+      locality_id:
+        type: integer
+      phone_number:
+        type: string
+    type: object
+  internal.Employee:
+    properties:
+      card_number_id:
+        type: string
+      first_name:
+        type: string
+      id:
+        type: integer
+      last_name:
+        type: string
+      warehouse_id:
+        type: integer
+    type: object
+  internal.InboundOrders:
+    properties:
+      employee_id:
+        type: integer
+      id:
+        type: integer
+      order_date:
+        type: string
+      order_number:
+        type: string
+      product_batch_id:
+        type: integer
+      warehouse_id:
+        type: integer
+    type: object
+  internal.Product:
+    properties:
+      description:
+        type: string
+      expiration_rate:
+        type: number
+      freezing_rate:
+        type: number
+      height:
+        type: number
+      id:
+        type: integer
+      length:
+        type: number
+      net_weight:
+        type: number
+      product_code:
+        type: string
+      product_type_id:
+        type: integer
+      recommended_freezing_temperature:
+        type: number
+      seller_id:
+        type: integer
+      width:
+        type: number
+    type: object
+  internal.ProductRecords:
+    properties:
+      id:
+        type: integer
+      last_update_date:
+        type: string
+      product_id:
+        type: integer
+      purchase_price:
+        type: number
+      sale_price:
+        type: number
+    type: object
+  internal.Section:
+    properties:
+      current_capacity:
+        type: integer
+      current_temperature:
+        type: number
+      id:
+        type: integer
+      maximum_capacity:
+        type: integer
+      minimum_capacity:
+        type: integer
+      minimum_temperature:
+        type: number
+      product_type_id:
+        type: integer
+      section_number:
+        type: integer
+      warehouse_id:
+        type: integer
+    type: object
+  internal.WarehousePatchUpdate:
+    properties:
+      address:
+        type: string
+      minimum_capacity:
+        type: integer
+      minimum_temperature:
+        type: number
+      telephone:
+        type: string
+      warehouse_code:
+        type: string
+    type: object
+  rest_err.Causes:
+    description: Structure representing the causes of an error.
+    properties:
+      field:
+        description: |-
+          Field associated with the error cause.
+          @json
+          @jsonTag field
+        example: name
+        type: string
+      message:
+        description: |-
+          Error message describing the cause.
+          @json
+          @jsonTag message
+        example: name is required
+        type: string
+    type: object
+  rest_err.RestErr:
+    description: Structure for describing why the error occurred
+    properties:
+      causes:
+        description: Error causes.
+        items:
+          $ref: '#/definitions/rest_err.Causes'
+        type: array
+      code:
+        description: Error code.
+        example: 500
+        type: integer
+      error:
+        description: Error description.
+        example: internal_server_error
+        type: string
+      message:
+        description: Error message.
+        example: error trying to process request
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: Bootcampers GO - W5
+  description: API for managing fresh products and orders
+  title: Meli Fresh Products API
+  version: "1.0"
+paths:
+  /api/v1/buyers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all buyers from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all buyers
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get all buyers
+      tags:
+      - Buyers
+    post:
+      consumes:
+      - application/json
+      description: Add a new buyer to the database
+      parameters:
+      - description: Buyer data
+        in: body
+        name: buyer
+        required: true
+        schema:
+          $ref: '#/definitions/internal.Buyer'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created buyer
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: buyer with given card number already registered
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Failed to create buyer
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a new buyer
+      tags:
+      - Buyers
+  /api/v1/buyers/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove a specific buyer from the database
+      parameters:
+      - description: Buyer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Failed to parse Id
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Buyer not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Delete a buyer by Id
+      tags:
+      - Buyers
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific buyer from the database using their Id
+      parameters:
+      - description: Buyer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Buyer data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Failed to parse Id
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Buyer not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get a buyer by Id
+      tags:
+      - Buyers
+    patch:
+      consumes:
+      - application/json
+      description: Update the details of an existing buyer in the database
+      parameters:
+      - description: Buyer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Buyer patch data
+        in: body
+        name: buyer
+        required: true
+        schema:
+          $ref: '#/definitions/internal.BuyerPatch'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated buyer
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Failed to parse id" or "Failed to parse body
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Buyer not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: buyer with given card number already registered
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Update a buyer's information
+      tags:
+      - Buyers
+  /api/v1/buyers/report-purchase-orders:
+    get:
+      consumes:
+      - application/json
+      description: Generate a report of purchase orders for a specific buyer or all
+        buyers
+      parameters:
+      - description: Buyer Id
+        in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Report data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: failed to parse id
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Buyer not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get purchase orders by buyer
+      tags:
+      - Buyers
+  /api/v1/carries:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all carries from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all carries
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: failed to fetch carries
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get all carries
+      tags:
+      - Carries
+    post:
+      consumes:
+      - application/json
+      description: Create a new carry in the database
+      parameters:
+      - description: Carry data
+        in: body
+        name: carry
+        required: true
+        schema:
+          $ref: '#/definitions/internal.Carries'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created carry with Id
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Failed to parse body
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: carry with this cid already exists" or "there's no such locality
+            id
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Missing fields
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a new carry
+      tags:
+      - Carries
+  /api/v1/employees:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all employees from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all employees
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: internal server error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get all employees
+      tags:
+      - Employees
+    post:
+      consumes:
+      - application/json
+      description: Create a new employee record in the database
+      parameters:
+      - description: Employee data
+        in: body
+        name: employee
+        required: true
+        schema:
+          $ref: '#/definitions/internal.Employee'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created employee
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid body format
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Card number id already in use" or "Employee already in use
+          schema:
+            additionalProperties: true
+            type: object
+        "422":
+          description: Invalid entity data
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new employee
+      tags:
+      - Employees
+  /api/v1/employees/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Remove an employee record from the database by Id
+      parameters:
+      - description: Employee ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid Id format
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Employee not found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete an employee by Id
+      tags:
+      - Employees
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a specific employee by Id
+      parameters:
+      - description: Employee ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Employee data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid Id format
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Employee not found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get an employee by Id
+      tags:
+      - Employees
+    patch:
+      consumes:
+      - application/json
+      description: Update the details of an existing employee by Id
+      parameters:
+      - description: Employee ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Employee data
+        in: body
+        name: employee
+        required: true
+        schema:
+          $ref: '#/definitions/internal.Employee'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated employee
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid Id format" or "Invalid body format
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Employee not found
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Card number id already in use" or "Conflict in employee
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update an existing employee
+      tags:
+      - Employees
+  /api/v1/employees/report-inbound-orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve the count all inbound orders per employee, or for a specific
+        employee if Id is provided
+      parameters:
+      - description: Employee ID
+        in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Count of inbound orders per employee
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Id should be a number
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Employee not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Failed to fetch inbound orders
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get inbound orders for employees
+      tags:
+      - Employees
+  /api/v1/inbound-orders:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of all inbound orders from the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of inbound orders
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Failed to fetch inbounds orders
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get all inbound orders
+      tags:
+      - InboundOrders
+    post:
+      consumes:
+      - application/json
+      description: Create a new inbound order with the provided details
+      parameters:
+      - description: Inbound order data
+        in: body
+        name: inbound
+        required: true
+        schema:
+          $ref: '#/definitions/internal.InboundOrders'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created inbound order with ID
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid body format
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Order number already exists" or "Employee not exists
+          schema:
+            additionalProperties: true
+            type: object
+        "422":
+          description: Required fields are missing
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a new inbound order
+      tags:
+      - InboundOrders
+  /api/v1/localities:
+    post:
+      consumes:
+      - application/json
+      description: Save a new locality on the database
+      parameters:
+      - description: Locality data
+        in: body
+        name: locality
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LocalityPostJson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Saved locality data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Locality inputs are Invalid
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Locality conflict
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Save a locality
+      tags:
+      - Locality
+  /api/v1/localities/report-carries:
+    get:
+      consumes:
+      - application/json
+      description: Report the total number of carries for every locality or a specific
+        one by Id
+      parameters:
+      - description: Locality ID
+        format: int
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Carries report data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Id should be a number
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Not carries on locality_id
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Failed to fetch carries
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Report carries count per locality
+      tags:
+      - Locality
+  /api/v1/localities/report-sellers:
+    get:
+      consumes:
+      - application/json
+      description: Report the sellers count for every locality or a specific one by
+        Id
+      parameters:
+      - description: Locality ID
+        format: int
+        in: query
+        name: id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sellers count report data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Id should be a number
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Locality not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Report sellers count per locality
+      tags:
+      - Locality
+  /api/v1/product_batches:
+    post:
+      consumes:
+      - application/json
+      description: Create a new product batch on the database
+      parameters:
+      - description: Product batch details
+        in: body
+        name: product_batch
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RequestProductBatchJSON'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created product batch
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid input format
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Product-batch with given product-batch number already registered"
+            or "Product-batch already exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Couldn't parse product-batch
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a new product batch
+      tags:
+      - ProductBatch
+  /api/v1/product_batches/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Fetch the details of a product batch using its unique Id
+      parameters:
+      - description: Product Batch ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product batch data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid Id format
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Product-batch not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get product batch by Id
+      tags:
+      - ProductBatch
+  /api/v1/productRecords:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new product record with details on the database.
+      parameters:
+      - description: Product Record Data
+        in: body
+        name: product_record
+        required: true
+        schema:
+          $ref: '#/definitions/internal.ProductRecords'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created product record
+          schema:
+            additionalProperties: true
+            type: object
+        "409":
+          description: Error ID doesn't exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Invalid JSON
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a product record
+      tags:
+      - ProductRecords
+  /api/v1/products:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all products in the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all products
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get all products
+      tags:
+      - Product
+    post:
+      consumes:
+      - application/json
+      description: Adds a new product to the system with the provided details in the
+        request body
+      parameters:
+      - description: Product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/internal.Product'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Product created
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Seller or Product Type not exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Product code already exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Unprocessable entity
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a new product
+      tags:
+      - Product
+  /api/v1/products/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a product by its Id
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "400":
+          description: Invalid Id format
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Delete a product
+      tags:
+      - Product
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a single product by its Id
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product data
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid Id format
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get product by ID
+      tags:
+      - Product
+    patch:
+      consumes:
+      - application/json
+      description: Updates an existing product's data in the request body
+      parameters:
+      - description: Product ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated product data
+        in: body
+        name: product
+        required: true
+        schema:
+          $ref: '#/definitions/internal.Product'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated product
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid request body
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Seller or Product Type not exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Product code already exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: All fields must be valid and filled
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Update a product
+      tags:
+      - Product
+  /api/v1/products/report-records:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves records of products, or a specific record by product
+        Id
+      parameters:
+      - description: Product ID
+        in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Product records
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Invalid Id
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Product not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get product records
+      tags:
+      - Product
+  /api/v1/purchase-orders:
+    post:
+      consumes:
+      - application/json
+      description: Handles the creation of a new purchase order to the database
+      parameters:
+      - description: Purchase Order Create Request
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/handler.PurchaseOrderCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created Purchase Order
+          schema:
+            $ref: '#/definitions/handler.PurchaseOrderJSON'
+        "400":
+          description: Invalid data
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Product records or Buyer not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Purchase order number already exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Purchase Order inputs are Invalid
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a new purchase order
+      tags:
+      - PurchaseOrder
+  /api/v1/sections:
+    get:
+      description: Fetches all sections available in the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of sections
+          schema:
+            items:
+              $ref: '#/definitions/internal.Section'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Retrieve all sections
+      tags:
+      - Section
+    post:
+      consumes:
+      - application/json
+      description: Creates a new section with the provided details on the request
+        body
+      parameters:
+      - description: Section Create Request
+        in: body
+        name: section
+        required: true
+        schema:
+          $ref: '#/definitions/handler.RequestSectionJSON'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created Section
+          schema:
+            $ref: '#/definitions/internal.Section'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Section with given section number already registered" or "Warehouse
+            not found" or "Product-type not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Couldn't parse section
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a new section
+      tags:
+      - Section
+  /api/v1/sections/{id}:
+    delete:
+      description: Deletes a section identified by its Id
+      parameters:
+      - description: Section ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Section not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Delete a section
+      tags:
+      - Section
+    get:
+      description: Fetches the section based on the provided section ID
+      parameters:
+      - description: Section ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Section data
+          schema:
+            $ref: '#/definitions/internal.Section'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Section not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Retrieve a section by ID
+      tags:
+      - Section
+    patch:
+      consumes:
+      - application/json
+      description: Updates a section with the provided Id and data on the request
+        body
+      parameters:
+      - description: Section ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated section data
+        in: body
+        name: updates
+        required: true
+        schema:
+          additionalProperties: true
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated Section
+          schema:
+            $ref: '#/definitions/internal.Section'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Section not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Section with given section number already registered
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Update an existing section
+      tags:
+      - Section
+  /api/v1/sections/report-products:
+    get:
+      description: Fetches a report of products available in a section or across all
+        sections
+      parameters:
+      - description: Section ID
+        in: query
+        name: id
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Report of products in sections
+          schema:
+            items:
+              $ref: '#/definitions/handler.ResponseReportProd'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Section not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Retrieve a report of products in a section
+      tags:
+      - Section
+  /api/v1/sellers:
+    get:
+      description: Fetches a list of all sellers in the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of sellers
+          schema:
+            items:
+              $ref: '#/definitions/handler.SellersGetJson'
+            type: array
+        "404":
+          description: Sellers not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Retrieve all sellers
+      tags:
+      - Seller
+    post:
+      consumes:
+      - application/json
+      description: Adds a new seller to the system with the provided details on the
+        request body.
+      parameters:
+      - description: Seller Create Request
+        in: body
+        name: seller
+        required: true
+        schema:
+          $ref: '#/definitions/handler.SellersPostJson'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created Seller Id
+          schema:
+            additionalProperties: true
+            type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Seller not found" or "Locality not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Seller already exists" or "Seller with this CID already exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a new seller
+      tags:
+      - Seller
+  /api/v1/sellers/{id}:
+    delete:
+      description: Removes a seller from the system based on the provided Id
+      parameters:
+      - description: Seller ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Seller not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Delete a seller
+      tags:
+      - Seller
+    get:
+      description: Fetches a seller's details based on the provided ID
+      parameters:
+      - description: Seller ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Seller data
+          schema:
+            $ref: '#/definitions/handler.SellersGetJson'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Seller Not Found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Retrieve a seller by ID
+      tags:
+      - Seller
+    patch:
+      consumes:
+      - application/json
+      description: Modify the information of an existing seller
+      parameters:
+      - description: Seller ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Seller Update Request
+        in: body
+        name: seller
+        required: true
+        schema:
+          $ref: '#/definitions/handler.SellersUpdateJson'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated Seller data
+          schema:
+            $ref: '#/definitions/handler.SellersGetJson'
+        "400":
+          description: Seller invalid fields
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Seller not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Seller with this CID already exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Update seller details
+      tags:
+      - Seller
+  /api/v1/warehouses:
+    get:
+      description: Retrieve a list of all warehouses in the database
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of all warehouses
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get all warehouses
+      tags:
+      - Warehouse
+    post:
+      consumes:
+      - application/json
+      description: Add a new warehouse to the database
+      parameters:
+      - description: Warehouse data
+        in: body
+        name: warehouse
+        required: true
+        schema:
+          $ref: '#/definitions/handler.WarehouseCreateRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created warehouse
+          schema:
+            $ref: '#/definitions/handler.WarehouseJSON'
+        "400":
+          description: Invalid Data
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Warehouse already exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Create a new warehouse
+      tags:
+      - Warehouse
+  /api/v1/warehouses/{id}:
+    delete:
+      description: Removes a warehouse from the database by its ID
+      parameters:
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid ID format
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Warehouse not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Delete warehouse
+      tags:
+      - Warehouse
+    get:
+      description: Retrieve a warehouse's details by its Id
+      parameters:
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Warehouse data
+          schema:
+            $ref: '#/definitions/handler.WarehouseJSON'
+        "400":
+          description: Invalid ID format
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Warehouse not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Get warehouse by Id
+      tags:
+      - Warehouse
+    patch:
+      consumes:
+      - application/json
+      description: Modify an existing warehouse's data
+      parameters:
+      - description: Warehouse ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated warehouse data
+        in: body
+        name: warehouse
+        required: true
+        schema:
+          $ref: '#/definitions/internal.WarehousePatchUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Updated warehouse
+          schema:
+            $ref: '#/definitions/handler.WarehouseJSON'
+        "400":
+          description: Invalid ID format" or "Invalid Data
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "404":
+          description: Warehouse not found
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "409":
+          description: Warehouse already exists
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/rest_err.RestErr'
+      summary: Update warehouse details
+      tags:
+      - Warehouse
+swagger: "2.0"

@@ -41,20 +41,23 @@ func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
 		return
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		var product internal.Product
 
 		err := rows.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate,
 			&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature,
-			&product.Width, &product.ProductTypeId, &product.SellerId)
+			&product.Width, &product.ProductTypeID, &product.SellerID)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				err = internal.ErrProductNotFound
 			}
 			return products, err
 		}
+
 		products = append(products, product)
 	}
+
 	return
 }
 
@@ -88,8 +91,8 @@ func (psql *ProductSQL) Save(product internal.Product) (p internal.Product, err 
 		product.ProductCode,
 		product.RecommendedFreezingTemperature,
 		product.Width,
-		product.ProductTypeId,
-		product.SellerId,
+		product.ProductTypeID,
+		product.SellerID,
 	)
 
 	if err != nil {
@@ -117,9 +120,9 @@ func (psql *ProductSQL) Update(product internal.Product) (internal.Product, erro
 		product.ProductCode,
 		product.RecommendedFreezingTemperature,
 		product.Width,
-		product.ProductTypeId,
-		product.SellerId,
-		product.Id,
+		product.ProductTypeID,
+		product.SellerID,
+		product.ID,
 	)
 
 	if err != nil {
@@ -142,6 +145,7 @@ func (psql *ProductSQL) Update(product internal.Product) (internal.Product, erro
 	if rowsAffected == 0 {
 		return product, internal.ErrProductNotFound
 	}
+
 
 	return product, nil
 }
@@ -167,16 +171,18 @@ func (psql *ProductSQL) Delete(id int) error {
 	return nil
 }
 
-func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJsonCount, error) {
-	var products []internal.ProductRecordsJsonCount
+func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJSONCount, error) {
+	var products []internal.ProductRecordsJSONCount
 
 	rows, err := psql.db.Query(FindAllRecordString)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
 	for rows.Next() {
-		var product internal.ProductRecordsJsonCount
+		var product internal.ProductRecordsJSONCount
+
 		err := rows.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -184,13 +190,15 @@ func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJsonCount, err
 			}
 			return products, err
 		}
+
 		products = append(products, product)
 	}
+
 	return products, nil
 }
 
-func (psql *ProductSQL) FindByIdRecord(id int) (internal.ProductRecordsJsonCount, error) {
-	var product internal.ProductRecordsJsonCount
+func (psql *ProductSQL) FindByIDRecord(id int) (internal.ProductRecordsJSONCount, error) {
+	var product internal.ProductRecordsJSONCount
 
 	row := psql.db.QueryRow(FindByIdRecordString, id)
 	err := row.Scan(&product.ProductID, &product.Description, &product.RecordsCount)

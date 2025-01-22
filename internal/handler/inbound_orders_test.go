@@ -11,7 +11,6 @@ import (
 	"os"
 
 	"github.com/DATA-DOG/go-txdb"
-	"github.com/go-chi/chi/v5"
 	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
@@ -25,7 +24,6 @@ const inboundRoute = "/api/v1/inbound-orders"
 
 type InboundOrdersTestSuite struct {
 	hd *handler.InboundOrdersHandler
-	rt chi.Router
 	db *sql.DB
 	suite.Suite
 }
@@ -74,9 +72,9 @@ func (suite *InboundOrdersTestSuite) TestInboundOrdersHandler_Create() {
 		inbound := internal.InboundOrders{
 			OrderDate:      "2025-01-01",
 			OrderNumber:    "ORD5555",
-			EmployeeId:     1,
-			ProductBatchId: 1,
-			WarehouseId:    1,
+			EmployeeID:     1,
+			ProductBatchID: 1,
+			WarehouseID:    1,
 		}
 		b, err := json.Marshal(inbound)
 		require.NoError(t, err)
@@ -115,9 +113,9 @@ func (suite *InboundOrdersTestSuite) TestInboundOrdersHandler_Create() {
 		inbound := internal.InboundOrders{
 			OrderDate:      "2025-01-01",
 			OrderNumber:    "ORD001",
-			EmployeeId:     1,
-			ProductBatchId: 1,
-			WarehouseId:    1,
+			EmployeeID:     1,
+			ProductBatchID: 1,
+			WarehouseID:    1,
 		}
 
 		b, err := json.Marshal(inbound)
@@ -135,9 +133,9 @@ func (suite *InboundOrdersTestSuite) TestInboundOrdersHandler_Create() {
 		inbound := internal.InboundOrders{
 			OrderDate:      "2025-01-01",
 			OrderNumber:    "ORD002",
-			EmployeeId:     999,
-			ProductBatchId: 1,
-			WarehouseId:    1,
+			EmployeeID:     999,
+			ProductBatchID: 1,
+			WarehouseID:    1,
 		}
 		b, err := json.Marshal(inbound)
 		require.NoError(t, err)

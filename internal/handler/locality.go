@@ -3,14 +3,15 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"go.uber.org/zap"
 	"net/http"
 	"strconv"
+
+	"go.uber.org/zap"
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/utils/logger"
-	"github.com/meli-fresh-products-api-backend-t1/utils/rest_err"
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 // NewLocalityDefault creates a new instance of the seller handler
@@ -26,7 +27,7 @@ type LocalityDefault struct {
 	sv internal.LocalityService
 }
 
-type LocalityGetJson struct {
+type LocalityGetJSON struct {
 	ID           int    `json:"id"`
 	LocalityName string `json:"locality_name"`
 	ProvinceName string `json:"province_name"`
@@ -34,13 +35,25 @@ type LocalityGetJson struct {
 	SellersCount int    `json:"sellers_count"`
 }
 
-type LocalityPostJson struct {
+type LocalityPostJSON struct {
 	LocalityID   int    `json:"locality_id"`
 	LocalityName string `json:"locality_name"`
 	ProvinceName string `json:"province_name"`
 	CountryName  string `json:"country_name"`
 }
 
+// ReportCarries godoc
+// @Summary Report carries count per locality
+// @Description Report the total number of carries for every locality or a specific one by Id
+// @Tags Locality
+// @Accept json
+// @Produce json
+// @Param id query string false "Locality ID" Format(int)
+// @Success 200 {object} map[string]any "Carries report data"
+// @Failure 400 {object} rest_err.RestErr "Id should be a number"
+// @Failure 404 {object} rest_err.RestErr "Not carries on locality_id"
+// @Failure 500 {object} rest_err.RestErr "Failed to fetch carries"
+// @Router /api/v1/localities/report-carries [get]
 func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		idStr := r.URL.Query().Get("id")
@@ -51,14 +64,16 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 				response.JSON(
 					w,
 					http.StatusInternalServerError,
-					rest_err.NewInternalServerError("failed to fetch carries"),
+					resterr.NewInternalServerError("failed to fetch carries"),
 				)
+
 				return
 			}
 
 			response.JSON(w, http.StatusOK, map[string]any{
 				"data": carries,
 			})
+
 			return
 		}
 
@@ -67,8 +82,9 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 			response.JSON(
 				w,
 				http.StatusBadRequest,
-				rest_err.NewBadRequestError("id should be a number"),
+				resterr.NewBadRequestError("id should be a number"),
 			)
+
 			return
 		}
 
@@ -77,8 +93,9 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 			response.JSON(
 				w,
 				http.StatusNotFound,
-				rest_err.NewNotFoundError("not carries on locality_id "+idStr),
+				resterr.NewNotFoundError("not carries on locality_id "+idStr),
 			)
+
 			return
 		}
 
@@ -92,14 +109,25 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 	}
 }
 
-// ReportSellers returns locality with sellers count
+// ReportSellers godoc
+// @Summary Report sellers count per locality
+// @Description Report the sellers count for every locality or a specific one by Id
+// @Tags Locality
+// @Accept json
+// @Produce json
+// @Param id query string false "Locality ID" Format(int)
+// @Success 200 {object} map[string]any "Sellers count report data"
+// @Failure 400 {object} rest_err.RestErr "Id should be a number"
+// @Failure 404 {object} rest_err.RestErr "Locality not found"
+// @Failure 500 {object} rest_err.RestErr "Internal server error"
+// @Router /api/v1/localities/report-sellers [get]
 func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var localities []internal.Locality
+
 		var err error
 
 		idStr := r.URL.Query().Get("id")
-
 		switch idStr {
 		case "":
 			localities, err = h.sv.ReportSellers()
@@ -107,7 +135,8 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 			id, parseErr := strconv.Atoi(idStr)
 
 			if parseErr != nil {
-				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestError("id should be a number"))
+				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("id should be a number"))
+
 				return
 			}
 
@@ -118,17 +147,21 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 			logger.Error(err.Error(), err,
 				zap.String("id", idStr),
 			)
+
 			if errors.Is(err, internal.ErrLocalityNotFound) {
-				response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
+				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
 				return
 			}
+
 			response.JSON(w, http.StatusInternalServerError, nil)
+
 			return
 		}
 
-		var localitiesJson []LocalityGetJson
+		var localitiesJSON []LocalityGetJSON
 		for _, locality := range localities {
-			localitiesJson = append(localitiesJson, LocalityGetJson{
+			localitiesJSON = append(localitiesJSON, LocalityGetJSON{
 				ID:           locality.ID,
 				LocalityName: locality.LocalityName,
 				ProvinceName: locality.ProvinceName,
@@ -138,56 +171,74 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": localitiesJson,
+			"data": localitiesJSON,
 		})
 	}
-
 }
 
-// Save method save the locality
+// Save godoc
+// @Summary Save a locality
+// @Description Save a new locality on the database
+// @Tags Locality
+// @Accept json
+// @Produce json
+// @Param locality body LocalityPostJson true "Locality data"
+// @Success 200 {object} map[string]any "Saved locality data"
+// @Failure 400 {object} rest_err.RestErr "Locality inputs are Invalid"
+// @Failure 409 {object} rest_err.RestErr "Locality conflict"
+// @Failure 500 {object} rest_err.RestErr "Internal server error"
+// @Router /api/v1/localities [post]
 func (h *LocalityDefault) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		var localityJson LocalityPostJson
-		err := json.NewDecoder(r.Body).Decode(&localityJson)
+		var localityJSON LocalityPostJSON
+
+		err := json.NewDecoder(r.Body).Decode(&localityJSON)
 		if err != nil {
 			response.JSON(w, http.StatusBadRequest, nil)
+
 			return
 		}
 
 		locality := &internal.Locality{
-			ID:           localityJson.LocalityID,
-			LocalityName: localityJson.LocalityName,
-			ProvinceName: localityJson.ProvinceName,
-			CountryName:  localityJson.CountryName,
+			ID:           localityJSON.LocalityID,
+			LocalityName: localityJSON.LocalityName,
+			ProvinceName: localityJSON.ProvinceName,
+			CountryName:  localityJSON.CountryName,
 		}
 
 		err = h.sv.Save(locality)
 		if err != nil {
 			if errors.Is(err, internal.ErrLocalityConflict) {
-				response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
+				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
+
 				return
 			}
 
 			if errors.As(err, &internal.DomainError{}) {
 				var domainError internal.DomainError
+
 				errors.As(err, &domainError)
-				var restCauses []rest_err.Causes
+
+				var restCauses []resterr.Causes
 				for _, cause := range domainError.Causes {
-					restCauses = append(restCauses, rest_err.Causes{
+					restCauses = append(restCauses, resterr.Causes{
 						Field:   cause.Field,
 						Message: cause.Message,
 					})
 				}
-				response.JSON(w, http.StatusBadRequest, rest_err.NewBadRequestValidationError(domainError.Message, restCauses))
+
+				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
+
 				return
 			}
 
 			response.JSON(w, http.StatusInternalServerError, nil)
+
 			return
 		}
 
 		response.JSON(w, http.StatusOK, map[string]any{
-			"data": localityJson,
+			"data": localityJSON,
 		})
 	}
 }

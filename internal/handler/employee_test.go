@@ -30,7 +30,6 @@ const (
 
 type EmployeeTestSuite struct {
 	db *sql.DB
-	rt chi.Router
 	hd *handler.EmployeeHandlerDefault
 	suite.Suite
 }
@@ -116,10 +115,10 @@ func (e *EmployeeTestSuite) TestEmployeeHandler_Create() {
 
 	e.T().Run("should create a new employee", func(t *testing.T) {
 		employee := internal.Employee{
-			CardNumberId: "E1012",
+			CardNumberID: "E1012",
 			FirstName:    "Alice",
 			LastName:     "Due",
-			WarehouseId:  1,
+			WarehouseID:  1,
 		}
 
 		body, err := json.Marshal(employee)
@@ -137,17 +136,17 @@ func (e *EmployeeTestSuite) TestEmployeeHandler_Create() {
 		}
 		err = json.NewDecoder(w.Body).Decode(&res)
 		require.NoError(t, err)
-		require.NotZero(t, res.Data.Id)
+		require.NotZero(t, res.Data.ID)
 		require.Equal(t, "Alice", res.Data.FirstName)
 	})
 
 	e.T().Run("should return conflict if card_number_id already in use", func(t *testing.T) {
 
 		employee := internal.Employee{
-			CardNumberId: "E1001",
+			CardNumberID: "E1001",
 			FirstName:    "Bob",
 			LastName:     "Marley",
-			WarehouseId:  1,
+			WarehouseID:  1,
 		}
 
 		body, err := json.Marshal(employee)
@@ -170,7 +169,7 @@ func (e *EmployeeTestSuite) TestEmployeeHandler_Create() {
 }
 
 func (suite *EmployeeTestSuiteMap) TestGetEmployeeById() {
-	employee := internal.Employee{Id: 1, CardNumberId: "E1001", FirstName: "John", LastName: "Doe", WarehouseId: 1}
+	employee := internal.Employee{ID: 1, CardNumberID: "E1001", FirstName: "John", LastName: "Doe", WarehouseID: 1}
 	suite.service.On("GetById", 1).Return(employee, nil)
 
 	r := httptest.NewRequest(http.MethodGet, "/employees/{id}", nil)
@@ -213,7 +212,7 @@ func (suite *EmployeeTestSuiteMap) TestGetEmployeeByIdNotFound() {
 }
 
 func (suite *EmployeeTestSuiteMap) TestUpdateEmployee() {
-	employee := internal.Employee{Id: 1, CardNumberId: "E1001", FirstName: "John", LastName: "Doe", WarehouseId: 1}
+	employee := internal.Employee{ID: 1, CardNumberID: "E1001", FirstName: "John", LastName: "Doe", WarehouseID: 1}
 	suite.service.On("Update", employee).Return(nil)
 	suite.service.On("GetById", 1).Return(employee, nil)
 
