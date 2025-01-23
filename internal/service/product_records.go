@@ -60,13 +60,15 @@ func (pr *ProductRecordsDefault) GetByID(id int) (internal.ProductRecords, error
 
 func ValidateProductRec(productRec internal.ProductRecords) error {
 	if productRec.LastUpdateDate.IsZero() {
-		return errors.New("LastUpdateDate is empty.")
+		return errors.New("LastUpdateDate is empty")
 	}
+
 	if productRec.PurchasePrice <= 0 {
-		return errors.New("PurchasePrice is empty.")
+		return errors.New("PurchasePrice is empty")
 	}
+
 	if productRec.SalePrice <= 0 {
-		return errors.New("SalePrice is empty.")
+		return errors.New("SalePrice is empty")
 	}
 
 	return nil

@@ -89,7 +89,7 @@ func TestProductRecordsMysql_FinAByID_not_found(t *testing.T) {
 
 	product, err := repo.FindByID(1)
 	assert.Error(t, err)
-	assert.Equal(t, internal.ErrProductReordsNotFound, err)
+	assert.Equal(t, internal.ErrProductRecordsNotFound, err)
 	assert.Empty(t, product)
 }
 
@@ -144,5 +144,5 @@ func TestProductRecordsMysql_Save_conflict(t *testing.T) {
 	repo := repository.NewProductRecordsSQL(mockDB)
 
 	_, err = repo.Save(productRecords)
-	assert.Error(t, err, internal.ErrProductReordsConflict)
+	assert.Error(t, err, internal.ErrProductRecordsConflict)
 }

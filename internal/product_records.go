@@ -7,8 +7,8 @@ import (
 
 var (
 	ErrProductIdNotFound     = errors.New("product ID not found")
-	ErrProductReordsNotFound = errors.New("product-records not found")
-	ErrProductReordsConflict = errors.New("product-records conflict")
+	ErrProductRecordsNotFound = errors.New("product-records not found")
+	ErrProductRecordsConflict = errors.New("product-records conflict")
 	ErrDateInvalid           = errors.New("invalid date type")
 )
 

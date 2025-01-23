@@ -19,7 +19,7 @@ func TestProductTypeMysql_FindByID_ok(t *testing.T) {
 		"description",
 	}).
 		AddRow(1, "product type")
-	mock.ExpectQuery(repository.FindByIdProductType).WillReturnRows(row)
+	mock.ExpectQuery(repository.FindByIDProductType).WillReturnRows(row)
 
 	repo := repository.NewProductTypeMysql(mockDB)
 
@@ -38,7 +38,7 @@ func TestProductTypeMysql_FindByID_not_found(t *testing.T) {
 		"description",
 	})
 
-	mock.ExpectQuery(repository.FindByIdProductType).WithArgs(1).WillReturnRows(row)
+	mock.ExpectQuery(repository.FindByIDProductType).WithArgs(1).WillReturnRows(row)
 
 	repo := repository.NewProductTypeMysql(mockDB)
 

@@ -22,7 +22,6 @@ const (
 	SaveProductRecords     = "INSERT INTO `product_records` (`last_update_date`, `purchase_price`, `sale_price`, `product_id`) VALUES (?, ?, ?, ?)"
 )
 
-// Implementação de FindAll
 func (psql *ProductRecordsSQL) FindAll() (productRecords []internal.ProductRecords, err error) {
 	rows, err := psql.db.Query(FindAllProductRecords)
 	if err != nil {
@@ -38,6 +37,7 @@ func (psql *ProductRecordsSQL) FindAll() (productRecords []internal.ProductRecor
 			if errors.Is(err, sql.ErrNoRows) {
 				err = internal.ErrProductNotFound
 			}
+
 			return productRecords, err
 		}
 
@@ -55,8 +55,9 @@ func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			err = internal.ErrProductReordsNotFound
+			err = internal.ErrProductRecordsNotFound
 		}
+
 		return productRecord, err
 	}
 
@@ -74,9 +75,10 @@ func (psql *ProductRecordsSQL) Save(productRec internal.ProductRecords) (interna
 		if errors.As(err, &mysqlErr) {
 			switch mysqlErr.Number {
 			case 1062:
-				err = internal.ErrProductReordsConflict
+				err = internal.ErrProductRecordsConflict
 			}
 		}
+		
 		return productRec, err
 	}
 
