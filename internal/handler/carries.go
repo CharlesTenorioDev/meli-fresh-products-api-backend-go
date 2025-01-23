@@ -24,7 +24,7 @@ func NewCarriesHandlerDefault(sv internal.CarriesService) *CarriesHandlerDefault
 // @Accept json
 // @Produce json
 // @Success 200 {object} map[string]interface{} "List of all carries"
-// @Failure 500 {object} rest_err.RestErr "failed to fetch carries"
+// @Failure 500 {object} resterr.RestErr "failed to fetch carries"
 // @Router /api/v1/carries [get]
 func (h *CarriesHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	all, err := h.sv.FindAll()
@@ -47,9 +47,9 @@ func (h *CarriesHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param carry body internal.Carries true "Carry data"
 // @Success 201 {object} map[string]interface{} "Created carry with Id"
-// @Failure 400 {object} rest_err.RestErr "Failed to parse body"
-// @Failure 422 {object} rest_err.RestErr "Missing fields"
-// @Failure 409 {object} rest_err.RestErr "carry with this cid already exists" or "there's no such locality id"
+// @Failure 400 {object} resterr.RestErr "Failed to parse body"
+// @Failure 422 {object} resterr.RestErr "Missing fields"
+// @Failure 409 {object} resterr.RestErr "carry with this cid already exists" or "there's no such locality id"
 // @Router /api/v1/carries [post]
 func (h *CarriesHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var carry internal.Carries
