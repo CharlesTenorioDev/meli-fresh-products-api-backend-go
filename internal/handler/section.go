@@ -182,7 +182,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 // @Failure 422 {object} rest_err.RestErr "Couldn't parse section"
 // @Router /api/v1/sections [post]
 func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var sectionJSON map[string]interface{}
+	var sectionJSON map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&sectionJSON); err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
