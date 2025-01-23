@@ -50,12 +50,14 @@ func (sl *Seller) Validate() (causes []Causes) {
 			Message: "Company name is required",
 		})
 	}
+
 	if !validator.String(sl.Address, 1, 255) {
 		causes = append(causes, Causes{
 			Field:   "address",
 			Message: "Address cannot be empty",
 		})
 	}
+
 	if !validator.IsTelephone(sl.Telephone) {
 		causes = append(causes, Causes{
 			Field:   "telephone",

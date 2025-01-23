@@ -265,15 +265,17 @@ func (h *SellerDefault) Delete() http.HandlerFunc {
 func (h *SellerDefault) handleError(w http.ResponseWriter, err error) {
 	if errors.As(err, &internal.DomainError{}) {
 		var domainError internal.DomainError
-		errors.As(err, &domainError)
-		restCauses := make([]resterr.Causes, 0)
+		_ = errors.As(err, &domainError)
+
+		var causes []resterr.Causes
 		for _, cause := range domainError.Causes {
-			restCauses = append(restCauses, resterr.Causes{
+			causes = append(causes, resterr.Causes{
 				Field:   cause.Field,
 				Message: cause.Message,
 			})
 		}
-		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
+
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, causes))
 
 		return
 	}
