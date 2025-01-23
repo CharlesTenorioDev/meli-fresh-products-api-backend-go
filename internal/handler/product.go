@@ -21,6 +21,15 @@ func NewProducHandlerDefault(phd internal.ProductService) *ProductHandlerDefault
 	return &ProductHandlerDefault{s: phd}
 }
 
+// GetAll godoc
+// @Summary Get all products
+// @Description Retrieves a list of all products in the database
+// @Tags Product
+// @Accept json
+// @Produce json
+// @Success 200 {object} map[string]interface{} "List of all products"
+// @Failure 400 {object} resterr.RestErr "Bad request"
+// @Router /api/v1/products [get]
 func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	products, err := h.s.GetAll()
 	if err != nil {
@@ -39,6 +48,17 @@ func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// GetByID godoc
+// @Summary Get product by ID
+// @Description Retrieves a single product by its Id
+// @Tags Product
+// @Accept json
+// @Produce json
+// @Param id path int true "Product ID"
+// @Success 200 {object} map[string]any "Product data"
+// @Failure 400 {object} resterr.RestErr "Invalid Id format"
+// @Failure 404 {object} resterr.RestErr "Product not found"
+// @Router /api/v1/products/{id} [get]
 func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
 	id, err := strconv.Atoi(idStr)
@@ -62,6 +82,20 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 	})
 }
 
+// Create godoc
+// @Summary Create a new product
+// @Description Adds a new product to the system with the provided details in the request body
+// @Tags Product
+// @Accept json
+// @Produce json
+// @Param product body internal.Product true "Product data"
+// @Success 201 {object} map[string]any "Product created"
+// @Failure 400 {object} resterr.RestErr "Invalid request body"
+// @Failure 404 {object} resterr.RestErr "Seller or Product Type not exists"
+// @Failure 409 {object} resterr.RestErr "Product code already exists"
+// @Failure 422 {object} resterr.RestErr "Unprocessable entity"
+// @Failure 500 {object} resterr.RestErr "Internal server error"
+// @Router /api/v1/products [post]
 func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var product internal.Product
 	if err := json.NewDecoder(r.Body).Decode(&product); err != nil {
@@ -79,7 +113,7 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 			errors.Is(err, internal.ErrProductNotFound):
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 
-			case errors.Is(err, internal.ErrProductCodeAlreadyExists),
+		case errors.Is(err, internal.ErrProductCodeAlreadyExists),
 			errors.Is(err, internal.ErrProductConflitEntity),
 			errors.Is(err, internal.ErrProductConflit):
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
@@ -93,7 +127,7 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-	
+
 	productJSON := internal.ProductJSONPost{
 		ProductCode:                    product.ProductCode,
 		Description:                    product.Description,
@@ -127,6 +161,11 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 // @Failure 409 {object} resterr.RestErr "Product code already exists"
 // @Failure 422 {object} resterr.RestErr "All fields must be valid and filled"
 // @Failure 500 {object} resterr.RestErr "Internal server error"
+// @Failure 400 {object} resterr.RestErr "Invalid request body"
+// @Failure 404 {object} resterr.RestErr "Seller or Product Type not exists"
+// @Failure 409 {object} resterr.RestErr "Product code already exists"
+// @Failure 422 {object} resterr.RestErr "All fields must be valid and filled"
+// @Failure 500 {object} resterr.RestErr "Internal server error"
 // @Router /api/v1/products/{id} [patch]
 func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
@@ -152,7 +191,7 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIdNotFound) || errors.Is(err, internal.ErrProductNotFound) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
-		} else if errors.Is(err, internal.ErrProductCodeAlreadyExists)||errors.Is(err, internal.ErrProductConflit) ||errors.Is(err, internal.ErrProductConflitEntity) {
+		} else if errors.Is(err, internal.ErrProductCodeAlreadyExists) || errors.Is(err, internal.ErrProductConflit) || errors.Is(err, internal.ErrProductConflitEntity) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		} else if errors.Is(err, internal.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
@@ -179,6 +218,9 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 // @Failure 400 {object} resterr.RestErr "Invalid Id format"
 // @Failure 404 {object} resterr.RestErr "Product not found"
 // @Failure 500 {object} resterr.RestErr "Internal server error"
+// @Failure 400 {object} resterr.RestErr "Invalid Id format"
+// @Failure 404 {object} resterr.RestErr "Product not found"
+// @Failure 500 {object} resterr.RestErr "Internal server error"
 // @Router /api/v1/products/{id} [delete]
 func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	idStr := chi.URLParam(r, "id")
@@ -198,7 +240,7 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 			return
 		}
-		
+
 		if errors.Is(err, internal.ErrProductNotFound) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 			return
@@ -220,6 +262,8 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 // @Produce json
 // @Param id query int false "Product ID"
 // @Success 200 {object} map[string]interface{} "Product records"
+// @Failure 400 {object} resterr.RestErr "Invalid Id"
+// @Failure 404 {object} resterr.RestErr "Product not found"
 // @Failure 400 {object} resterr.RestErr "Invalid Id"
 // @Failure 404 {object} resterr.RestErr "Product not found"
 // @Router /api/v1/products/report-records [get]
