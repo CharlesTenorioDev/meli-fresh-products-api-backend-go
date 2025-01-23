@@ -47,10 +47,6 @@ func (w *Warehouse) Validate() error {
 		return errors.New("minimum capacity is required")
 	}
 
-	if w.MinimumTemperature == 0 {
-		return errors.New("minimum temperature is required")
-	}
-
 	return nil
 }
 

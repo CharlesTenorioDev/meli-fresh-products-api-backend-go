@@ -80,8 +80,8 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			description:    "case 1 - success: Create a new warehouse",
 			method:         "POST",
 			url:            endpointWarehouse,
-			body:           `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":5}`,
-			expectedBody:   `{"data":{"id":3,"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":5}}`,
+			body:           `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":0}`,
+			expectedBody:   `{"data":{"id":3,"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":0}}`,
 			expectedCode:   http.StatusCreated,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
