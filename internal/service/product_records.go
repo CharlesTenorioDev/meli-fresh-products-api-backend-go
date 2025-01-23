@@ -12,10 +12,6 @@ type ProductRecordsDefault struct {
 	productRepo    internal.ProductRepository
 }
 
-var (
-	ErrProductRecordsNotFound = errors.New("product records not found")
-)
-
 func NewProductRecordsDefault(prodRecRepo internal.ProductRecordsRepository, prodRepo internal.ProductRepository) *ProductRecordsDefault {
 	return &ProductRecordsDefault{
 		productRecRepo: prodRecRepo,
@@ -73,4 +69,3 @@ func ValidateProductRec(productRec internal.ProductRecords) error {
 
 	return nil
 }
-
