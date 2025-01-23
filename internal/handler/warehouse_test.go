@@ -109,10 +109,9 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
 				mk := NewWarehouseServiceMock()
-				mk.On("Save", mock.Anything).Return(fmt.Errorf("%w: %v", internal.ErrWarehouseUnprocessableEntity, "minimum temperature is required"))
 				return mk
 			},
-			expectedMockCalls: 1,
+			expectedMockCalls: 0,
 		},
 		{
 			description: "case 3 - error: Attempt to create a new warehouse without minimum capacity",
