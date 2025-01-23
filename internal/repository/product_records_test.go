@@ -60,7 +60,7 @@ func TestProductRecordsMysql_FinAByID_ok(t *testing.T) {
 	}).
 		AddRow(1, time.Now().Truncate(24*time.Hour), 1, 1, 1)
 
-	mock.ExpectQuery(repository.FindByIdProductRecords).WillReturnRows(row)
+	mock.ExpectQuery(repository.FindByIDProductRecords).WillReturnRows(row)
 
 	repo := repository.NewProductRecordsSQL(mockDB)
 
@@ -83,7 +83,7 @@ func TestProductRecordsMysql_FinAByID_not_found(t *testing.T) {
 		"product_id",
 	})
 
-	mock.ExpectQuery(repository.FindByIdProductRecords).WillReturnRows(row)
+	mock.ExpectQuery(repository.FindByIDProductRecords).WillReturnRows(row)
 
 	repo := repository.NewProductRecordsSQL(mockDB)
 

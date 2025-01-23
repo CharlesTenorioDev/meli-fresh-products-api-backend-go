@@ -1,8 +1,6 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -68,10 +66,13 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 
 func (s *ProductDefault) Update(product internal.Product) (internal.Product, error) {
 	existingProducts, err := s.productRepo.FindAll()
+
 	if err != nil {
 		return product, err
 	}
+
 	existingProduct, err := s.productRepo.FindByID(product.ID)
+
 	if err != nil {
 		return product, internal.ErrProductNotFound
 	}
@@ -187,38 +188,10 @@ func IsProductCodeExists(existingProducts []internal.Product, productCode string
 }
 
 func ValidateProduct(product internal.Product) error {
-	if product.ProductCode == "" {
-		return errors.New("ProductCode is empty.")
-	}
-	if product.Description == "" {
-		return errors.New("Description is empty.")
-	}
-	if product.Height <= 0 {
-		return errors.New("Height is empty.")
-	}
-	if product.Length <= 0 {
-		return errors.New("Length is empty.")
-	}
-	if product.Width <= 0 {
-		return errors.New("Width is empty.")
-	}
-	if product.NetWeight <= 0 {
-		return errors.New("NetWeight is empty.")
-	}
-	if product.ExpirationRate <= 0 {
-		return errors.New("ExpirationRate is empty.")
-	}
-	if product.RecommendedFreezingTemperature < -273.15 {
-		return errors.New("RecommendedFreezingTemperature is empty.")
-	}
-	if product.FreezingRate < -273.15 {
-		return errors.New("FreezingRate is empty.")
-	}
-	if product.ProductTypeID <= 0 {
-		return errors.New("ProductTypeId is empty.")
-	}
-	if product.SellerID <= 0 {
-		return errors.New("SellerId is empty.")
+	if product.ProductCode == "" || product.Description == "" || product.Height <= 0 || product.Length <= 0 ||
+		product.Width <= 0 || product.NetWeight <= 0 || product.ExpirationRate <= 0 || product.RecommendedFreezingTemperature < -273.15 ||
+		product.FreezingRate < -273.15 || product.ProductTypeID <= 0 || product.SellerID <= 0 {
+		return internal.ErrProductUnprocessableEntity
 	}
 
 	return nil

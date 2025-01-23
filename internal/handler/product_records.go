@@ -39,6 +39,7 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 	// Decodifica o corpo da requisição JSON
 	if err := json.NewDecoder(r.Body).Decode(&productRec); err != nil {
 		response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
+		
 		return
 	}
 
@@ -48,6 +49,7 @@ func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Req
 		if errors.Is(err, internal.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
+
 		if errors.Is(err, internal.ErrProductIdNotFound) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}

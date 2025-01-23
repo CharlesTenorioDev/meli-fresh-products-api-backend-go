@@ -18,7 +18,7 @@ func NewProductRecordsSQL(db *sql.DB) *ProductRecordsSQL {
 
 const (
 	FindAllProductRecords  = "SELECT `id`, `last_update_date`, `purchase_price`, `sale_price`, `product_id` FROM `product_records`"
-	FindByIdProductRecords = "SELECT `id`, `last_update_date`, `purchase_price`, `sale_price`, `product_id` FROM `product_records` WHERE `id` = ?"
+	FindByIDProductRecords = "SELECT `id`, `last_update_date`, `purchase_price`, `sale_price`, `product_id` FROM `product_records` WHERE `id` = ?"
 	SaveProductRecords     = "INSERT INTO `product_records` (`last_update_date`, `purchase_price`, `sale_price`, `product_id`) VALUES (?, ?, ?, ?)"
 )
 
@@ -50,7 +50,7 @@ func (psql *ProductRecordsSQL) FindAll() (productRecords []internal.ProductRecor
 func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error) {
 	var productRecord internal.ProductRecords
 
-	row := psql.db.QueryRow(FindByIdProductRecords, id)
+	row := psql.db.QueryRow(FindByIDProductRecords, id)
 	err := row.Scan(&productRecord.ID, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 
 	if err != nil {

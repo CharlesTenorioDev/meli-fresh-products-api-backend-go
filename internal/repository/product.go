@@ -3,7 +3,6 @@ package repository
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -38,6 +37,7 @@ func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrProductNotFound
 		}
+
 		return
 	}
 	defer rows.Close()
@@ -52,6 +52,7 @@ func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
 			if errors.Is(err, sql.ErrNoRows) {
 				err = internal.ErrProductNotFound
 			}
+
 			return products, err
 		}
 
@@ -68,10 +69,12 @@ func (psql *ProductSQL) FindByID(id int) (internal.Product, error) {
 	err := row.Scan(&product.ID, &product.Description, &product.ExpirationRate, &product.FreezingRate,
 		&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature,
 		&product.Width, &product.ProductTypeID, &product.SellerID)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = internal.ErrProductNotFound
-		}
+	
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				err = internal.ErrProductNotFound
+			}
+
 		return product, err
 	}
 
@@ -100,11 +103,13 @@ func (psql *ProductSQL) Save(product internal.Product) (p internal.Product, err 
 		if errors.As(err, &mysqlErr) {
 			switch mysqlErr.Number {
 			case 1062:
-				err = internal.ErroProductConflit
+				err = internal.ErrProductConflit
 			}
 		}
 	}
+
 	p = product
+
 	return
 }
 
@@ -130,14 +135,17 @@ func (psql *ProductSQL) Update(product internal.Product) (internal.Product, erro
 		if errors.As(err, &mysqlErr) {
 			switch mysqlErr.Number {
 			case 1062:
-				err = internal.ErroProductConflit
+				err = internal.ErrProductConflit
 			default:
 				err = internal.ErrProductNotFound
 			}
 		}
+
 		return product, err
 	}
+
 	rowsAffected, err := result.RowsAffected()
+
 	if err != nil {
 		return product, err
 	}
@@ -150,20 +158,20 @@ func (psql *ProductSQL) Update(product internal.Product) (internal.Product, erro
 }
 
 func (psql *ProductSQL) Delete(id int) error {
-
 	_, err := psql.db.Exec(DeleteString, id)
+
 	var mysqlErr *mysql.MySQLError
 
 	if err != nil {
-		fmt.Print(err)
 		if errors.As(err, &mysqlErr) {
 			switch mysqlErr.Number {
 			case 1451:
-				err = internal.ErroProductConflitEntity
+				err = internal.ErrProductConflitEntity
 			default:
 				err = internal.ErrProductNotFound
 			}
 		}
+
 		return err
 	}
 
@@ -187,6 +195,7 @@ func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJSONCount, err
 			if errors.Is(err, sql.ErrNoRows) {
 				err = internal.ErrProductNotFound
 			}
+
 			return products, err
 		}
 
@@ -201,11 +210,12 @@ func (psql *ProductSQL) FindByIDRecord(id int) (internal.ProductRecordsJSONCount
 
 	row := psql.db.QueryRow(FindByIDRecordString, id)
 	err := row.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
+	
 	if err != nil {
-
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrProductIdNotFound
 		}
+
 		return product, err
 	}
 

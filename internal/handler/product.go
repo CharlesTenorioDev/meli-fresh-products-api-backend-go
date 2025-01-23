@@ -28,7 +28,9 @@ func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 			return
 		}
+
 		response.JSON(w, http.StatusInternalServerError, nil)
+
 		return
 	}
 
@@ -44,6 +46,7 @@ func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		err = internal.ErrProductBadRequest
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+
 		return
 	}
 
@@ -66,8 +69,9 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
 	product, err := h.s.Create(product)
-	fmt.Print(product)
+
 	if err != nil {
 		switch {
 		case errors.Is(err, internal.ErrSellerIdNotFound),
@@ -76,8 +80,8 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 
 			case errors.Is(err, internal.ErrProductCodeAlreadyExists),
-			errors.Is(err, internal.ErroProductConflitEntity),
-			errors.Is(err, internal.ErroProductConflit):
+			errors.Is(err, internal.ErrProductConflitEntity),
+			errors.Is(err, internal.ErrProductConflit):
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 
 		case errors.Is(err, internal.ErrProductUnprocessableEntity):
@@ -89,6 +93,7 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+	
 	productJSON := internal.ProductJSONPost{
 		ProductCode:                    product.ProductCode,
 		Description:                    product.Description,
@@ -102,6 +107,7 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 		ProductTypeID:                  product.ProductTypeID,
 		SellerID:                       product.SellerID,
 	}
+
 	response.JSON(w, http.StatusCreated, map[string]any{
 		"data": productJSON,
 	})
@@ -142,10 +148,11 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 	updatedProduct, err := h.s.Update(product)
 	fmt.Print(updatedProduct)
+
 	if err != nil {
 		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIdNotFound) || errors.Is(err, internal.ErrProductNotFound) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
-		} else if errors.Is(err, internal.ErrProductCodeAlreadyExists) {
+		} else if errors.Is(err, internal.ErrProductCodeAlreadyExists)||errors.Is(err, internal.ErrProductConflit) ||errors.Is(err, internal.ErrProductConflitEntity) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		} else if errors.Is(err, internal.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
@@ -185,11 +192,13 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 
 	err = h.s.Delete(id)
 	fmt.Printf("erro do handler %v", err)
+
 	if err != nil {
-		if errors.Is(err, internal.ErroProductConflit) || errors.Is(err, internal.ErroProductConflitEntity) {
+		if errors.Is(err, internal.ErrProductConflit) || errors.Is(err, internal.ErrProductConflitEntity) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 			return
 		}
+		
 		if errors.Is(err, internal.ErrProductNotFound) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 			return
@@ -215,24 +224,23 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 // @Failure 404 {object} resterr.RestErr "Product not found"
 // @Router /api/v1/products/report-records [get]
 func (h *ProductHandlerDefault) ReportRecords(w http.ResponseWriter, r *http.Request) {
-	// Extrair o parâmetro "id" da URL
 	id := r.URL.Query().Get("id")
 
 	if id != "" {
 		productID, err := strconv.Atoi(id)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, "ID inválido")
+			response.JSON(w, http.StatusBadRequest, resterr.NewNotFoundError(err.Error()))
 
 			return
 		}
 
 		report, err := h.s.GetByIDRecord(productID)
 		if err != nil {
-			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("product not found"))
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 			return
 		}
 
-		response.JSON(w, http.StatusOK, map[string]interface{}{
+		response.JSON(w, http.StatusOK, map[string]any{
 			"data": report,
 		})
 

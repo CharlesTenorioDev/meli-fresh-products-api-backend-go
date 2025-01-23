@@ -210,7 +210,7 @@ func TestProductMysql_save_conflict(t *testing.T) {
 	// Chama o método Save para salvar o produto
 	_, err = repo.Save(product)
 	// Verifica se o método Save gerou erro
-	assert.Error(t, err, internal.ErroProductConflit)
+	assert.Error(t, err, internal.ErrProductConflit)
 }
 
 func TestProductMysql_Update_ok(t *testing.T) {

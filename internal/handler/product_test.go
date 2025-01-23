@@ -359,10 +359,19 @@ func Test_Create(t *testing.T) {
 		{
 			name: "create_conflito_status_409",
 			mockSetup: func(m *MockProductService) {
-				m.On("Create", mock.Anything).Return(internal.Product{}, internal.ErroProductConflit)
+				m.On("Create", mock.Anything).Return(internal.Product{}, internal.ErrProductConflit)
 			},
 			requestBody:      internal.Product{},
 			expectedStatus:   http.StatusConflict,
+			expectedResponse: ResponseCreate{},
+		},
+		{
+			name: "create_conflito_status_404",
+			mockSetup: func(m *MockProductService) {
+				m.On("Create", mock.Anything).Return(internal.Product{}, internal.ErrProductNotFound)
+			},
+			requestBody:      internal.Product{},
+			expectedStatus:   http.StatusNotFound,
 			expectedResponse: ResponseCreate{},
 		},
 		{
@@ -428,6 +437,7 @@ func Test_Update(t *testing.T) {
 		name             string
 		mockSetup        func(*MockProductService)
 		requestBody      interface{}
+		id               string
 		expectedStatus   int
 		expectedResponse ResponseCreate
 	}{
@@ -463,7 +473,8 @@ func Test_Update(t *testing.T) {
 				SellerID:                       1,
 				Width:                          10.0,
 			},
-			expectedStatus: http.StatusCreated,
+			id:             "1",
+			expectedStatus: http.StatusOK,
 			expectedResponse: ResponseCreate{
 				Data: internal.Product{
 					ID:                             1,
@@ -484,34 +495,37 @@ func Test_Update(t *testing.T) {
 		{
 			name: "update_fail_status_422",
 			mockSetup: func(m *MockProductService) {
-				m.On("Update", mock.Anything).Return(internal.Product{}, internal.ErrProductUnprocessableEntity)
+				m.On("Update", mock.Anything).Return(internal.Product{ID: 1}, internal.ErrProductUnprocessableEntity)
 			},
 			requestBody:      internal.Product{},
+			id:               "1",
 			expectedStatus:   http.StatusUnprocessableEntity,
 			expectedResponse: ResponseCreate{},
 		},
 		{
 			name: "update_non_existent_status_404",
 			mockSetup: func(m *MockProductService) {
-				m.On("Update", mock.Anything).Return(internal.Product{}, internal.ErrProductNotFound)
+				m.On("Update", mock.Anything).Return(internal.Product{ID: 1}, internal.ErrProductNotFound)
 			},
 			requestBody:      internal.Product{},
+			id:               "1",
 			expectedStatus:   http.StatusNotFound,
 			expectedResponse: ResponseCreate{},
 		},
 		{
-			name: "create_conflito_status_409",
+			name: "update_conflito_status_409",
 			mockSetup: func(m *MockProductService) {
-				m.On("Update", mock.Anything).Return(internal.Product{}, internal.ErroProductConflit)
+				m.On("Update", mock.Anything).Return(internal.Product{ID: 1}, internal.ErrProductConflit)
 			},
 			requestBody:      internal.Product{},
+			id:               "1",
 			expectedStatus:   http.StatusConflict,
 			expectedResponse: ResponseCreate{},
 		},
 		{
 			name: "should return internal server error",
 			mockSetup: func(m *MockProductService) {
-				m.On("Update", mock.Anything).Return(internal.Product{}, errors.New("internal server error"))
+				m.On("Update", mock.Anything).Return(internal.Product{ID: 1}, errors.New("internal server error"))
 			},
 			requestBody: internal.Product{
 				ProductCode:                    "Product A",
@@ -526,6 +540,7 @@ func Test_Update(t *testing.T) {
 				SellerID:                       1,
 				Width:                          10.0,
 			},
+			id:               "1",
 			expectedStatus:   http.StatusInternalServerError,
 			expectedResponse: ResponseCreate{},
 		},
@@ -542,13 +557,16 @@ func Test_Update(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			req, err := http.NewRequest(http.MethodPost, "/product", bytes.NewBuffer(requestBody))
+			req, err := http.NewRequest(http.MethodPut, "/product/"+tt.id, bytes.NewBuffer(requestBody))
 			if err != nil {
 				t.Fatal(err)
 			}
 			req.Header.Set("Content-Type", "application/json")
-
 			rec := httptest.NewRecorder()
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", tt.id)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
 			productHandler.Update(rec, req)
 
 			assert.Equal(t, tt.expectedStatus, rec.Code)
@@ -572,12 +590,21 @@ func Test_Delete(t *testing.T) {
 		expectedResponse   interface{}
 	}{
 		{
-			name: "should delete a seller",
+			name: "should delete a product",
 			mockSetup: func(m *MockProductService) {
 				m.On("Delete", 1).Return(nil)
 			},
 			id:                 "1",
 			expectedStatusCode: http.StatusNoContent,
+			expectedResponse:   nil,
+		},
+		{
+			name: "should delete err conflit ",
+			mockSetup: func(m *MockProductService) {
+				m.On("Delete", 1).Return(internal.ErrProductConflit)
+			},
+			id:                 "1",
+			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   nil,
 		},
 		{
@@ -641,6 +668,159 @@ func Test_Delete(t *testing.T) {
 					t.Fatalf("Tipo de resposta inesperado: %T", response)
 				}
 			}
+		})
+	}
+}
+
+func Test_ReportRecords_All(t *testing.T) {
+	tests := []struct {
+		name           string
+		mockSetup      func(*MockProductService)
+		expectedStatus int
+		expectedBody   interface{}
+	}{
+		{
+			name: "ReportRecords_All_status_200",
+			mockSetup: func(p *MockProductService) {
+				mockProduct := []internal.ProductRecordsJSONCount{
+					{ProductID: 1, Description: "Product 1", RecordsCount: 1},
+					{ProductID: 2, Description: "Product 2", RecordsCount: 1},
+					{ProductID: 3, Description: "Product 3", RecordsCount: 1},
+				}
+				p.On("GetAllRecord").Return(mockProduct, nil)
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody: map[string]interface{}{
+				"data": []internal.ProductRecordsJSONCount{
+					{ProductID: 1, Description: "Product 1", RecordsCount: 1},
+					{ProductID: 2, Description: "Product 2", RecordsCount: 1},
+					{ProductID: 3, Description: "Product 3", RecordsCount: 1},
+				},
+			},
+		},
+		{
+			name: "ReportRecords_All_status_400",
+			mockSetup: func(p *MockProductService) {
+				p.On("GetAllRecord").Return([]internal.ProductRecordsJSONCount{}, errors.New("bad request"))
+			},
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := new(MockProductService)
+			productHandler := handler.NewProducHandlerDefault(mockService)
+			tt.mockSetup(mockService)
+
+			req := httptest.NewRequest(http.MethodGet, "/productRecords", nil)
+			rec := httptest.NewRecorder()
+
+			productHandler.ReportRecords(rec, req)
+
+			assert.Equal(t, tt.expectedStatus, rec.Code)
+
+			if tt.expectedBody != nil {
+				switch response := tt.expectedBody.(type) {
+				case map[string]interface{}:
+					var actualResponse struct {
+						Data []internal.ProductRecordsJSONCount `json:"data"`
+					}
+					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response["data"], actualResponse.Data)
+
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
+					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
+				}
+			}
+
+			mockService.AssertExpectations(t)
+		})
+	}
+}
+
+func Test_ReportRecords_ByID(t *testing.T) {
+	tests := []struct {
+		name           string
+		mockSetup      func(*MockProductService)
+		expectedStatus int
+		expectedBody   interface{}
+	}{
+		{
+			name: "ReportRecords_By_ID_status_200",
+			mockSetup: func(p *MockProductService) {
+				mockProduct := internal.ProductRecordsJSONCount{
+					ProductID: 1, Description: "Product 1", RecordsCount: 1,
+				}
+				p.On("GetByIDRecord", 1).Return(mockProduct, nil)
+			},
+			expectedStatus: http.StatusOK,
+			expectedBody: map[string]interface{}{
+				"data": internal.ProductRecordsJSONCount{
+					ProductID: 1, Description: "Product 1", RecordsCount: 1,
+				},
+			},
+		},
+		{
+			name: "ReportRecords_By_ID_status_404",
+			mockSetup: func(p *MockProductService) {
+				p.On("GetByIDRecord", 1).Return(internal.ProductRecordsJSONCount{}, internal.ErrProductNotFound)
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := new(MockProductService)
+			productHandler := handler.NewProducHandlerDefault(mockService)
+			tt.mockSetup(mockService)
+
+			req := httptest.NewRequest(http.MethodGet, "/productRecords?id=1", nil)
+			rec := httptest.NewRecorder()
+
+			productHandler.ReportRecords(rec, req)
+
+			assert.Equal(t, tt.expectedStatus, rec.Code)
+
+			if tt.expectedBody != nil {
+				switch response := tt.expectedBody.(type) {
+				case map[string]interface{}:
+					var actualResponse struct {
+						Data internal.ProductRecordsJSONCount `json:"data"`
+					}
+					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					// Verifica se os dados retornados são os mesmos
+					assert.Equal(t, response["data"], actualResponse.Data)
+
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
+					err := json.NewDecoder(rec.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					// Verifica se o erro retornado é o mesmo
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
+				}
+			}
+
+			// Verifica se as expectativas do mock foram atendidas
+			mockService.AssertExpectations(t)
 		})
 	}
 }
