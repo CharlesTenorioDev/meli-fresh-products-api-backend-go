@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -59,6 +60,10 @@ func (r *SectionRepositoryMock) Delete(id int) error {
 
 func intPtr(i int) *int {
 	return &i
+}
+
+func float64Ptr(f float64) *float64 {
+	return &f
 }
 
 func newSectionService() (*service.SectionService, *SectionRepositoryMock, *service.ProductTypeRepositoryMock, *WarehouseRepositoryMock) {
@@ -180,12 +185,101 @@ func TestService_ReadSectionUnitTest(t *testing.T) {
 	})
 }
 
+func TestService_ReportProductsUnitTest(t *testing.T) {
+	t.Run("successfully report products", func(t *testing.T) {
+		sv, rpSection, _, _ := newSectionService()
+
+		expectedReports := []internal.ReportProduct{
+			{
+				SectionID:     1,
+				SectionNumber: 123,
+				ProductsCount: 3,
+			},
+			{
+				SectionID:     2,
+				SectionNumber: 456,
+				ProductsCount: 2,
+			},
+			{
+				SectionID:     2,
+				SectionNumber: 789,
+				ProductsCount: 4,
+			},
+		}
+
+		rpSection.On("ReportProducts").Return(expectedReports, nil)
+
+		reports, err := sv.ReportProducts()
+
+		require.NoError(t, err)
+		require.Equal(t, expectedReports, reports)
+		rpSection.AssertExpectations(t)
+	})
+}
+
+func TestService_ReportProductsByIDUnitTest(t *testing.T) {
+	t.Run("successfully report products by section ID", func(t *testing.T) {
+		sv, rpSection, _, _ := newSectionService()
+		sectionID := 1
+		expectedReport := internal.ReportProduct{
+			SectionID:     1,
+			SectionNumber: 123,
+			ProductsCount: 3,
+		}
+
+		rpSection.On("FindByID", sectionID).Return(internal.Section{}, nil)
+		rpSection.On("ReportProductsByID", sectionID).Return(expectedReport, nil)
+
+		report, err := sv.ReportProductsByID(sectionID)
+
+		require.NoError(t, err)
+		require.Equal(t, expectedReport, report)
+		rpSection.AssertExpectations(t)
+	})
+
+	t.Run("return error when section ID does not exist", func(t *testing.T) {
+		sv, rpSection, _, _ := newSectionService()
+		sectionID := 1
+		expectedError := internal.ErrSectionNotFound
+
+		rpSection.On("FindByID", sectionID).Return(internal.Section{}, expectedError)
+
+		report, err := sv.ReportProductsByID(sectionID)
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, expectedError)
+		require.Empty(t, report)
+		rpSection.AssertExpectations(t)
+	})
+
+	t.Run("return error when reporting products by section ID fails", func(t *testing.T) {
+		sv, rpSection, _, _ := newSectionService()
+		sectionID := 1
+		/*expectedReport := internal.ReportProduct{
+			SectionID:     1,
+			SectionNumber: 123,
+			ProductsCount: 3,
+		}*/
+		expectedError := errors.New("error on reporting products")
+
+		rpSection.On("FindByID", sectionID).Return(internal.Section{}, nil)
+		rpSection.On("ReportProductsByID", sectionID).Return(internal.ReportProduct{}, expectedError)
+
+		report, err := sv.ReportProductsByID(sectionID)
+
+		require.Error(t, err)
+		require.EqualError(t, err, expectedError.Error())
+		require.Empty(t, report)
+		rpSection.AssertExpectations(t)
+	})
+}
+
 func TestService_UpdateSectionUnitTest(t *testing.T) {
 	t.Run("return error when updating a nonexistent section", func(t *testing.T) {
 		sv, rpSection, _, _ := newSectionService()
 
 		updates := internal.SectionPatch{
-			CurrentCapacity: intPtr(50),
+			CurrentCapacity: intPtr(150),
 		}
 
 		rpSection.On("FindByID", 1).Return(internal.Section{}, internal.ErrSectionNotFound)
@@ -201,15 +295,23 @@ func TestService_UpdateSectionUnitTest(t *testing.T) {
 	t.Run("successfully update an existing section", func(t *testing.T) {
 		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
 
-		existingSection := newTestSection(1, 100, 4, 3)
+		existingSection := newTestSection(1, 100, 6, 7)
 
 		updates := internal.SectionPatch{
-			CurrentCapacity: intPtr(150),
+			SectionNumber:      intPtr(456),
+			CurrentTemperature: float64Ptr(22.5),
+			MinimumTemperature: float64Ptr(15.0),
+			CurrentCapacity:    intPtr(502),
+			MinimumCapacity:    intPtr(302),
+			MaximumCapacity:    intPtr(150),
+			WarehouseID:        intPtr(7),
+			ProductTypeID:      intPtr(7),
 		}
 
+		rpSection.On("SectionNumberExists", *updates.SectionNumber).Return(false, nil)
 		rpSection.On("FindByID", 1).Return(existingSection, nil)
-		rpWareHouse.On("FindByID", existingSection.WarehouseID).Return(internal.Warehouse{ID: existingSection.WarehouseID}, nil)
-		rpProductType.On("FindByID", existingSection.ProductTypeID).Return(internal.ProductType{ID: existingSection.ProductTypeID}, nil)
+		rpWareHouse.On("FindByID", *updates.WarehouseID).Return(internal.Warehouse{ID: *updates.WarehouseID}, nil)
+		rpProductType.On("FindByID", *updates.ProductTypeID).Return(internal.ProductType{ID: *updates.ProductTypeID}, nil)
 
 		rpSection.On("Update", mock.AnythingOfType("*internal.Section")).Return(nil)
 
