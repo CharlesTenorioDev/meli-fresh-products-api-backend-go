@@ -23,7 +23,6 @@ func NewProductRecordsDefault(prodRecRepo internal.ProductRecordsRepository, pro
 	}
 }
 
-// Create Implementação da função
 func (pr *ProductRecordsDefault) Create(productRec internal.ProductRecords) (internal.ProductRecords, error) {
 	if err := ValidateProductRec(productRec); err != nil {
 		return productRec, err
@@ -31,13 +30,12 @@ func (pr *ProductRecordsDefault) Create(productRec internal.ProductRecords) (int
 
 	_, err := pr.productRepo.FindByID(productRec.ProductID)
 	if err != nil {
-		return productRec, ErrProductNotExists
+		return productRec, internal.ErrProductIdNotFound
 	}
 
 	return pr.productRecRepo.Save(productRec)
 }
 
-// GetAll Implementação da função
 func (pr *ProductRecordsDefault) GetAll() ([]internal.ProductRecords, error) {
 	productRecords, err := pr.productRecRepo.FindAll()
 	if err != nil {
@@ -47,7 +45,6 @@ func (pr *ProductRecordsDefault) GetAll() ([]internal.ProductRecords, error) {
 	return productRecords, nil
 }
 
-// GetByID Implementação da função
 func (pr *ProductRecordsDefault) GetByID(id int) (internal.ProductRecords, error) {
 	if id <= 0 {
 		return internal.ProductRecords{}, resterr.NewBadRequestError("O ID deve ser válido e maior que zero")
@@ -62,11 +59,16 @@ func (pr *ProductRecordsDefault) GetByID(id int) (internal.ProductRecords, error
 }
 
 func ValidateProductRec(productRec internal.ProductRecords) error {
-	if productRec.LastUpdateDate.IsZero() ||
-		productRec.PurchasePrice <= 0 ||
-		productRec.SalePrice <= 0 {
-		return ErrProductUnprocessableEntity
+	if productRec.LastUpdateDate.IsZero() {
+		return errors.New("LastUpdateDate is empty.")
+	}
+	if productRec.PurchasePrice <= 0 {
+		return errors.New("PurchasePrice is empty.")
+	}
+	if productRec.SalePrice <= 0 {
+		return errors.New("SalePrice is empty.")
 	}
 
 	return nil
 }
+

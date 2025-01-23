@@ -1,17 +1,7 @@
 package service
 
 import (
-	"errors"
-
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-)
-
-var (
-	ErrProductUnprocessableEntity = errors.New("all fields must be valid and filled")
-	ErrProductCodeAlreadyExists   = errors.New("product code already exists")
-	ErrProductNotExists           = errors.New("error ID doesn't exists")
-	ErrSellerNotExists            = errors.New("error fetching seller")
-	ErrProductTypeNotExists       = errors.New("error fetching product type")
 )
 
 func NewProductService(prRepo internal.ProductRepository, slRepo internal.SellerRepository, ptRepo internal.ProductTypeRepository) *ProductDefault {
@@ -53,22 +43,19 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 	}
 
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
-		return product, ErrProductCodeAlreadyExists
+		return product, internal.ErrProductCodeAlreadyExists
 	}
 
 	_, err = s.sellerRepo.FindByID(product.SellerID)
 	if err != nil {
-		return product, ErrSellerNotExists
+		return product, internal.ErrSellerIdNotFound
 	}
 
 	_, err = s.productTypeRepo.FindByID(product.ProductTypeID)
 	if err != nil {
-		return product, ErrProductTypeNotExists
+		return product, internal.ErrProductTypeIdNotFound
 	}
-	// Gera um novo ID para o produto
-	product.ID = GenerateNewID(existingProducts)
 
-	// Salva o novo produto no repositório
 	product, err = s.productRepo.Save(product)
 	if err != nil {
 		return internal.Product{}, err
@@ -79,13 +66,15 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 
 func (s *ProductDefault) Update(product internal.Product) (internal.Product, error) {
 	existingProducts, err := s.productRepo.FindAll()
+
 	if err != nil {
 		return product, err
 	}
 
 	existingProduct, err := s.productRepo.FindByID(product.ID)
+
 	if err != nil {
-		return product, ErrProductNotExists
+		return product, internal.ErrProductNotFound
 	}
 
 	if product.ProductCode == "" {
@@ -133,30 +122,31 @@ func (s *ProductDefault) Update(product internal.Product) (internal.Product, err
 	}
 
 	if IsProductCodeExists(existingProducts, product.ProductCode) {
-		return product, ErrProductCodeAlreadyExists
+		return product, internal.ErrProductCodeAlreadyExists
 	}
 
 	_, err = s.sellerRepo.FindByID(product.SellerID)
 	if err != nil {
-		return product, ErrSellerNotExists
+		return product, internal.ErrSellerIdNotFound
 	}
 
 	_, err = s.productTypeRepo.FindByID(product.ProductTypeID)
 	if err != nil {
-		return product, ErrProductTypeNotExists
+		return product, internal.ErrProductTypeNotFound
 	}
 
-	productUpdate, err := s.productRepo.Update(product)
+	_, err = s.productRepo.Update(product)
 	if err != nil {
 		return internal.Product{}, err
 	}
 
-	return productUpdate, nil
+	return product, nil
 }
 
 func (s *ProductDefault) Delete(id int) error {
 	err := s.productRepo.Delete(id)
 	if err != nil {
+		print(err)
 		return err
 	}
 
@@ -198,19 +188,10 @@ func IsProductCodeExists(existingProducts []internal.Product, productCode string
 }
 
 func ValidateProduct(product internal.Product) error {
-	if product.ProductCode == "" ||
-		product.Description == "" ||
-		product.Height <= 0 ||
-		product.Length <= 0 ||
-		product.Width <= 0 ||
-		product.NetWeight <= 0 ||
-		product.ExpirationRate <= 0 ||
-
-		product.RecommendedFreezingTemperature < -273.15 ||
-		product.FreezingRate < -273.15 ||
-		product.ProductTypeID <= 0 ||
-		product.SellerID <= 0 {
-		return ErrProductUnprocessableEntity
+	if product.ProductCode == "" || product.Description == "" || product.Height <= 0 || product.Length <= 0 ||
+		product.Width <= 0 || product.NetWeight <= 0 || product.ExpirationRate <= 0 || product.RecommendedFreezingTemperature < -273.15 ||
+		product.FreezingRate < -273.15 || product.ProductTypeID <= 0 || product.SellerID <= 0 {
+		return internal.ErrProductUnprocessableEntity
 	}
 
 	return nil
