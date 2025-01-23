@@ -435,7 +435,7 @@ func Test_Update(t *testing.T) {
 			name: "update_ok_status_200",
 			mockSetup: func(m *MockProductService) {
 				m.On("Update", mock.Anything).Return(internal.Product{
-					Id:                             1,
+					ID:                             1,
 					ProductCode:                    "Product A",
 					Description:                    "Test description",
 					Height:                         10.0,
@@ -444,13 +444,13 @@ func Test_Update(t *testing.T) {
 					ExpirationRate:                 1.0,
 					RecommendedFreezingTemperature: 18.0,
 					FreezingRate:                   18.0,
-					ProductTypeId:                  1,
-					SellerId:                       1,
+					ProductTypeID:                  1,
+					SellerID:                       1,
 					Width:                          10.0,
 				}, nil)
 			},
 			requestBody: internal.Product{
-				Id:                             1,
+				ID:                             1,
 				ProductCode:                    "Product A",
 				Description:                    "Test description",
 				Height:                         10.0,
@@ -459,14 +459,14 @@ func Test_Update(t *testing.T) {
 				ExpirationRate:                 1,
 				RecommendedFreezingTemperature: 18,
 				FreezingRate:                   18,
-				ProductTypeId:                  int(1),
-				SellerId:                       1,
+				ProductTypeID:                  int(1),
+				SellerID:                       1,
 				Width:                          10.0,
 			},
 			expectedStatus: http.StatusCreated,
 			expectedResponse: ResponseCreate{
 				Data: internal.Product{
-					Id:                             1,
+					ID:                             1,
 					ProductCode:                    "Product A",
 					Description:                    "Test description",
 					Height:                         10.0,
@@ -475,8 +475,8 @@ func Test_Update(t *testing.T) {
 					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
-					ProductTypeId:                  int(1),
-					SellerId:                       1,
+					ProductTypeID:                  int(1),
+					SellerID:                       1,
 					Width:                          10.0,
 				},
 			},
@@ -522,8 +522,8 @@ func Test_Update(t *testing.T) {
 				ExpirationRate:                 1.0,
 				RecommendedFreezingTemperature: 18.0,
 				FreezingRate:                   18.0,
-				ProductTypeId:                  1,
-				SellerId:                       1,
+				ProductTypeID:                  1,
+				SellerID:                       1,
 				Width:                          10.0,
 			},
 			expectedStatus:   http.StatusInternalServerError,
@@ -587,7 +587,7 @@ func Test_Delete(t *testing.T) {
 			},
 			id:                 "1",
 			expectedStatusCode: http.StatusNotFound,
-			expectedResponse:   *rest_err.NewNotFoundError("product not found"),
+			expectedResponse:   *resterr.NewNotFoundError("product not found"),
 		},
 		{
 			name: "should return internal server error",
@@ -630,8 +630,8 @@ func Test_Delete(t *testing.T) {
 
 			if tt.expectedResponse != nil {
 				switch response := tt.expectedResponse.(type) {
-				case rest_err.RestErr:
-					var actualResponse rest_err.RestErr
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rec.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)

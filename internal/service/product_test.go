@@ -76,7 +76,7 @@ func TestProductServiceDefault_GetAll(t *testing.T) { //Se a lista tiver "n" ele
 
 func TestProductServiceDefault_GetByID(t *testing.T) {
 	t.Run("find_by_id_existent", func(t *testing.T) { //Se o elemento pesquisado pelo id existir, ele retornará as informações do elemento solicitado
-		expectedProduct := internal.Product{Id: 1}
+		expectedProduct := internal.Product{ID: 1}
 		productRepo := new(repositoryProductMock)
 		sellerRepo := new(repositoryMock)
 		productTypeRepo := new(service.ProductTypeRepositoryMock)
@@ -186,8 +186,8 @@ func TestProductServiceDefault_Create(t *testing.T) {
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)
 		productRepo.On("Save", product).Return(product, nil)
-		sellerRepo.On("FindByID", product.SellerId).Return(internal.Seller{}, nil)
-		productTypeRepo.On("FindByID", product.ProductTypeId).Return(internal.ProductType{}, internal.ErrProductTypeIdNotFound)
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, internal.ErrProductTypeIdNotFound)
 
 		// Executa o método que será testado
 		_, err := svc.Create(product)
