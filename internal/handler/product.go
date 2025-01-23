@@ -109,7 +109,7 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		switch {
 		case errors.Is(err, internal.ErrSellerIdNotFound),
-			errors.Is(err, internal.ErrProductTypeIdNotFound),
+			errors.Is(err, internal.ErrProductTypeIDNotFound),
 			errors.Is(err, internal.ErrProductNotFound):
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 
@@ -189,7 +189,7 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	fmt.Print(updatedProduct)
 
 	if err != nil {
-		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIdNotFound) || errors.Is(err, internal.ErrProductNotFound) {
+		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIDNotFound) || errors.Is(err, internal.ErrProductNotFound) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 		} else if errors.Is(err, internal.ErrProductCodeAlreadyExists) || errors.Is(err, internal.ErrProductConflit) || errors.Is(err, internal.ErrProductConflitEntity) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))

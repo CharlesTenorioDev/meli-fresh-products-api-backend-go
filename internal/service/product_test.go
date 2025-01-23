@@ -185,14 +185,14 @@ func TestProductServiceDefault_Create(t *testing.T) {
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)
 		productRepo.On("Save", product).Return(product, nil)
 		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)
-		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, internal.ErrProductTypeIdNotFound)
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, internal.ErrProductTypeIDNotFound)
 
 		// Executa o método que será testado
 		_, err := svc.Create(product)
 
 		// Verifica se o erro retornado é o esperado
 		assert.NotNil(t, err)
-		assert.Equal(t, internal.ErrProductTypeIdNotFound, err)
+		assert.Equal(t, internal.ErrProductTypeIDNotFound, err)
 	})
 
 	t.Run("should error if repository fails to save", func(t *testing.T) {
@@ -703,5 +703,3 @@ func TestGenerateNewID(t *testing.T) {
 		})
 	}
 }
-
-

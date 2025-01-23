@@ -53,7 +53,7 @@ func (s *ProductDefault) Create(product internal.Product) (internal.Product, err
 
 	_, err = s.productTypeRepo.FindByID(product.ProductTypeID)
 	if err != nil {
-		return product, internal.ErrProductTypeIdNotFound
+		return product, internal.ErrProductTypeIDNotFound
 	}
 
 	product, err = s.productRepo.Save(product)
