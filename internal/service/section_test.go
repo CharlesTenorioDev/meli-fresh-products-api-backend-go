@@ -33,12 +33,16 @@ func (r *SectionRepositoryMock) ReportProductsByID(sectionID int) (internal.Repo
 	return args.Get(0).(internal.ReportProduct), args.Error(1)
 }
 
-func (r *SectionRepositoryMock) SectionNumberExists(section internal.Section) (bool, error) {
-	args := r.Called(section)
+func (r *SectionRepositoryMock) SectionNumberExists(sectionNumber int) (bool, error) {
+	args := r.Called(sectionNumber)
 	return args.Get(0).(bool), args.Error(1)
 }
 
 func (r *SectionRepositoryMock) Save(section *internal.Section) error {
+	if section.WarehouseID == 0 {
+		return internal.ErrWarehouseRepositoryNotFound
+	}
+
 	args := r.Called(section)
 	return args.Error(0)
 }
@@ -51,6 +55,10 @@ func (r *SectionRepositoryMock) Update(section *internal.Section) error {
 func (r *SectionRepositoryMock) Delete(id int) error {
 	args := r.Called(id)
 	return args.Error(0)
+}
+
+func intPtr(i int) *int {
+	return &i
 }
 
 func newSectionService() (*service.SectionService, *SectionRepositoryMock, *service.ProductTypeRepositoryMock, *WarehouseRepositoryMock) {
@@ -76,13 +84,13 @@ func newTestSection(id int, sectionNumber int, warehouseID int, productTypeID in
 	}
 }
 
-func TestCreateSection(t *testing.T) {
+func TestService_CreateSectionUnitTest(t *testing.T) {
 	t.Run("successfully create a new section", func(t *testing.T) {
 		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
 
 		sectionCreate := newTestSection(0, 101, 4, 3)
 
-		rpSection.On("SectionNumberExists", sectionCreate).Return(false, nil)
+		rpSection.On("SectionNumberExists", sectionCreate.SectionNumber).Return(false, nil)
 		rpWareHouse.On("FindByID", sectionCreate.WarehouseID).Return(internal.Warehouse{ID: sectionCreate.WarehouseID}, nil)
 		rpProductType.On("FindByID", sectionCreate.ProductTypeID).Return(internal.ProductType{ID: sectionCreate.ProductTypeID}, nil)
 		rpSection.On("Save", &sectionCreate).Return(nil)
@@ -95,12 +103,28 @@ func TestCreateSection(t *testing.T) {
 		rpWareHouse.AssertExpectations(t)
 	})
 
+	t.Run("return fail error when required field is missing", func(t *testing.T) {
+		sv, rpSection, _, rpWareHouse := newSectionService()
+
+		sectionCreate := newTestSection(0, 101, 0, 2)
+
+		rpSection.On("SectionNumberExists", sectionCreate.SectionNumber).Return(false, nil)
+		rpWareHouse.On("FindByID", sectionCreate.WarehouseID).Return(internal.Warehouse{}, internal.ErrWarehouseRepositoryNotFound)
+
+		err := sv.Save(&sectionCreate)
+
+		require.ErrorIs(t, err, internal.ErrSectionUnprocessableEntity)
+		require.Contains(t, err.Error(), "couldn't parse section")
+		//rpSection.AssertExpectations(t)
+		//rpWareHouse.AssertExpectations(t)
+	})
+
 	t.Run("return conflict error when number is already in use", func(t *testing.T) {
 		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
 
 		sectionCreate := newTestSection(0, 101, 4, 3)
 
-		rpSection.On("SectionNumberExists", sectionCreate).Return(true, nil)
+		rpSection.On("SectionNumberExists", sectionCreate.SectionNumber).Return(true, nil)
 
 		err := sv.Save(&sectionCreate)
 
@@ -111,7 +135,7 @@ func TestCreateSection(t *testing.T) {
 	})
 }
 
-func TestReadSection(t *testing.T) {
+func TestService_ReadSectionUnitTest(t *testing.T) {
 	t.Run("successfully read all sections", func(t *testing.T) {
 		sv, rpSection, _, _ := newSectionService()
 
@@ -156,12 +180,12 @@ func TestReadSection(t *testing.T) {
 	})
 }
 
-func TestUpdateSection(t *testing.T) {
+func TestService_UpdateSectionUnitTest(t *testing.T) {
 	t.Run("return error when updating a nonexistent section", func(t *testing.T) {
 		sv, rpSection, _, _ := newSectionService()
 
-		updates := map[string]interface{}{
-			"maximum_capacity": 150.0,
+		updates := internal.SectionPatch{
+			CurrentCapacity: intPtr(50),
 		}
 
 		rpSection.On("FindByID", 1).Return(internal.Section{}, internal.ErrSectionNotFound)
@@ -179,8 +203,8 @@ func TestUpdateSection(t *testing.T) {
 
 		existingSection := newTestSection(1, 100, 4, 3)
 
-		updates := map[string]interface{}{
-			"maximum_capacity": 150.0,
+		updates := internal.SectionPatch{
+			CurrentCapacity: intPtr(150),
 		}
 
 		rpSection.On("FindByID", 1).Return(existingSection, nil)
@@ -197,7 +221,7 @@ func TestUpdateSection(t *testing.T) {
 	})
 }
 
-func TestDeleteSection(t *testing.T) {
+func TestService_DeleteSectionUnitTest(t *testing.T) {
 	t.Run("return error when attempting to delete a nonexistent section", func(t *testing.T) {
 		sv, rpSection, _, _ := newSectionService()
 

@@ -24,6 +24,17 @@ type RequestSectionJSON struct {
 	ProductTypeID      int     `json:"product_type_id"`
 }
 
+type SectionsUpdateJSON struct {
+	SectionNumber      *int     `json:"section_number"`
+	CurrentTemperature *float64 `json:"current_temperature"`
+	MinimumTemperature *float64 `json:"minimum_temperature"`
+	CurrentCapacity    *int     `json:"current_capacity"`
+	MinimumCapacity    *int     `json:"minimum_capacity"`
+	MaximumCapacity    *int     `json:"maximum_capacity"`
+	WarehouseID        *int     `json:"warehouse_id"`
+	ProductTypeID      *int     `json:"product_type_id"`
+}
+
 type ResponseReportProd struct {
 	SectionID     int `json:"section_id"`
 	SectionNumber int `json:"section_number"`
@@ -171,21 +182,34 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 // @Failure 422 {object} rest_err.RestErr "Couldn't parse section"
 // @Router /api/v1/sections [post]
 func (h *SectionHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var sectionJSON RequestSectionJSON
+	var sectionJSON map[string]interface{}
 	if err := json.NewDecoder(r.Body).Decode(&sectionJSON); err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
+	requiredFields := []string{
+		"section_number", "current_temperature", "minimum_temperature",
+		"current_capacity", "minimum_capacity", "maximum_capacity",
+		"warehouse_id", "product_type_id",
+	}
+
+	for _, field := range requiredFields {
+		if sectionJSON[field] == nil {
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(field+" is required"))
+			return
+		}
+	}
+
 	section := internal.Section{
-		SectionNumber:      sectionJSON.SectionNumber,
-		CurrentTemperature: sectionJSON.CurrentTemperature,
-		MinimumTemperature: sectionJSON.MinimumTemperature,
-		CurrentCapacity:    sectionJSON.CurrentCapacity,
-		MinimumCapacity:    sectionJSON.MinimumCapacity,
-		MaximumCapacity:    sectionJSON.MaximumCapacity,
-		WarehouseID:        sectionJSON.WarehouseID,
-		ProductTypeID:      sectionJSON.ProductTypeID,
+		SectionNumber:      int(sectionJSON["section_number"].(float64)),
+		CurrentTemperature: sectionJSON["current_temperature"].(float64),
+		MinimumTemperature: sectionJSON["minimum_temperature"].(float64),
+		CurrentCapacity:    int(sectionJSON["current_capacity"].(float64)),
+		MinimumCapacity:    int(sectionJSON["minimum_capacity"].(float64)),
+		MaximumCapacity:    int(sectionJSON["maximum_capacity"].(float64)),
+		WarehouseID:        int(sectionJSON["warehouse_id"].(float64)),
+		ProductTypeID:      int(sectionJSON["product_type_id"].(float64)),
 	}
 
 	err := h.sv.Save(&section)
@@ -224,19 +248,34 @@ func (h *SectionHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var updates map[string]any
-	if err := json.NewDecoder(r.Body).Decode(&updates); err != nil {
+	var body SectionsUpdateJSON
+	if err = json.NewDecoder(r.Body).Decode(&body); err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 		return
 	}
 
-	section, err := h.sv.Update(id, updates)
+	stPatch := internal.SectionPatch{
+		SectionNumber:      body.SectionNumber,
+		CurrentTemperature: body.CurrentTemperature,
+		MinimumTemperature: body.MinimumTemperature,
+		CurrentCapacity:    body.CurrentCapacity,
+		MinimumCapacity:    body.MinimumCapacity,
+		MaximumCapacity:    body.MaximumCapacity,
+		WarehouseID:        body.WarehouseID,
+		ProductTypeID:      body.ProductTypeID,
+	}
+
+	section, err := h.sv.Update(id, stPatch)
 	if err != nil {
 		if errors.Is(err, internal.ErrSectionNotFound) {
 			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
-		} else {
+		} else if errors.Is(err, internal.ErrSectionUnprocessableEntity) {
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
+		} else if errors.Is(err, internal.ErrSectionNumberAlreadyInUse) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}
+
+		response.JSON(w, http.StatusInternalServerError, nil)
 
 		return
 	}

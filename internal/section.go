@@ -21,6 +21,17 @@ type Section struct {
 	ProductTypeID      int     `json:"product_type_id"`
 }
 
+type SectionPatch struct {
+	SectionNumber      *int
+	CurrentTemperature *float64
+	MinimumTemperature *float64
+	CurrentCapacity    *int
+	MinimumCapacity    *int
+	MaximumCapacity    *int
+	WarehouseID        *int
+	ProductTypeID      *int
+}
+
 type ReportProduct struct {
 	SectionID     int `json:"section_id"`
 	SectionNumber int `json:"section_number"`
@@ -32,7 +43,7 @@ type SectionRepository interface {
 	FindByID(id int) (Section, error)
 	ReportProducts() ([]ReportProduct, error)
 	ReportProductsByID(sectionID int) (ReportProduct, error)
-	SectionNumberExists(section Section) (bool, error)
+	SectionNumberExists(sectionNumber int) (bool, error)
 	Save(section *Section) error
 	Update(section *Section) error
 	Delete(id int) error
@@ -44,7 +55,7 @@ type SectionService interface {
 	ReportProducts() ([]ReportProduct, error)
 	ReportProductsByID(sectionID int) (ReportProduct, error)
 	Save(section *Section) error
-	Update(id int, updates map[string]any) (Section, error)
+	Update(id int, updateSection SectionPatch) (Section, error)
 	Delete(id int) error
 }
 

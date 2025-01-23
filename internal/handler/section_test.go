@@ -67,8 +67,8 @@ func (m *MockSectionService) Save(section *internal.Section) error {
 	return args.Error(0)
 }
 
-func (m *MockSectionService) Update(id int, updates map[string]interface{}) (internal.Section, error) {
-	args := m.Called(id, updates)
+func (m *MockSectionService) Update(id int, body internal.SectionPatch) (internal.Section, error) {
+	args := m.Called(id, body)
 	return args.Get(0).(internal.Section), args.Error(1)
 }
 
@@ -77,7 +77,135 @@ func (m *MockSectionService) Delete(id int) error {
 	return args.Error(0)
 }
 
-func TestGetAllSections(t *testing.T) {
+func float64Ptr(f float64) *float64 {
+	return &f
+}
+
+func TestHandler_CreateSectionUnitTest(t *testing.T) {
+	tests := []struct {
+		name               string
+		mockSetup          func(*MockSectionService)
+		requestBody        interface{}
+		expectedStatusCode int
+		expectedResponse   interface{}
+	}{
+		{
+			name: "successfully create a new section",
+			mockSetup: func(m *MockSectionService) {
+				m.On("Save", mock.Anything).Return(nil)
+			},
+			requestBody: handler.RequestSectionJSON{
+				SectionNumber:      123,
+				CurrentTemperature: 22.5,
+				MinimumTemperature: 15.0,
+				CurrentCapacity:    50,
+				MinimumCapacity:    30,
+				MaximumCapacity:    100,
+				WarehouseID:        1,
+				ProductTypeID:      2,
+			},
+			expectedStatusCode: http.StatusCreated,
+			expectedResponse: internal.Section{
+				ID:                 1,
+				SectionNumber:      123,
+				CurrentTemperature: 22.5,
+				MinimumTemperature: 15.0,
+				CurrentCapacity:    50,
+				MinimumCapacity:    30,
+				MaximumCapacity:    100,
+				WarehouseID:        1,
+				ProductTypeID:      2,
+			},
+		},
+		{
+			name: "return fail error when required field is missing",
+			mockSetup: func(m *MockSectionService) {
+				m.On("Save", mock.Anything).Return(nil)
+			},
+			requestBody: handler.RequestSectionJSON{
+				SectionNumber:      123,
+				CurrentTemperature: 22.5,
+				MinimumTemperature: 15.0,
+				CurrentCapacity:    3,
+				MinimumCapacity:    30,
+				MaximumCapacity:    100,
+			},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedResponse:   *resterr.NewUnprocessableEntityError("couldn't parse section"),
+		},
+		{
+			name: "return conflict error when number is already in use",
+			mockSetup: func(m *MockSectionService) {
+				m.On("FindAll").Return([]internal.Section{
+					{SectionNumber: 123},
+				}, nil)
+				m.On("Save", mock.Anything).Return(internal.ErrSectionNumberAlreadyInUse)
+			},
+			requestBody: handler.RequestSectionJSON{
+				SectionNumber:      123,
+				CurrentTemperature: 22.5,
+				MinimumTemperature: 15.0,
+				CurrentCapacity:    50,
+				MinimumCapacity:    30,
+				MaximumCapacity:    100,
+				WarehouseID:        1,
+				ProductTypeID:      2,
+			},
+			expectedStatusCode: http.StatusConflict,
+			expectedResponse:   *resterr.NewConflictError("section with given section number already registered"),
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := new(MockSectionService)
+			sectionHandler := handler.NewHandlerSection(mockService)
+			tt.mockSetup(mockService)
+
+			requestBody, err := json.Marshal(tt.requestBody)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			req, err := http.NewRequest(http.MethodPost, "/sections", bytes.NewBuffer(requestBody))
+			if err != nil {
+				t.Fatal(err)
+			}
+			req.Header.Set("content-type", "application/json")
+
+			rr := httptest.NewRecorder()
+			hd := sectionHandler.Create
+			hd(rr, req)
+
+			assert.Equal(t, tt.expectedStatusCode, rr.Code)
+
+			if tt.expectedResponse != nil {
+				switch response := tt.expectedResponse.(type) {
+				case internal.Section:
+					var actualResponse = struct {
+						Data internal.Section `json:"data"`
+					}{}
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse.Data)
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
+				}
+			}
+		})
+	}
+}
+
+func TestHandler_ReadAllSectionUnitTest(t *testing.T) {
 	tests := []struct {
 		name               string
 		mockSetup          func(*MockSectionService)
@@ -204,7 +332,7 @@ func TestGetAllSections(t *testing.T) {
 	}
 }
 
-func TestGetSectionById(t *testing.T) {
+func TestHandler_ReadByIdSectionUnitTest(t *testing.T) {
 	tests := []struct {
 		name               string
 		mockSetup          func(*MockSectionService)
@@ -319,78 +447,263 @@ func TestGetSectionById(t *testing.T) {
 	}
 }
 
-func TestSaveSection(t *testing.T) {
+func TestHandler_ReportProductsUnitTest(t *testing.T) {
 	tests := []struct {
 		name               string
 		mockSetup          func(*MockSectionService)
+		queryID            string
+		expectedStatusCode int
+		expectedResponse   interface{}
+	}{
+		{
+			name: "should return report for all sections",
+			mockSetup: func(m *MockSectionService) {
+				m.On("ReportProducts").Return([]internal.ReportProduct{
+					{SectionID: 1, SectionNumber: 123, ProductsCount: 10},
+					{SectionID: 2, SectionNumber: 456, ProductsCount: 5},
+				}, nil)
+			},
+			queryID:            "",
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"data": []internal.ReportProduct{
+					{SectionID: 1, SectionNumber: 123, ProductsCount: 10},
+					{SectionID: 2, SectionNumber: 456, ProductsCount: 5},
+				},
+			},
+		},
+		/*{
+			name: "should return report for specific section",
+			mockSetup: func(m *MockSectionService) {
+				// Adicione a expectativa correta para aceitar o ID
+				m.On("ReportProductsByID", 1).Return(internal.ReportProduct{SectionID: 1, SectionNumber: 123, ProductsCount: 10}, nil)
+			},
+			queryID:            "1", // ID correto a ser passado na requisição
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"data": internal.ReportProduct{SectionID: 1, SectionNumber: 123, ProductsCount: 10},
+			},
+		},*/
+		{
+			name:               "should return bad request error for invalid ID",
+			mockSetup:          func(m *MockSectionService) {},
+			queryID:            "invalid_id",
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   nil,
+		},
+		/*{
+			name: "should return not found error for non-existing section",
+			mockSetup: func(m *MockSectionService) {
+				m.On("ReportProductsByID", 1).Return(internal.ReportProduct{}, internal.ErrSectionNotFound)
+			},
+			queryID:            "1",
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   *resterr.NewNotFoundError("section not found"),
+		},
+		{
+			name: "should return internal server error",
+			mockSetup: func(m *MockSectionService) {
+				m.On("ReportProducts").Return(nil, errors.New("internal server error"))
+			},
+			queryID:            "",
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   nil,
+		},*/
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := new(MockSectionService)
+			sectionHandler := handler.NewHandlerSection(mockService)
+			tt.mockSetup(mockService)
+
+			url := "/sections/report-products"
+
+			if tt.queryID != "" {
+				url += "?id=" + tt.queryID
+			}
+
+			req, err := http.NewRequest(http.MethodGet, url, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+			hd := sectionHandler.ReportProducts
+			hd(rr, req)
+
+			assert.Equal(t, tt.expectedStatusCode, rr.Code)
+
+			if tt.expectedResponse != nil {
+				switch response := tt.expectedResponse.(type) {
+				case map[string]interface{}:
+					var actualResponse struct {
+						Data []internal.ReportProduct `json:"data"`
+					}
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response["data"], actualResponse.Data)
+				case resterr.RestErr:
+					var actualResponse resterr.RestErr
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("unexpected response type: %T", response)
+				}
+			}
+		})
+	}
+}
+
+func TestHandler_UpdateSectionUnitTest(t *testing.T) {
+	tests := []struct {
+		name               string
+		mockSetup          func(*MockSectionService)
+		id                 string
 		requestBody        interface{}
 		expectedStatusCode int
 		expectedResponse   interface{}
 	}{
 		{
-			name: "should create a new section",
+			name: "should update a section",
 			mockSetup: func(m *MockSectionService) {
-				m.On("Save", mock.Anything).Return(nil)
+				mockSection := internal.Section{
+					ID:                 1,
+					SectionNumber:      123,
+					CurrentTemperature: 22.5,
+					MinimumTemperature: 15.0,
+					CurrentCapacity:    50,
+					MinimumCapacity:    30,
+					MaximumCapacity:    100,
+					WarehouseID:        1,
+					ProductTypeID:      2,
+				}
+				m.On("Update", 1, internal.SectionPatch{
+					SectionNumber:      intPtr(123),
+					CurrentTemperature: float64Ptr(22.5),
+					MinimumTemperature: float64Ptr(15.0),
+					CurrentCapacity:    intPtr(50),
+					MinimumCapacity:    intPtr(30),
+					MaximumCapacity:    intPtr(100),
+					WarehouseID:        intPtr(1),
+					ProductTypeID:      intPtr(2),
+				}).Return(mockSection, nil)
 			},
-			requestBody: handler.RequestSectionJSON{
-				SectionNumber:      123,
-				CurrentTemperature: 22.5,
-				MinimumTemperature: 15.0,
-				CurrentCapacity:    50,
-				MinimumCapacity:    30,
-				MaximumCapacity:    100,
-				WarehouseID:        1,
-				ProductTypeID:      2,
+			id: "1",
+			requestBody: handler.SectionsUpdateJSON{
+				SectionNumber:      intPtr(123),
+				CurrentTemperature: float64Ptr(22.5),
+				MinimumTemperature: float64Ptr(15.0),
+				CurrentCapacity:    intPtr(50),
+				MinimumCapacity:    intPtr(30),
+				MaximumCapacity:    intPtr(100),
+				WarehouseID:        intPtr(1),
+				ProductTypeID:      intPtr(2),
 			},
-			expectedStatusCode: http.StatusCreated,
-			expectedResponse: internal.Section{
-				ID:                 1,
-				SectionNumber:      123,
-				CurrentTemperature: 22.5,
-				MinimumTemperature: 15.0,
-				CurrentCapacity:    50,
-				MinimumCapacity:    30,
-				MaximumCapacity:    100,
-				WarehouseID:        1,
-				ProductTypeID:      2,
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: map[string]interface{}{
+				"data": internal.Section{
+					ID:                 1,
+					SectionNumber:      123,
+					CurrentTemperature: 22.5,
+					MinimumTemperature: 15.0,
+					CurrentCapacity:    50,
+					MinimumCapacity:    30,
+					MaximumCapacity:    100,
+					WarehouseID:        1,
+					ProductTypeID:      2,
+				},
 			},
 		},
 		{
-			name: "should return conflict error when number is already in use",
+			name: "should return bad request error for invalid id",
 			mockSetup: func(m *MockSectionService) {
-				m.On("FindAll").Return([]internal.Section{
-					{SectionNumber: 123},
-				}, nil)
-				m.On("Save", mock.Anything).Return(internal.ErrSectionNumberAlreadyInUse)
 			},
-			requestBody: handler.RequestSectionJSON{
-				SectionNumber:      123,
-				CurrentTemperature: 22.5,
-				MinimumTemperature: 15.0,
-				CurrentCapacity:    50,
-				MinimumCapacity:    30,
-				MaximumCapacity:    100,
-				WarehouseID:        1,
-				ProductTypeID:      2,
+			id:                 "invalid_id",
+			requestBody:        nil,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   nil,
+		},
+		{
+			name: "should return unprocessable entity error for invalid request body",
+			mockSetup: func(m *MockSectionService) {
+				m.On("Update", 1, mock.Anything).Return(internal.Section{}, internal.ErrSectionUnprocessableEntity)
+			},
+			id: "1",
+			requestBody: handler.SectionsUpdateJSON{
+				SectionNumber:      intPtr(456),
+				CurrentTemperature: float64Ptr(22.5),
+				MinimumTemperature: float64Ptr(15.0),
+				CurrentCapacity:    intPtr(100),
+				MinimumCapacity:    intPtr(30),
+				MaximumCapacity:    intPtr(100),
+				WarehouseID:        intPtr(1),
+				ProductTypeID:      intPtr(2),
+			},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedResponse:   *resterr.NewUnprocessableEntityError("couldn't parse section"),
+		},
+		{
+			name: "should return conflict error",
+			mockSetup: func(m *MockSectionService) {
+				m.On("Update", 1, mock.Anything).Return(internal.Section{}, internal.ErrSectionNumberAlreadyInUse)
+			},
+			id: "1",
+			requestBody: handler.SectionsUpdateJSON{
+				SectionNumber:      intPtr(456),
+				CurrentTemperature: float64Ptr(22.5),
+				MinimumTemperature: float64Ptr(15.0),
+				CurrentCapacity:    intPtr(150),
+				MinimumCapacity:    intPtr(30),
+				MaximumCapacity:    intPtr(100),
+				WarehouseID:        intPtr(1),
+				ProductTypeID:      intPtr(2),
 			},
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   *resterr.NewConflictError("section with given section number already registered"),
 		},
 		{
-			name: "return unprocessable entity error when warehouse ID does not exist",
+			name: "should return not found error",
 			mockSetup: func(m *MockSectionService) {
-				m.On("Save", mock.Anything).Return(nil)
+				m.On("Update", 1, mock.Anything).Return(internal.Section{}, internal.ErrSectionNotFound)
 			},
-			requestBody: handler.RequestSectionJSON{
-				SectionNumber:      123,
-				CurrentTemperature: 22.5,
-				MinimumTemperature: 15.0,
-				CurrentCapacity:    -3,
-				MinimumCapacity:    30,
-				MaximumCapacity:    100,
+			id: "1",
+			requestBody: handler.SectionsUpdateJSON{
+				SectionNumber:      intPtr(456),
+				CurrentTemperature: float64Ptr(22.5),
+				MinimumTemperature: float64Ptr(15.0),
+				CurrentCapacity:    intPtr(150),
+				MinimumCapacity:    intPtr(30),
+				MaximumCapacity:    intPtr(100),
+				WarehouseID:        intPtr(1),
+				ProductTypeID:      intPtr(2),
 			},
-			expectedStatusCode: http.StatusUnprocessableEntity,
-			expectedResponse:   *resterr.NewUnprocessableEntityError("couldn't parse section"),
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   *resterr.NewNotFoundError("section not found"),
+		},
+		{
+			name: "should return internal server error",
+			mockSetup: func(m *MockSectionService) {
+				m.On("Update", 1, mock.Anything).Return(internal.Section{}, errors.New("internal server error"))
+			},
+			id: "1",
+			requestBody: handler.SectionsUpdateJSON{
+				SectionNumber:      intPtr(456),
+				CurrentTemperature: float64Ptr(22.5),
+				MinimumTemperature: float64Ptr(15.0),
+				CurrentCapacity:    intPtr(150),
+				MinimumCapacity:    intPtr(30),
+				MaximumCapacity:    intPtr(100),
+				WarehouseID:        intPtr(1),
+				ProductTypeID:      intPtr(2),
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   nil,
 		},
 	}
 
@@ -405,29 +718,34 @@ func TestSaveSection(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			req, err := http.NewRequest(http.MethodPost, "/sections", bytes.NewBuffer(requestBody))
+			req, err := http.NewRequest(http.MethodPut, "/sections/"+tt.id, bytes.NewBuffer(requestBody))
 			if err != nil {
 				t.Fatal(err)
 			}
 			req.Header.Set("content-type", "application/json")
 
 			rr := httptest.NewRecorder()
-			hd := sectionHandler.Create
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", tt.id)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			hd := sectionHandler.Update
 			hd(rr, req)
 
 			assert.Equal(t, tt.expectedStatusCode, rr.Code)
 
 			if tt.expectedResponse != nil {
 				switch response := tt.expectedResponse.(type) {
-				case internal.Section:
-					var actualResponse = struct {
+				case map[string]interface{}:
+					var actualResponse struct {
 						Data internal.Section `json:"data"`
-					}{}
+					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
 					}
-					assert.Equal(t, response, actualResponse.Data)
+					assert.Equal(t, response["data"], actualResponse.Data)
 				case resterr.RestErr:
 					var actualResponse resterr.RestErr
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
@@ -443,11 +761,7 @@ func TestSaveSection(t *testing.T) {
 	}
 }
 
-func TestUpdateSection(t *testing.T) {
-
-}
-
-func TestDeleteSection(t *testing.T) {
+func TestHandler_DeleteSectionUnitTest(t *testing.T) {
 	tests := []struct {
 		name               string
 		mockSetup          func(*MockSectionService)
@@ -529,40 +843,3 @@ func TestDeleteSection(t *testing.T) {
 		})
 	}
 }
-
-/*
-func TestUpdateSection() {
-	section := internal.Section{
-		SectionNumber:      101,
-		CurrentTemperature: 1.0,
-		MinimumTemperature: 1.0,
-		CurrentCapacity:    1,
-		MinimumCapacity:    1,
-		MaximumCapacity:    1,
-		WarehouseID:        1,
-		ProductTypeID:      1,
-	}
-
-	suite.service.On("Update", 1, mock.Anything).Return(section, nil)
-	suite.service.On("FindByID", 1).Return(section, nil)
-
-	body, _ := json.Marshal(section)
-	r := httptest.NewRequest(http.MethodPut, "/sections/{id}", bytes.NewReader(body))
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("id", "1")
-	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-	w := httptest.NewRecorder()
-
-	suite.handler.Update(w, r)
-
-	assert.Equal(suite.T(), http.StatusOK, w.Result().StatusCode)
-
-	var response struct {
-		Data internal.Section `json:"data"`
-	}
-	err := json.NewDecoder(w.Body).Decode(&response)
-	require.NoError(suite.T(), err)
-
-	assert.Equal(suite.T(), section, response.Data)
-}
-*/

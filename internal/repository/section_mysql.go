@@ -146,12 +146,12 @@ func (r *SectionMysql) ReportProductsByID(sectionID int) (internal.ReportProduct
 	return rp, nil
 }
 
-func (r *SectionMysql) SectionNumberExists(section internal.Section) (bool, error) {
+func (r *SectionMysql) SectionNumberExists(sectionNumber int) (bool, error) {
 	query := "SELECT COUNT(*) FROM sections WHERE section_number = ?"
 
 	var count int
 
-	err := r.db.QueryRow(query, section.SectionNumber).Scan(&count)
+	err := r.db.QueryRow(query, sectionNumber).Scan(&count)
 	if err != nil {
 		return false, err
 	}
