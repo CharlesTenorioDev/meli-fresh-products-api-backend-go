@@ -71,7 +71,9 @@ func (h *ProductHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 			errors.Is(err, internal.ErrProductNotFound):
 			response.JSON(w, http.StatusNotFound, rest_err.NewNotFoundError(err.Error()))
 
-		case errors.Is(err, internal.ErrProductCodeAlreadyExists):
+		case errors.Is(err, internal.ErrProductCodeAlreadyExists),
+			errors.Is(err, internal.ErroProductConflitEntity),
+			errors.Is(err, internal.ErroProductConflit):
 			response.JSON(w, http.StatusConflict, rest_err.NewConflictError(err.Error()))
 
 		case errors.Is(err, internal.ErrProductUnprocessableEntity):
