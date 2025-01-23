@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-txdb"
-	"github.com/go-chi/chi/v5"
 	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
@@ -23,7 +22,6 @@ const api = "/api/v1/carries"
 
 type CarriesTestSuite struct {
 	hd *handler.CarriesHandlerDefault
-	rt chi.Router
 	db *sql.DB
 	suite.Suite
 }
@@ -76,7 +74,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",
-			LocalityId:  3,
+			LocalityID:  3,
 		}
 		b, err := json.Marshal(carry)
 		require.NoError(t, err)
@@ -91,7 +89,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			&resCarry.CompanyName,
 			&resCarry.Address,
 			&resCarry.PhoneNumber,
-			&resCarry.LocalityId,
+			&resCarry.LocalityID,
 		)
 		var data struct {
 			Data struct {
@@ -117,7 +115,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",
-			LocalityId:  3,
+			LocalityID:  3,
 		}
 		b, err := json.Marshal(carry)
 		require.NoError(t, err)
@@ -132,7 +130,7 @@ func (c *CarriesTestSuite) TestCarriesDefault_Create() {
 			CompanyName: "Iris",
 			Address:     "Paulista",
 			PhoneNumber: "11977021487",
-			LocalityId:  100,
+			LocalityID:  100,
 		}
 		b, err := json.Marshal(carry)
 		require.NoError(t, err)

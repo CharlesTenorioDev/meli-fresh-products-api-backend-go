@@ -13,7 +13,7 @@ import (
 )
 
 var productRecords = internal.ProductRecords{
-	Id:             1,
+	ID:             1,
 	LastUpdateDate: time.Now().Truncate(24 * time.Hour),
 	PurchasePrice:  1,
 	SalePrice:      1,
@@ -42,8 +42,8 @@ func TestProductRecordsMysql_FinAll(t *testing.T) {
 	products, err := repo.FindAll()
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(products))
-	assert.Equal(t, 1, products[0].Id)
-	assert.Equal(t, 2, products[1].Id)
+	assert.Equal(t, 1, products[0].ID)
+	assert.Equal(t, 2, products[1].ID)
 }
 
 func TestProductRecordsMysql_FinAByID_ok(t *testing.T) {
@@ -67,7 +67,7 @@ func TestProductRecordsMysql_FinAByID_ok(t *testing.T) {
 	product, err := repo.FindByID(1)
 	assert.NoError(t, err)
 	assert.NoError(t, err)
-	assert.Equal(t, 1, product.Id)
+	assert.Equal(t, 1, product.ID)
 }
 
 func TestProductRecordsMysql_FinAByID_not_found(t *testing.T) {

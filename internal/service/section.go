@@ -35,7 +35,7 @@ func (s *SectionService) FindAll() ([]internal.Section, error) {
 func (s *SectionService) FindByID(id int) (internal.Section, error) {
 	section, err := s.rpS.FindByID(id)
 	if err != nil {
-		return internal.Section{}, internal.SectionNotFound
+		return internal.Section{}, internal.ErrSectionNotFound
 	}
 
 	return section, nil
@@ -53,7 +53,7 @@ func (s *SectionService) ReportProducts() ([]internal.ReportProduct, error) {
 func (s *SectionService) ReportProductsByID(sectionID int) (internal.ReportProduct, error) {
 	_, err := s.rpS.FindByID(sectionID)
 	if err != nil {
-		return internal.ReportProduct{}, internal.SectionNotFound
+		return internal.ReportProduct{}, internal.ErrSectionNotFound
 	}
 
 	reportProduct, err := s.rpS.ReportProductsByID(sectionID)
@@ -66,12 +66,12 @@ func (s *SectionService) ReportProductsByID(sectionID int) (internal.ReportProdu
 
 func (s *SectionService) Save(section *internal.Section) error {
 	if ok := section.Ok(); !ok {
-		return internal.SectionUnprocessableEntity
+		return internal.ErrSectionUnprocessableEntity
 	}
 
 	countExists, err := s.rpS.SectionNumberExists(*section)
 	if err != nil || countExists {
-		return internal.SectionNumberAlreadyInUse
+		return internal.ErrSectionNumberAlreadyInUse
 	}
 
 	_, err = s.rpW.FindByID(section.WarehouseID)
@@ -92,10 +92,10 @@ func (s *SectionService) Save(section *internal.Section) error {
 	return nil
 }
 
-func (s *SectionService) Update(id int, updates map[string]interface{}) (internal.Section, error) {
+func (s *SectionService) Update(id int, updates map[string]any) (internal.Section, error) {
 	section, err := s.FindByID(id)
 	if err != nil {
-		return internal.Section{}, internal.SectionNotFound
+		return internal.Section{}, internal.ErrSectionNotFound
 	}
 
 	processInt := func(key string, target *int) error {
@@ -106,6 +106,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 				if err != nil {
 					return fmt.Errorf("invalid value for %s: %v", key, err)
 				}
+
 				*target = value
 			case float64:
 				*target = int(v)
@@ -113,6 +114,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 				return fmt.Errorf("invalid type for %s: expected string or float64, got %T", key, v)
 			}
 		}
+
 		return nil
 	}
 
@@ -124,6 +126,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 				if err != nil {
 					return fmt.Errorf("invalid value for %s: %v", key, err)
 				}
+
 				*target = value
 			case float64:
 				*target = v
@@ -131,6 +134,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 				return fmt.Errorf("invalid type for %s: expected string or float64, got %T", key, v)
 			}
 		}
+
 		return nil
 	}
 
@@ -141,7 +145,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 
 		countExists, err := s.rpS.SectionNumberExists(section)
 		if err != nil || countExists {
-			return internal.Section{}, internal.SectionNumberAlreadyInUse
+			return internal.Section{}, internal.ErrSectionNumberAlreadyInUse
 		}
 	}
 
@@ -198,7 +202,7 @@ func (s *SectionService) Update(id int, updates map[string]interface{}) (interna
 func (s *SectionService) Delete(id int) error {
 	_, err := s.FindByID(id)
 	if err != nil {
-		return internal.SectionNotFound
+		return internal.ErrSectionNotFound
 	}
 
 	err = s.rpS.Delete(id)

@@ -32,25 +32,26 @@ func (psql *ProductRecordsSQL) FindAll() (productRecords []internal.ProductRecor
 
 	for rows.Next() {
 		var productRecord internal.ProductRecords
-		err := rows.Scan(&productRecord.Id, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
+
+		err := rows.Scan(&productRecord.ID, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				err = internal.ErrProductNotFound
 			}
 			return productRecords, err
 		}
+
 		productRecords = append(productRecords, productRecord)
 	}
 
 	return
 }
 
-// Implementação de FindByID
 func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error) {
 	var productRecord internal.ProductRecords
 
 	row := psql.db.QueryRow(FindByIdProductRecords, id)
-	err := row.Scan(&productRecord.Id, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
+	err := row.Scan(&productRecord.ID, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -62,7 +63,6 @@ func (psql *ProductRecordsSQL) FindByID(id int) (internal.ProductRecords, error)
 	return productRecord, nil
 }
 
-// Implementação de Save
 func (psql *ProductRecordsSQL) Save(productRec internal.ProductRecords) (internal.ProductRecords, error) {
 	_, err := psql.db.Exec(
 		SaveProductRecords,

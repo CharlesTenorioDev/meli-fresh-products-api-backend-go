@@ -14,7 +14,7 @@ type PurchaseOrder struct {
 	OrderDate       time.Time
 	TrackingCode    string
 	BuyerID         int
-	ProductRecordId int
+	ProductRecordID int
 }
 
 var (
@@ -32,40 +32,46 @@ func (p *PurchaseOrder) Validate() (causes []Causes) {
 			Message: "Order number is required",
 		})
 	}
+
 	if !validator.String(p.TrackingCode, 1, 255) {
 		causes = append(causes, Causes{
 			Field:   "tracking_code",
 			Message: "Tracking code is required",
 		})
 	}
+
 	if validator.IntIsNegative(p.BuyerID) {
 		causes = append(causes, Causes{
 			Field:   "buyer_id",
 			Message: "Buyer ID cannot be negative",
 		})
 	}
+
 	if validator.IntIsZero(p.BuyerID) {
 		causes = append(causes, Causes{
 			Field:   "buyer_id",
 			Message: "Buyer ID is required",
 		})
 	}
-	if validator.IntIsNegative(p.ProductRecordId) {
+
+	if validator.IntIsNegative(p.ProductRecordID) {
 		causes = append(causes, Causes{
 			Field:   "product_record_id",
 			Message: "Product record ID cannot be negative",
 		})
 	}
-	if validator.IntIsZero(p.ProductRecordId) {
+
+	if validator.IntIsZero(p.ProductRecordID) {
 		causes = append(causes, Causes{
 			Field:   "product_record_id",
 			Message: "Product record ID is required",
 		})
 	}
-	return
+
+	return causes
 }
 
-// PurchaseOrdersRepository is an interface that contains the methods that the purchase order repository should support
+// PurchaseOrderRepository is an interface that contains the methods that the purchase order repository should support
 type PurchaseOrderRepository interface {
 	// FindByID returns the purchase order with the given ID
 	FindByID(id int) (PurchaseOrder, error)

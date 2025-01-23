@@ -6,7 +6,8 @@ import (
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
-const FindByIdProductType =`
+
+const FindByIdProductType = `
 SELECT 
 	id,
 	description          
@@ -24,7 +25,6 @@ type ProductTypeMysql struct {
 }
 
 func (r *ProductTypeMysql) FindByID(id int) (internal.ProductType, error) {
-	
 
 	var pt internal.ProductType
 	err := r.db.QueryRow(FindByIdProductType, id).Scan(
@@ -35,6 +35,7 @@ func (r *ProductTypeMysql) FindByID(id int) (internal.ProductType, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return pt, internal.ErrProductTypeNotFound
 		}
+
 		return pt, err
 	}
 

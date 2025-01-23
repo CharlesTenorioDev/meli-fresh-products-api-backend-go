@@ -3,10 +3,10 @@ package internal
 import "errors"
 
 var (
-	SectionNotFound            = errors.New("section not found")
-	SectionAlreadyExists       = errors.New("section already exists")
-	SectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
-	SectionUnprocessableEntity = errors.New("couldn't parse section")
+	ErrSectionNotFound            = errors.New("section not found")
+	ErrSectionAlreadyExists       = errors.New("section already exists")
+	ErrSectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
+	ErrSectionUnprocessableEntity = errors.New("couldn't parse section")
 )
 
 type Section struct {
@@ -44,7 +44,7 @@ type SectionService interface {
 	ReportProducts() ([]ReportProduct, error)
 	ReportProductsByID(sectionID int) (ReportProduct, error)
 	Save(section *Section) error
-	Update(id int, updates map[string]interface{}) (Section, error)
+	Update(id int, updates map[string]any) (Section, error)
 	Delete(id int) error
 }
 
@@ -59,5 +59,6 @@ func (s *Section) Ok() bool {
 		s.ProductTypeID <= 0 {
 		return false
 	}
+
 	return true
 }

@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	localFileProdTypeJson = "db/product_type.json"
+	localFileProdTypeJSON = "db/product_type.json"
 )
 
 type ProductType struct {
@@ -19,16 +19,17 @@ type ProductType struct {
 func ReadAllProductsTypeToFile() ([]*ProductType, error) {
 	var productTypeList []*ProductType
 
-	file, err := os.Open(localFileProdTypeJson)
+	file, err := os.Open(localFileProdTypeJSON)
 	if err != nil {
 		if os.IsNotExist(err) {
-			file, err = os.Create(localFileProdTypeJson)
+			file, err = os.Create(localFileProdTypeJSON)
 			if err != nil {
 				return nil, err
 			}
 			defer file.Close()
 
 			initialData := []ProductType{}
+
 			writer := json.NewEncoder(file)
 			if err := writer.Encode(initialData); err != nil {
 				return nil, err
@@ -36,16 +37,19 @@ func ReadAllProductsTypeToFile() ([]*ProductType, error) {
 
 			return productTypeList, nil
 		}
+
 		return nil, err
 	}
 	defer file.Close()
 
 	reader := json.NewDecoder(file)
+
 	err = reader.Decode(&productTypeList)
 	if err != nil {
 		if err == io.EOF {
 			return nil, nil
 		}
+
 		return nil, err
 	}
 

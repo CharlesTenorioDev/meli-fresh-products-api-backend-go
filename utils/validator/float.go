@@ -20,6 +20,6 @@ func FloatIsLessThan(i float64, j float64) bool {
 	return i < j
 }
 
-func FloatBetween(i, min, max float64) bool {
-	return i >= min && i <= max
+func FloatBetween(i, minV, maxV float64) bool {
+	return i >= minV && i <= maxV
 }

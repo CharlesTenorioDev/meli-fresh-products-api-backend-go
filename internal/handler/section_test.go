@@ -148,7 +148,7 @@ func (suite *SectionTestSuite) TestGetSectionById() {
 }
 
 func (suite *SectionTestSuite) TestGetSectionByIdNotFound() {
-	suite.service.On("FindByID", 1).Return(internal.Section{}, internal.SectionNotFound)
+	suite.service.On("FindByID", 1).Return(internal.Section{}, internal.ErrSectionNotFound)
 
 	r := httptest.NewRequest(http.MethodGet, "/sections/{id}", nil)
 	rctx := chi.NewRouteContext()
@@ -210,7 +210,7 @@ func (suite *SectionTestSuite) TestSaveSectionError() {
 		WarehouseID:        1,
 		ProductTypeID:      1,
 	}
-	suite.service.On("Save", &section).Return(internal.SectionNotFound)
+	suite.service.On("Save", &section).Return(internal.ErrSectionNotFound)
 
 	body, _ := json.Marshal(section)
 	r := httptest.NewRequest(http.MethodPost, "/sections", bytes.NewReader(body))
@@ -279,7 +279,7 @@ func (suite *SectionTestSuite) TestDeleteSection() {
 }
 
 func (suite *SectionTestSuite) TestDeleteSectionNotFound() {
-	suite.service.On("Delete", 1).Return(internal.SectionNotFound)
+	suite.service.On("Delete", 1).Return(internal.ErrSectionNotFound)
 
 	r := httptest.NewRequest(http.MethodDelete, "/sections/{id}", nil)
 	rctx := chi.NewRouteContext()

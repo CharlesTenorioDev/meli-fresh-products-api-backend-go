@@ -19,7 +19,7 @@ func NewProductSQL(db *sql.DB) *ProductSQL {
 
 const (
 	FindAllString  = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products"
-	FindByIdString = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products WHERE id = ?"
+	FindByIDString = "SELECT id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id FROM products WHERE id = ?"
 	SaveString     = "INSERT INTO products (id, description, expiration_rate, freezing_rate, height, length, net_weight, product_code, recommended_freezing_temperature, width, product_type_id, seller_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	UpdateString   = `UPDATE products 
 		 SET description = ?, expiration_rate = ?, freezing_rate = ?, 
@@ -29,7 +29,7 @@ const (
 		 WHERE id = ?`
 	DeleteString         = "DELETE FROM products WHERE id = ?"
 	FindAllRecordString  = "SELECT pr.product_id, p.description, COUNT(*) AS records_count FROM product_records pr JOIN products p ON pr.product_id = p.id GROUP BY pr.product_id, p.description;"
-	FindByIdRecordString = "SELECT pr.product_id, p.description, COUNT(*) AS records_count FROM product_records pr JOIN products p ON pr.product_id = p.id WHERE p.id = ? GROUP BY pr.product_id, p.description;"
+	FindByIDRecordString = "SELECT pr.product_id, p.description, COUNT(*) AS records_count FROM product_records pr JOIN products p ON pr.product_id = p.id WHERE p.id = ? GROUP BY pr.product_id, p.description;"
 )
 
 func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
@@ -41,30 +41,33 @@ func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
 		return
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		var product internal.Product
 
-		err := rows.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate,
+		err := rows.Scan(&product.ID, &product.Description, &product.ExpirationRate, &product.FreezingRate,
 			&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature,
-			&product.Width, &product.ProductTypeId, &product.SellerId)
+			&product.Width, &product.ProductTypeID, &product.SellerID)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
 				err = internal.ErrProductNotFound
 			}
 			return products, err
 		}
+
 		products = append(products, product)
 	}
+
 	return
 }
 
 func (psql *ProductSQL) FindByID(id int) (internal.Product, error) {
 	var product internal.Product
 
-	row := psql.db.QueryRow(FindByIdString, id)
-	err := row.Scan(&product.Id, &product.Description, &product.ExpirationRate, &product.FreezingRate,
+	row := psql.db.QueryRow(FindByIDString, id)
+	err := row.Scan(&product.ID, &product.Description, &product.ExpirationRate, &product.FreezingRate,
 		&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature,
-		&product.Width, &product.ProductTypeId, &product.SellerId)
+		&product.Width, &product.ProductTypeID, &product.SellerID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrProductNotFound
@@ -78,7 +81,7 @@ func (psql *ProductSQL) FindByID(id int) (internal.Product, error) {
 func (psql *ProductSQL) Save(product internal.Product) (p internal.Product, err error) {
 	_, err = psql.db.Exec(
 		SaveString,
-		product.Id,
+		product.ID,
 		product.Description,
 		product.ExpirationRate,
 		product.FreezingRate,
@@ -88,8 +91,8 @@ func (psql *ProductSQL) Save(product internal.Product) (p internal.Product, err 
 		product.ProductCode,
 		product.RecommendedFreezingTemperature,
 		product.Width,
-		product.ProductTypeId,
-		product.SellerId,
+		product.ProductTypeID,
+		product.SellerID,
 	)
 
 	if err != nil {
@@ -117,9 +120,9 @@ func (psql *ProductSQL) Update(product internal.Product) (internal.Product, erro
 		product.ProductCode,
 		product.RecommendedFreezingTemperature,
 		product.Width,
-		product.ProductTypeId,
-		product.SellerId,
-		product.Id,
+		product.ProductTypeID,
+		product.SellerID,
+		product.ID,
 	)
 
 	if err != nil {
@@ -167,16 +170,18 @@ func (psql *ProductSQL) Delete(id int) error {
 	return nil
 }
 
-func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJsonCount, error) {
-	var products []internal.ProductRecordsJsonCount
+func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJSONCount, error) {
+	var products []internal.ProductRecordsJSONCount
 
 	rows, err := psql.db.Query(FindAllRecordString)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
+
 	for rows.Next() {
-		var product internal.ProductRecordsJsonCount
+		var product internal.ProductRecordsJSONCount
+
 		err := rows.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
@@ -184,15 +189,17 @@ func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJsonCount, err
 			}
 			return products, err
 		}
+
 		products = append(products, product)
 	}
+
 	return products, nil
 }
 
-func (psql *ProductSQL) FindByIdRecord(id int) (internal.ProductRecordsJsonCount, error) {
-	var product internal.ProductRecordsJsonCount
+func (psql *ProductSQL) FindByIDRecord(id int) (internal.ProductRecordsJSONCount, error) {
+	var product internal.ProductRecordsJSONCount
 
-	row := psql.db.QueryRow(FindByIdRecordString, id)
+	row := psql.db.QueryRow(FindByIDRecordString, id)
 	err := row.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
 	if err != nil {
 
