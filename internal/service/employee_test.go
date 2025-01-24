@@ -157,7 +157,7 @@ func TestCreate_EmployeeUnitTest(t *testing.T) {
 		rp.On("Save", &defaultEmployee).Return(-1, errors.New("failed to create employee"))
 		err := sv.Save(&defaultEmployee)
 
-		require.NoError(t, err)
+		require.Error(t, err)
 	})
 }
 
