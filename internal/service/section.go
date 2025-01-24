@@ -1,9 +1,6 @@
 package service
 
 import (
-	"fmt"
-	"strconv"
-
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -69,7 +66,7 @@ func (s *SectionService) Save(section *internal.Section) error {
 		return internal.ErrSectionUnprocessableEntity
 	}
 
-	countExists, err := s.rpS.SectionNumberExists(*section)
+	countExists, err := s.rpS.SectionNumberExists(section.SectionNumber)
 	if err != nil || countExists {
 		return internal.ErrSectionNumberAlreadyInUse
 	}
@@ -92,111 +89,124 @@ func (s *SectionService) Save(section *internal.Section) error {
 	return nil
 }
 
-func (s *SectionService) Update(id int, updates map[string]any) (internal.Section, error) {
-	section, err := s.FindByID(id)
-	if err != nil {
-		return internal.Section{}, internal.ErrSectionNotFound
-	}
-
-	processInt := func(key string, target *int) error {
-		if val, ok := updates[key]; ok {
-			switch v := val.(type) {
-			case string:
-				value, err := strconv.Atoi(v)
-				if err != nil {
-					return fmt.Errorf("invalid value for %s: %v", key, err)
-				}
-
-				*target = value
-			case float64:
-				*target = int(v)
-			default:
-				return fmt.Errorf("invalid type for %s: expected string or float64, got %T", key, v)
-			}
-		}
-
-		return nil
-	}
-
-	processFloat := func(key string, target *float64) error {
-		if val, ok := updates[key]; ok {
-			switch v := val.(type) {
-			case string:
-				value, err := strconv.ParseFloat(v, 64)
-				if err != nil {
-					return fmt.Errorf("invalid value for %s: %v", key, err)
-				}
-
-				*target = value
-			case float64:
-				*target = v
-			default:
-				return fmt.Errorf("invalid type for %s: expected string or float64, got %T", key, v)
-			}
-		}
-
-		return nil
-	}
-
-	if _, ok := updates["section_number"]; ok {
-		if err := processInt("section_number", &section.SectionNumber); err != nil {
-			return internal.Section{}, err
-		}
-
-		countExists, err := s.rpS.SectionNumberExists(section)
-		if err != nil || countExists {
-			return internal.Section{}, internal.ErrSectionNumberAlreadyInUse
-		}
-	}
-
-	if err := processFloat("current_temperature", &section.CurrentTemperature); err != nil {
-		return internal.Section{}, err
-	}
-
-	if err := processFloat("minimum_temperature", &section.MinimumTemperature); err != nil {
-		return internal.Section{}, err
-	}
-
-	if err := processInt("current_capacity", &section.CurrentCapacity); err != nil {
-		return internal.Section{}, err
-	}
-
-	if err := processInt("minimum_capacity", &section.MinimumCapacity); err != nil {
-		return internal.Section{}, err
-	}
-
-	if err := processInt("maximum_capacity", &section.MaximumCapacity); err != nil {
-		return internal.Section{}, err
-	}
-
-	if _, ok := updates["warehouse_id"]; ok {
-		if err := processInt("warehouse_id", &section.WarehouseID); err != nil {
-			return internal.Section{}, err
-		}
-
-		_, err = s.rpW.FindByID(section.WarehouseID)
-		if err != nil {
-			return internal.Section{}, internal.ErrWarehouseRepositoryNotFound
-		}
-	}
-
-	if _, ok := updates["product_type_id"]; ok {
-		if err := processInt("product_type_id", &section.ProductTypeID); err != nil {
-			return internal.Section{}, err
-		}
-
-		_, err = s.rpT.FindByID(section.ProductTypeID)
-		if err != nil {
-			return internal.Section{}, internal.ErrProductTypeNotFound
-		}
-	}
-
-	err = s.rpS.Update(&section)
+func (s *SectionService) Update(id int, updateSection internal.SectionPatch) (internal.Section, error) {
+	actualSection, err := s.FindByID(id)
 	if err != nil {
 		return internal.Section{}, err
 	}
 
-	return section, nil
+	if err := s.updateSectionNumber(updateSection.SectionNumber, &actualSection); err != nil {
+		return internal.Section{}, err
+	}
+
+	if err := s.updateTemperature(&updateSection, &actualSection); err != nil {
+		return internal.Section{}, err
+	}
+
+	if err := s.updateCapacity(&updateSection, &actualSection); err != nil {
+		return internal.Section{}, err
+	}
+
+	if err := s.updateWarehouseAndProduct(&updateSection, &actualSection); err != nil {
+		return internal.Section{}, err
+	}
+
+	if err := s.rpS.Update(&actualSection); err != nil {
+		return internal.Section{}, err
+	}
+
+	return actualSection, nil
+}
+
+func (s *SectionService) updateSectionNumber(sectionNumber *int, actualSection *internal.Section) error {
+	if sectionNumber != nil {
+		countExists, err := s.rpS.SectionNumberExists(*sectionNumber)
+		if err != nil {
+			return err
+		}
+
+		if countExists {
+			return internal.ErrSectionNumberAlreadyInUse
+		}
+
+		if *sectionNumber <= 0 {
+			return internal.ErrSectionUnprocessableEntity
+		}
+
+		actualSection.SectionNumber = *sectionNumber
+	}
+
+	return nil
+}
+
+func (s *SectionService) updateTemperature(updateSection *internal.SectionPatch, actualSection *internal.Section) error {
+	if updateSection.CurrentTemperature != nil {
+		if *updateSection.CurrentTemperature < -273.15 {
+			return internal.ErrSectionUnprocessableEntity
+		}
+
+		actualSection.CurrentTemperature = *updateSection.CurrentTemperature
+	}
+
+	if updateSection.MinimumTemperature != nil {
+		if *updateSection.MinimumTemperature < -273.15 {
+			return internal.ErrSectionUnprocessableEntity
+		}
+
+		actualSection.MinimumTemperature = *updateSection.MinimumTemperature
+	}
+
+	return nil
+}
+
+func (s *SectionService) updateCapacity(updateSection *internal.SectionPatch, actualSection *internal.Section) error {
+	if updateSection.CurrentCapacity != nil {
+		if *updateSection.CurrentCapacity < 0 {
+			return internal.ErrSectionUnprocessableEntity
+		}
+
+		actualSection.CurrentCapacity = *updateSection.CurrentCapacity
+	}
+
+	if updateSection.MinimumCapacity != nil {
+		if *updateSection.MinimumCapacity < 0 {
+			return internal.ErrSectionUnprocessableEntity
+		}
+
+		actualSection.MinimumCapacity = *updateSection.MinimumCapacity
+	}
+
+	if updateSection.MaximumCapacity != nil {
+		if *updateSection.MaximumCapacity < 0 {
+			return internal.ErrSectionUnprocessableEntity
+		}
+
+		actualSection.MaximumCapacity = *updateSection.MaximumCapacity
+	}
+
+	return nil
+}
+
+func (s *SectionService) updateWarehouseAndProduct(updateSection *internal.SectionPatch, actualSection *internal.Section) error {
+	if updateSection.WarehouseID != nil {
+		_, err := s.rpW.FindByID(*updateSection.WarehouseID)
+		if err != nil {
+			return internal.ErrWarehouseRepositoryNotFound
+		}
+
+		actualSection.WarehouseID = *updateSection.WarehouseID
+	}
+
+	if updateSection.ProductTypeID != nil {
+		_, err := s.rpT.FindByID(*updateSection.ProductTypeID)
+		if err != nil {
+			return internal.ErrProductTypeNotFound
+		}
+
+		actualSection.ProductTypeID = *updateSection.ProductTypeID
+	}
+
+	return nil
 }
 
 func (s *SectionService) Delete(id int) error {

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -18,6 +19,10 @@ type SectionMysql struct {
 func (r *SectionMysql) FindAll() ([]internal.Section, error) {
 	rows, err := r.db.Query("SELECT `id`, `section_number`, `current_temperature`, `minimum_temperature`, `current_capacity`, `minimum_capacity`, `maximum_capacity`, `warehouse_id`, `product_type_id` FROM sections")
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrSectionNotFound
+		}
+
 		return nil, err
 	}
 	defer rows.Close()
@@ -37,6 +42,10 @@ func (r *SectionMysql) FindAll() ([]internal.Section, error) {
 
 	err = rows.Err()
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrSectionNotFound
+		}
+
 		return nil, err
 	}
 
@@ -89,6 +98,10 @@ func (r *SectionMysql) ReportProducts() ([]internal.ReportProduct, error) {
 
 	rows, err := r.db.Query(query)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrReportProductNotFound
+		}
+
 		return nil, err
 	}
 	defer rows.Close()
@@ -103,6 +116,15 @@ func (r *SectionMysql) ReportProducts() ([]internal.ReportProduct, error) {
 		}
 
 		report = append(report, rp)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrReportProductNotFound
+		}
+
+		return nil, err
 	}
 
 	return report, nil
@@ -138,12 +160,12 @@ func (r *SectionMysql) ReportProductsByID(sectionID int) (internal.ReportProduct
 	return rp, nil
 }
 
-func (r *SectionMysql) SectionNumberExists(section internal.Section) (bool, error) {
+func (r *SectionMysql) SectionNumberExists(sectionNumber int) (bool, error) {
 	query := "SELECT COUNT(*) FROM sections WHERE section_number = ?"
 
 	var count int
 
-	err := r.db.QueryRow(query, section.SectionNumber).Scan(&count)
+	err := r.db.QueryRow(query, sectionNumber).Scan(&count)
 	if err != nil {
 		return false, err
 	}
@@ -165,6 +187,14 @@ func (r *SectionMysql) Save(section *internal.Section) error {
 	)
 
 	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) {
+			switch mysqlErr.Number {
+			case 1062:
+				err = internal.ErrSectionUnprocessableEntity
+			}
+		}
+
 		return err
 	}
 
@@ -191,6 +221,18 @@ func (r *SectionMysql) Update(section *internal.Section) error {
 		section.ProductTypeID,
 		section.ID,
 	)
+
+	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) {
+			switch mysqlErr.Number {
+			case 1062:
+				err = internal.ErrSectionUnprocessableEntity
+			default:
+				err = internal.ErrSectionNotFound
+			}
+		}
+	}
 
 	return err
 }
