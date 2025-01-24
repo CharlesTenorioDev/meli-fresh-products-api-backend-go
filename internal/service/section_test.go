@@ -62,10 +62,6 @@ func (r *SectionRepositoryMock) Delete(id int) error {
 	return args.Error(0)
 }
 
-func intPtr(i int) *int {
-	return &i
-}
-
 func float64Ptr(f float64) *float64 {
 	return &f
 }

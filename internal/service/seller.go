@@ -37,6 +37,14 @@ func (s *SellerServiceDefault) FindByID(id int) (internal.Seller, error) {
 }
 
 func (s *SellerServiceDefault) Save(seller *internal.Seller) error {
+	causes := seller.Validate()
+	if len(causes) > 0 {
+		return internal.DomainError{
+			Message: "Seller fields invalid",
+			Causes:  causes,
+		}
+	}
+
 	sellerCid, err := s.rp.FindByCID(seller.CID)
 	if err != nil && !errors.Is(err, internal.ErrSellerNotFound) {
 		return err

@@ -56,7 +56,7 @@ func (r *RepositoryProductMock) FindByIDRecord(id int) (internal.ProductRecordsJ
 func TestProductServiceDefault_GetAll(t *testing.T) { //Se a lista tiver "n" elementos, ele retornará um número do total de elementos.
 	t.Run("find_all", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -79,8 +79,9 @@ func TestProductServiceDefault_GetAll(t *testing.T) { //Se a lista tiver "n" ele
 func TestProductServiceDefault_GetByID(t *testing.T) {
 	t.Run("find_by_id_existent", func(t *testing.T) { //Se o elemento pesquisado pelo id existir, ele retornará as informações do elemento solicitado
 		expectedProduct := internal.Product{ID: 1}
+
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -95,7 +96,7 @@ func TestProductServiceDefault_GetByID(t *testing.T) {
 
 	t.Run("find_by_id_non_existent", func(t *testing.T) { // Se o elemento pesquisado por id não existir, retornará null
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -126,7 +127,7 @@ func TestProductServiceDefault_Create(t *testing.T) {
 
 	t.Run("create_ok", func(t *testing.T) { //Se ele contiver os campos necessários, será criado
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -146,7 +147,7 @@ func TestProductServiceDefault_Create(t *testing.T) {
 	t.Run("create_conflito", func(t *testing.T) { // Se o product_code já existir, ele não poderá ser criado.
 		// Cria um product com code já existente.
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -162,7 +163,7 @@ func TestProductServiceDefault_Create(t *testing.T) {
 
 	t.Run("should error product seller not exists", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -182,7 +183,7 @@ func TestProductServiceDefault_Create(t *testing.T) {
 	t.Run("should error product product-type not exists", func(t *testing.T) {
 		// Cria um product com product-type não existe
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -202,7 +203,7 @@ func TestProductServiceDefault_Create(t *testing.T) {
 	t.Run("should error if repository fails to save", func(t *testing.T) {
 		//cria um erro de servidor
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -220,7 +221,7 @@ func TestProductServiceDefault_Create(t *testing.T) {
 	})
 	t.Run("should error if repository FindAll", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -235,8 +236,9 @@ func TestProductServiceDefault_Create(t *testing.T) {
 	})
 	t.Run("should error if product validation fails", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
+
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
 
 		productRepo.On("FindAll").Return([]internal.Product{}, nil)
@@ -277,7 +279,7 @@ func TestProductServiceDefault_Update(t *testing.T) {
 
 		// Configura o mock para as chamadas necessárias
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -299,7 +301,7 @@ func TestProductServiceDefault_Update(t *testing.T) {
 
 		// Configura o mock para as chamadas necessárias
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -317,7 +319,7 @@ func TestProductServiceDefault_Update(t *testing.T) {
 	})
 	t.Run("should error if repository FindAll", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -332,7 +334,7 @@ func TestProductServiceDefault_Update(t *testing.T) {
 	})
 	t.Run("should fill missing fields from existing product", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -390,7 +392,7 @@ func TestProductServiceDefault_Delete(t *testing.T) {
 
 		//Se a exclusão for bem-sucedida, o item não aparecerá na lista.
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -405,7 +407,7 @@ func TestProductServiceDefault_Delete(t *testing.T) {
 
 		//Quando o produto não existir, será retornado null
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -420,8 +422,9 @@ func TestProductServiceDefault_Delete(t *testing.T) {
 func TestProductServiceDefault_GetByIDRecord(t *testing.T) {
 	t.Run("find_by_id_existent", func(t *testing.T) { //Se o elemento pesquisado pelo id existir, ele retornará as informações do elemento solicitado
 		expectedProduct := internal.ProductRecordsJSONCount{ProductID: 1}
+
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -436,7 +439,7 @@ func TestProductServiceDefault_GetByIDRecord(t *testing.T) {
 
 	t.Run("find_by_id_non_existent", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
@@ -452,7 +455,7 @@ func TestProductServiceDefault_GetByIDRecord(t *testing.T) {
 func TestProductServiceDefault_GetAllRecord(t *testing.T) {
 	t.Run("FindAllRecord", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
-		sellerRepo := new(repositoryMock)
+		sellerRepo := new(sellerRepositoryMock)
 		productTypeRepo := new(ProductTypeRepositoryMock)
 
 		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)

@@ -111,7 +111,7 @@ func (s *BuyerServiceDefault) ReportPurchaseOrders() (po []internal.PurchaseOrde
 	if len(po) == 0 {
 		return nil, ErrPurchaseOrdersNotFound
 	}
-  
+
 	return
 }
 

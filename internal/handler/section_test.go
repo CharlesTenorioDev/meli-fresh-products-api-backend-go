@@ -53,7 +53,7 @@ func (m *MockSectionService) ReportProducts() ([]internal.ReportProduct, error) 
 }
 
 func (m *MockSectionService) ReportProductsByID(id int) (internal.ReportProduct, error) {
-	args := m.Called()
+	args := m.Called(id)
 	return args.Get(0).(internal.ReportProduct), args.Error(1)
 }
 

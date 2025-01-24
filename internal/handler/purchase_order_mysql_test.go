@@ -85,7 +85,10 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		var data struct {
 			PurchaseOrderCreated internal.PurchaseOrder `json:"data"`
 		}
-		json.NewDecoder(response.Result().Body).Decode(&data)
+		err := json.NewDecoder(response.Result().Body).Decode(&data)
+		if err != nil {
+			t.Fatal(err)
+		}
 		// retrieve the purchase order from the database
 		var po internal.PurchaseOrder
 		po, errPo := p.rp.FindByID(data.PurchaseOrderCreated.ID)
@@ -234,7 +237,7 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		// then
 		expectedCode := http.StatusNotFound
 		expectedBody := `{
-			"message": "product-records conflict",
+			"message": "product-records not found",
 			"error": "not_found",
 			"code": 404,
 			"causes": null

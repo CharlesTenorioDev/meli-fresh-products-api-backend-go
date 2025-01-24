@@ -23,3 +23,8 @@ func IsEmail(e string) bool {
 	emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	return emailRegex.MatchString(e)
 }
+
+func IsTelephone(t string) bool {
+	telephoneRegex := regexp.MustCompile(`^(\(?\d{2}\)?\s)?(\d{4,5}-\d{4})$`)
+	return telephoneRegex.MatchString(t)
+}
