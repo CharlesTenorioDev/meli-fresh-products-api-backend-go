@@ -652,6 +652,45 @@ func TestHandler_UpdateEmployeeUnitTest(t *testing.T) {
 		require.Equal(t, expectedRes, actualRes)
 		require.Equal(t, expectedStatus, res.Result().StatusCode)
 	})
+	t.Run("update fails, bad body", func(t *testing.T) {
+		expectedStatus := http.StatusBadRequest
+		sv := NewMockEmployeeService()
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodPatch, "/{id}", strings.NewReader(""))
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "1")
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+		res := httptest.NewRecorder()
+
+		hd.Update(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("update fails, internal get by id fails", func(t *testing.T) {
+		employee := internal.Employee{
+			ID:           1,
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			CardNumberID: "FN001",
+			WarehouseID:  14,
+		}
+
+		expectedStatus := http.StatusInternalServerError
+		sv := NewMockEmployeeService()
+		sv.On("Update", employee).Return(nil)
+		sv.On("GetByID", 1).Return(internal.Employee{}, errors.New("error retrieving updated employee"))
+		b, _ := json.Marshal(employee)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodPatch, "/{id}", bytes.NewReader(b))
+		rctx := chi.NewRouteContext()
+		rctx.URLParams.Add("id", "1")
+		req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+		res := httptest.NewRecorder()
+
+		hd.Update(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
 }
 
 func TestHandler_DeleteEmployeeUnitTest(t *testing.T) {
@@ -706,6 +745,68 @@ func TestHandler_DeleteEmployeeUnitTest(t *testing.T) {
 	})
 }
 
+func TestHandler_ReportInboundOrdersEmployeeUnitTest(t *testing.T) {
+	t.Run("fails to fetch inbound orders", func(t *testing.T) {
+		expectedStatus := http.StatusInternalServerError
+		sv := NewMockEmployeeService()
+		sv.On("CountInboundOrdersPerEmployee").Return([]internal.InboundOrdersPerEmployee{}, errors.New("failed to fetch inbound orders"))
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		res := httptest.NewRecorder()
+
+		hd.ReportInboundOrders(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("succeeds to fetch inbound orders", func(t *testing.T) {
+		expectedStatus := http.StatusOK
+		sv := NewMockEmployeeService()
+		sv.On("CountInboundOrdersPerEmployee").Return([]internal.InboundOrdersPerEmployee{}, nil)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		res := httptest.NewRecorder()
+
+		hd.ReportInboundOrders(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("fails with invalid id", func(t *testing.T) {
+		expectedStatus := http.StatusBadRequest
+		sv := NewMockEmployeeService()
+		sv.On("CountInboundOrdersPerEmployee").Return([]internal.InboundOrdersPerEmployee{}, nil)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodGet, "/?id=abcdef", nil)
+		res := httptest.NewRecorder()
+
+		hd.ReportInboundOrders(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("employee not found", func(t *testing.T) {
+		expectedStatus := http.StatusNotFound
+		sv := NewMockEmployeeService()
+		sv.On("ReportInboundOrdersByID", 1).Return(internal.InboundOrdersPerEmployee{}, errors.New("employee not found"))
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodGet, "/?id=1", nil)
+		res := httptest.NewRecorder()
+
+		hd.ReportInboundOrders(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+	t.Run("employee found", func(t *testing.T) {
+		expectedStatus := http.StatusOK
+		sv := NewMockEmployeeService()
+		sv.On("ReportInboundOrdersByID", 1).Return(internal.InboundOrdersPerEmployee{}, nil)
+		hd := handler.NewEmployeeDefault(sv)
+		req := httptest.NewRequest(http.MethodGet, "/?id=1", nil)
+		res := httptest.NewRecorder()
+
+		hd.ReportInboundOrders(res, req)
+
+		require.Equal(t, expectedStatus, res.Result().StatusCode)
+	})
+}
 func TestEmployeeTestSuite(t *testing.T) {
 	suite.Run(t, new(EmployeeTestSuite))
 }
