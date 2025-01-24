@@ -6,10 +6,10 @@ import (
 )
 
 var (
-	ErrProductIdNotFound      = errors.New("product ID not found")
+	ErrProductIdNotFound     = errors.New("product ID not found")
 	ErrProductRecordsNotFound = errors.New("product-records not found")
 	ErrProductRecordsConflict = errors.New("product-records conflict")
-	ErrDateInvalid            = errors.New("invalid date type")
+	ErrDateInvalid           = errors.New("invalid date type")
 )
 
 type ProductRecords struct {

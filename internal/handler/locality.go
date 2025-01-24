@@ -50,9 +50,9 @@ type LocalityPostJSON struct {
 // @Produce json
 // @Param id query string false "Locality ID" Format(int)
 // @Success 200 {object} map[string]any "Carries report data"
-// @Failure 400 {object} rest_err.RestErr "Id should be a number"
-// @Failure 404 {object} rest_err.RestErr "Not carries on locality_id"
-// @Failure 500 {object} rest_err.RestErr "Failed to fetch carries"
+// @Failure 400 {object} resterr.RestErr "Id should be a number"
+// @Failure 404 {object} resterr.RestErr "Not carries on locality_id"
+// @Failure 500 {object} resterr.RestErr "Failed to fetch carries"
 // @Router /api/v1/localities/report-carries [get]
 func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -117,9 +117,9 @@ func (h *LocalityDefault) ReportCarries() http.HandlerFunc {
 // @Produce json
 // @Param id query string false "Locality ID" Format(int)
 // @Success 200 {object} map[string]any "Sellers count report data"
-// @Failure 400 {object} rest_err.RestErr "Id should be a number"
-// @Failure 404 {object} rest_err.RestErr "Locality not found"
-// @Failure 500 {object} rest_err.RestErr "Internal server error"
+// @Failure 400 {object} resterr.RestErr "Id should be a number"
+// @Failure 404 {object} resterr.RestErr "Locality not found"
+// @Failure 500 {object} resterr.RestErr "Internal server error"
 // @Router /api/v1/localities/report-sellers [get]
 func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -182,11 +182,11 @@ func (h *LocalityDefault) ReportSellers() http.HandlerFunc {
 // @Tags Locality
 // @Accept json
 // @Produce json
-// @Param locality body LocalityPostJson true "Locality data"
+// @Param locality body LocalityPostJSON true "Locality data"
 // @Success 200 {object} map[string]any "Saved locality data"
-// @Failure 400 {object} rest_err.RestErr "Locality inputs are Invalid"
-// @Failure 409 {object} rest_err.RestErr "Locality conflict"
-// @Failure 500 {object} rest_err.RestErr "Internal server error"
+// @Failure 400 {object} resterr.RestErr "Locality inputs are Invalid"
+// @Failure 409 {object} resterr.RestErr "Locality conflict"
+// @Failure 500 {object} resterr.RestErr "Internal server error"
 // @Router /api/v1/localities [post]
 func (h *LocalityDefault) Save() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

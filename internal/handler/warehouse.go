@@ -23,11 +23,11 @@ type WarehouseJSON struct {
 }
 
 type WarehouseCreateRequest struct {
-	WarehouseCode      string  `json:"warehouse_code"`
-	Address            string  `json:"address"`
-	Telephone          string  `json:"telephone"`
-	MinimumCapacity    int     `json:"minimum_capacity"`
-	MinimumTemperature float64 `json:"minimum_temperature"`
+	WarehouseCode      string   `json:"warehouse_code"`
+	Address            string   `json:"address"`
+	Telephone          string   `json:"telephone"`
+	MinimumCapacity    int      `json:"minimum_capacity"`
+	MinimumTemperature *float64 `json:"minimum_temperature"`
 }
 
 var (
@@ -55,7 +55,7 @@ type WarehouseDefault struct {
 // @Tags Warehouse
 // @Produce json
 // @Success 200 {object} map[string]any "List of all warehouses"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/warehouses [get]
 func (h *WarehouseDefault) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -92,9 +92,9 @@ func (h *WarehouseDefault) GetAll() http.HandlerFunc {
 // @Produce json
 // @Param id path int true "Warehouse ID"
 // @Success 200 {object} WarehouseJSON "Warehouse data"
-// @Failure 400 {object} rest_err.RestErr "Invalid ID format"
-// @Failure 404 {object} rest_err.RestErr "Warehouse not found"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 400 {object} resterr.RestErr "Invalid ID format"
+// @Failure 404 {object} resterr.RestErr "Warehouse not found"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/warehouses/{id} [get]
 func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -141,10 +141,10 @@ func (h *WarehouseDefault) GetByID() http.HandlerFunc {
 // @Produce json
 // @Param warehouse body WarehouseCreateRequest true "Warehouse data"
 // @Success 201 {object} WarehouseJSON "Created warehouse"
-// @Failure 400 {object} rest_err.RestErr "Invalid Data"
-// @Failure 409 {object} rest_err.RestErr "Warehouse already exists"
-// @Failure 422 {object} rest_err.RestErr "Unprocessable Entity"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 400 {object} resterr.RestErr "Invalid Data"
+// @Failure 409 {object} resterr.RestErr "Warehouse already exists"
+// @Failure 422 {object} resterr.RestErr "Unprocessable Entity"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/warehouses [post]
 func (h *WarehouseDefault) Create() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -156,6 +156,12 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			return
 		}
 
+		// check if the minimum temperature is nil (can be 0)
+		if requestInput.MinimumTemperature == nil {
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError("unprocessable entity: minimum temperature is required"))
+			return
+		}
+
 		// create the warehouse
 		warehouse := internal.Warehouse{
 			ID:                 0,
@@ -163,13 +169,7 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			Address:            requestInput.Address,
 			Telephone:          requestInput.Telephone,
 			MinimumCapacity:    requestInput.MinimumCapacity,
-			MinimumTemperature: requestInput.MinimumTemperature,
-		}
-
-		// validating the warehouse
-		if err := warehouse.Validate(); err != nil {
-			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
-			return
+			MinimumTemperature: *requestInput.MinimumTemperature,
 		}
 
 		// save the warehouse
@@ -178,6 +178,8 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
+			case errors.Is(err, internal.ErrWarehouseUnprocessableEntity):
+				response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 			default:
 				response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 			}
@@ -210,10 +212,10 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 // @Param id path int true "Warehouse ID"
 // @Param warehouse body internal.WarehousePatchUpdate true "Updated warehouse data"
 // @Success 200 {object} WarehouseJSON "Updated warehouse"
-// @Failure 400 {object} rest_err.RestErr "Invalid ID format" or "Invalid Data"
-// @Failure 404 {object} rest_err.RestErr "Warehouse not found"
-// @Failure 409 {object} rest_err.RestErr "Warehouse already exists"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 400 {object} resterr.RestErr "Invalid ID format" or "Invalid Data"
+// @Failure 404 {object} resterr.RestErr "Warehouse not found"
+// @Failure 409 {object} resterr.RestErr "Warehouse already exists"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/warehouses/{id} [patch]
 func (h *WarehouseDefault) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -269,9 +271,9 @@ func (h *WarehouseDefault) Update() http.HandlerFunc {
 // @Tags Warehouse
 // @Param id path int true "Warehouse ID"
 // @Success 204 {object} nil "No Content"
-// @Failure 400 {object} rest_err.RestErr "Invalid ID format"
-// @Failure 404 {object} rest_err.RestErr "Warehouse not found"
-// @Failure 500 {object} rest_err.RestErr "Internal Server Error"
+// @Failure 400 {object} resterr.RestErr "Invalid ID format"
+// @Failure 404 {object} resterr.RestErr "Warehouse not found"
+// @Failure 500 {object} resterr.RestErr "Internal Server Error"
 // @Router /api/v1/warehouses/{id} [delete]
 func (h *WarehouseDefault) Delete() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

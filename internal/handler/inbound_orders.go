@@ -86,7 +86,7 @@ func (h *InboundOrdersHandler) Create(w http.ResponseWriter, r *http.Request) {
 // @Accept json
 // @Produce json
 // @Success 200 {object} map[string]interface{} "List of inbound orders"
-// @Failure 500 {object} rest_err.RestErr "Failed to fetch inbounds orders"
+// @Failure 500 {object} resterr.RestErr "Failed to fetch inbounds orders"
 // @Router /api/v1/inbound-orders [get]
 func (h *InboundOrdersHandler) GetAll(w http.ResponseWriter, r *http.Request) {
 	allInbounds, err := h.sv.FindAll()

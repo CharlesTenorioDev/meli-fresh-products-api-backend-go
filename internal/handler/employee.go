@@ -31,7 +31,7 @@ func NewEmployeeDefault(sv internal.EmployeeService) *EmployeeHandlerDefault {
 // @Accept json
 // @Produce json
 // @Success 200 {object} map[string]interface{} "List of all employees"
-// @Failure 500 {object} rest_err.RestErr "internal server error"
+// @Failure 500 {object} resterr.RestErr "internal server error"
 // @Router /api/v1/employees [get]
 func (h *EmployeeHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 	dataEmployee, err := h.sv.GetAll()
@@ -239,9 +239,9 @@ func (h *EmployeeHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) 
 // @Produce json
 // @Param id query int false "Employee ID"
 // @Success 200 {object} map[string]interface{} "Count of inbound orders per employee"
-// @Failure 400 {object} rest_err.RestErr "Id should be a number"
-// @Failure 404 {object} rest_err.RestErr "Employee not found"
-// @Failure 500 {object} rest_err.RestErr "Failed to fetch inbound orders"
+// @Failure 400 {object} resterr.RestErr "Id should be a number"
+// @Failure 404 {object} resterr.RestErr "Employee not found"
+// @Failure 500 {object} resterr.RestErr "Failed to fetch inbound orders"
 // @Router /api/v1/employees/report-inbound-orders [get]
 func (h *EmployeeHandlerDefault) ReportInboundOrders(w http.ResponseWriter, r *http.Request) {
 	idStr := r.URL.Query().Get("id")
