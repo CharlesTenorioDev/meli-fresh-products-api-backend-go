@@ -80,14 +80,14 @@ func (h *BuyerHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Success 201 {object} map[string]interface{} "Created buyer"
 // @Failure 409 {object} resterr.RestErr "buyer with given card number already registered"
 // @Failure 400 {object} resterr.RestErr "Invalid input"
-// @Failure 422 {object} resterr.RestErr "Failed to create buyer"
+// @Failure 422 {object} resterr.RestErr "Couldn't parse buyer"
 // @Router /api/v1/buyers [post]
 func (h *BuyerHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var buyer internal.Buyer
 
 	err := json.NewDecoder(r.Body).Decode(&buyer)
 	if err != nil {
-		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(ErrInvalidData))
 
 		return
 	}
