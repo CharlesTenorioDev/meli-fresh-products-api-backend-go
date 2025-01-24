@@ -53,7 +53,7 @@ func (r *EmployeeRepositoryMock) ReportInboundOrdersByID(employeeID int) (io int
 	return args.Get(0).(internal.InboundOrdersPerEmployee), args.Error(1)
 }
 
-func TestCreate_EmployeeUnitTestService(t *testing.T) {
+func TestCreate_EmployeeUnitTest(t *testing.T) {
 	defaultEmployee := internal.Employee{
 		ID:           0,
 		CardNumberID: "abcdef",
@@ -115,7 +115,7 @@ func TestCreate_EmployeeUnitTestService(t *testing.T) {
 	})
 }
 
-func TestRead_EmployeeUnitTestService(t *testing.T) {
+func TestRead_EmployeeUnitTest(t *testing.T) {
 	expectedEmployees := []internal.Employee{
 		{
 			ID:        1,
@@ -177,7 +177,7 @@ func TestRead_EmployeeUnitTestService(t *testing.T) {
 	})
 }
 
-func TestUpdate_EmployeeUnitTestService(t *testing.T) {
+func TestUpdate_EmployeeUnitTest(t *testing.T) {
 	t.Run("update employee with id 1 (does not exist)", func(t *testing.T) {
 		rpWarehouse := NewWarehouseRepositoryMock()
 		rp := NewEmployeeRepositoryMock()
@@ -222,7 +222,7 @@ func TestUpdate_EmployeeUnitTestService(t *testing.T) {
 	})
 }
 
-func TestDelete_EmployeeUnitTestService(t *testing.T) {
+func TestDelete_EmployeeUnitTest(t *testing.T) {
 	t.Run("user does not exist", func(t *testing.T) {
 		rpWarehouse := NewWarehouseRepositoryMock()
 		rp := NewEmployeeRepositoryMock()
