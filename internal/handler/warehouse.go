@@ -23,11 +23,11 @@ type WarehouseJSON struct {
 }
 
 type WarehouseCreateRequest struct {
-	WarehouseCode      string  `json:"warehouse_code"`
-	Address            string  `json:"address"`
-	Telephone          string  `json:"telephone"`
-	MinimumCapacity    int     `json:"minimum_capacity"`
-	MinimumTemperature float64 `json:"minimum_temperature"`
+	WarehouseCode      string   `json:"warehouse_code"`
+	Address            string   `json:"address"`
+	Telephone          string   `json:"telephone"`
+	MinimumCapacity    int      `json:"minimum_capacity"`
+	MinimumTemperature *float64 `json:"minimum_temperature"`
 }
 
 var (
@@ -156,6 +156,12 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			return
 		}
 
+		// check if the minimum temperature is nil (can be 0)
+		if requestInput.MinimumTemperature == nil {
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError("unprocessable entity: minimum temperature is required"))
+			return
+		}
+
 		// create the warehouse
 		warehouse := internal.Warehouse{
 			ID:                 0,
@@ -163,13 +169,7 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			Address:            requestInput.Address,
 			Telephone:          requestInput.Telephone,
 			MinimumCapacity:    requestInput.MinimumCapacity,
-			MinimumTemperature: requestInput.MinimumTemperature,
-		}
-
-		// validating the warehouse
-		if err := warehouse.Validate(); err != nil {
-			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
-			return
+			MinimumTemperature: *requestInput.MinimumTemperature,
 		}
 
 		// save the warehouse
@@ -178,6 +178,8 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			switch {
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
+			case errors.Is(err, internal.ErrWarehouseUnprocessableEntity):
+				response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 			default:
 				response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 			}

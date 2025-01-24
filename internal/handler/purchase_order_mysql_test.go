@@ -234,7 +234,7 @@ func (p *PurchaseOrdersTestSuite) TestPurchaseOrders_Create() {
 		// then
 		expectedCode := http.StatusNotFound
 		expectedBody := `{
-			"message": "Product Records not found",
+			"message": "product-records conflict",
 			"error": "not_found",
 			"code": 404,
 			"causes": null
