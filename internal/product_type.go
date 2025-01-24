@@ -4,7 +4,7 @@ import "errors"
 
 var (
 	ErrProductTypeAlreadyExists = errors.New("product-type already exists")
-	ErrProductTypeNotFound      = errors.New("product-type not found")
+	ErrProductTypeNotFound         = errors.New("product-type not found")
 )
 
 type ProductType struct {

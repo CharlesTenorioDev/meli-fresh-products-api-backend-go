@@ -75,19 +75,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "buyer with given card number already registered",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Failed to create buyer",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -125,19 +125,19 @@ const docTemplate = `{
                     "400": {
                         "description": "failed to parse id",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Buyer not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -176,13 +176,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Failed to parse Id",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Buyer not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -215,13 +215,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Failed to parse Id",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Buyer not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -267,19 +267,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Failed to parse id\" or \"Failed to parse body",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Buyer not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "buyer with given card number already registered",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -309,7 +309,7 @@ const docTemplate = `{
                     "500": {
                         "description": "failed to fetch carries",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -348,19 +348,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Failed to parse body",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "carry with this cid already exists\" or \"there's no such locality id",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Missing fields",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -390,7 +390,7 @@ const docTemplate = `{
                     "500": {
                         "description": "internal server error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -482,19 +482,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Id should be a number",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Employee not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Failed to fetch inbound orders",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -673,7 +673,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Failed to fetch inbounds orders",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -753,7 +753,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.LocalityPostJson"
+                            "$ref": "#/definitions/handler.LocalityPostJSON"
                         }
                     }
                 ],
@@ -768,19 +768,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Locality inputs are Invalid",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Locality conflict",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -819,19 +819,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Id should be a number",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Not carries on locality_id",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Failed to fetch carries",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -870,19 +870,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Id should be a number",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Locality not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -923,13 +923,13 @@ const docTemplate = `{
                     "409": {
                         "description": "Error ID doesn't exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Invalid JSON",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -970,19 +970,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid input format",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Product-batch with given product-batch number already registered\" or \"Product-batch already exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Couldn't parse product-batch",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1021,13 +1021,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid Id format",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Product-batch not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1057,7 +1057,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1096,31 +1096,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Seller or Product Type not exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Product code already exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Unprocessable entity",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1158,13 +1158,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid Id",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Product not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1203,13 +1203,13 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid Id format",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Product not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1242,19 +1242,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid Id format",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Product not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1300,31 +1300,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid request body",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Seller or Product Type not exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Product code already exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "All fields must be valid and filled",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal server error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1364,31 +1364,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid data",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Product records or Buyer not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Purchase order number already exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Purchase Order inputs are Invalid",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1417,7 +1417,7 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1455,19 +1455,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Section with given section number already registered\" or \"Warehouse not found\" or \"Product-type not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Couldn't parse section",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1504,19 +1504,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Section not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1551,19 +1551,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Section not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1593,19 +1593,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Section not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1651,19 +1651,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Section not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Section with given section number already registered",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1685,20 +1685,20 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/handler.SellersGetJson"
+                                "$ref": "#/definitions/handler.SellersGetJSON"
                             }
                         }
                     },
                     "404": {
                         "description": "Sellers not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1722,7 +1722,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.SellersPostJson"
+                            "$ref": "#/definitions/handler.SellersPostJSON"
                         }
                     }
                 ],
@@ -1737,31 +1737,31 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Seller not found\" or \"Locality not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Seller already exists\" or \"Seller with this CID already exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1790,25 +1790,25 @@ const docTemplate = `{
                     "200": {
                         "description": "Seller data",
                         "schema": {
-                            "$ref": "#/definitions/handler.SellersGetJson"
+                            "$ref": "#/definitions/handler.SellersGetJSON"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Seller Not Found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1838,19 +1838,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Seller not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1881,7 +1881,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/handler.SellersUpdateJson"
+                            "$ref": "#/definitions/handler.SellersUpdateJSON"
                         }
                     }
                 ],
@@ -1889,31 +1889,31 @@ const docTemplate = `{
                     "200": {
                         "description": "Updated Seller data",
                         "schema": {
-                            "$ref": "#/definitions/handler.SellersGetJson"
+                            "$ref": "#/definitions/handler.SellersGetJSON"
                         }
                     },
                     "400": {
                         "description": "Seller invalid fields",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Seller not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Seller with this CID already exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1940,7 +1940,7 @@ const docTemplate = `{
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -1978,25 +1978,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid Data",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Warehouse already exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "422": {
                         "description": "Unprocessable Entity",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -2031,19 +2031,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid ID format",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Warehouse not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -2070,19 +2070,19 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid ID format",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Warehouse not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -2127,25 +2127,25 @@ const docTemplate = `{
                     "400": {
                         "description": "Invalid ID format\" or \"Invalid Data",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "404": {
                         "description": "Warehouse not found",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "409": {
                         "description": "Warehouse already exists",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
-                            "$ref": "#/definitions/rest_err.RestErr"
+                            "$ref": "#/definitions/resterr.RestErr"
                         }
                     }
                 }
@@ -2153,7 +2153,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "handler.LocalityPostJson": {
+        "handler.LocalityPostJSON": {
             "type": "object",
             "properties": {
                 "country_name": {
@@ -2291,7 +2291,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.SellersGetJson": {
+        "handler.SellersGetJSON": {
             "type": "object",
             "properties": {
                 "address": {
@@ -2314,7 +2314,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.SellersPostJson": {
+        "handler.SellersPostJSON": {
             "type": "object",
             "properties": {
                 "address": {
@@ -2334,7 +2334,7 @@ const docTemplate = `{
                 }
             }
         },
-        "handler.SellersUpdateJson": {
+        "handler.SellersUpdateJSON": {
             "type": "object",
             "properties": {
                 "address": {
@@ -2607,7 +2607,7 @@ const docTemplate = `{
                 }
             }
         },
-        "rest_err.Causes": {
+        "resterr.Causes": {
             "description": "Structure representing the causes of an error.",
             "type": "object",
             "properties": {
@@ -2623,7 +2623,7 @@ const docTemplate = `{
                 }
             }
         },
-        "rest_err.RestErr": {
+        "resterr.RestErr": {
             "description": "Structure for describing why the error occurred",
             "type": "object",
             "properties": {
@@ -2631,7 +2631,7 @@ const docTemplate = `{
                     "description": "Error causes.",
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/rest_err.Causes"
+                        "$ref": "#/definitions/resterr.Causes"
                     }
                 },
                 "code": {

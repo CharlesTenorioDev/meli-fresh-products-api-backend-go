@@ -7,21 +7,19 @@ import (
 
 	"github.com/bootcamp-go/web/response"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 )
 
 type ProductRecordsHandlerDefault struct {
-	pd internal.ProductRecordsService
+	s internal.ProductRecordsService
 }
 
 // NewProductRecordsDefault creates a new instance of ProductRecordsHandlerDefault.
 func NewProductRecordsDefault(pd internal.ProductRecordsService) *ProductRecordsHandlerDefault {
 	return &ProductRecordsHandlerDefault{
-		pd: pd,
+		s: pd,
 	}
 }
-
 
 // Create handles the creation of a Product Record.
 // Create godoc
@@ -32,27 +30,27 @@ func NewProductRecordsDefault(pd internal.ProductRecordsService) *ProductRecords
 // @Produce json
 // @Param product_record body internal.ProductRecords true "Product Record Data"
 // @Success 201 {object} map[string]interface{} "Created product record"
-// @Failure 422 {object} rest_err.RestErr "Invalid JSON"
-// @Failure 409 {object} rest_err.RestErr "Error ID doesn't exists"
+// @Failure 422 {object} resterr.RestErr "Invalid JSON"
+// @Failure 409 {object} resterr.RestErr "Error ID doesn't exists"
 // @Router /api/v1/productRecords [post]
 func (h *ProductRecordsHandlerDefault) Create(w http.ResponseWriter, r *http.Request) {
 	var productRec internal.ProductRecords
 
 	// Decodifica o corpo da requisição JSON
 	if err := json.NewDecoder(r.Body).Decode(&productRec); err != nil {
-		response.JSON(w, http.StatusUnprocessableEntity, "JSON inválido")
-
+		response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
+		
 		return
 	}
 
 	// Chama o serviço para criar o registro
-	createdProductRec, err := h.pd.Create(productRec)
+	createdProductRec, err := h.s.Create(productRec)
 	if err != nil {
-		if errors.Is(err, service.ErrProductUnprocessableEntity) {
+		if errors.Is(err, internal.ErrProductUnprocessableEntity) {
 			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 		}
 
-		if errors.Is(err, service.ErrProductNotExists) {
+		if errors.Is(err, internal.ErrProductIdNotFound) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		}
 
