@@ -112,7 +112,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 				response.JSON(w, http.StatusUnprocessableEntity, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
 			case errors.Is(err, internal.ErrPurchaseOrderConflict):
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
-			case errors.Is(err, service.ErrProductRecordsNotFound):
+			case errors.Is(err, internal.ErrProductRecordsNotFound):
 				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
 			case errors.Is(err, service.ErrBuyerNotFound):
 				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
