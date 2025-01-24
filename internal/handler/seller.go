@@ -2,7 +2,6 @@ package handler
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"strconv"
 
@@ -64,14 +63,7 @@ func (h *SellerDefault) GetAll() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		all, err := h.sv.FindAll()
 		if err != nil {
-			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError("sellers not found"))
-
-				return
-			}
-
-			response.JSON(w, http.StatusInternalServerError, nil)
-
+			h.handleError(w, err)
 			return
 		}
 
@@ -109,21 +101,13 @@ func (h *SellerDefault) GetByID() http.HandlerFunc {
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, nil)
-
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 			return
 		}
 
 		seller, err := h.sv.FindByID(id)
 		if err != nil {
-			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
-
-				return
-			}
-
-			response.JSON(w, http.StatusInternalServerError, nil)
-
+			h.handleError(w, err)
 			return
 		}
 
@@ -162,8 +146,7 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 
 		err := request.JSON(r, &body)
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
-
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError("request json invalid"))
 			return
 		}
 
@@ -175,32 +158,9 @@ func (h *SellerDefault) Save() http.HandlerFunc {
 			Locality:    body.Locality,
 		}
 
-		err = sl.Validate()
-		if err != nil {
-			restErr := resterr.NewUnprocessableEntityError(err.Error())
-			response.JSON(w, restErr.Code, restErr)
-
-			return
-		}
-
 		err = h.sv.Save(sl)
 		if err != nil {
-			log.Println(err)
-
-			if errors.Is(err, internal.ErrSellerConflict) || errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
-				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
-
-				return
-			}
-
-			if errors.Is(err, internal.ErrSellerNotFound) || errors.Is(err, internal.ErrLocalityNotFound) {
-				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
-
-				return
-			}
-
-			response.JSON(w, http.StatusInternalServerError, nil)
-
+			h.handleError(w, err)
 			return
 		}
 
@@ -232,8 +192,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, nil)
-
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 			return
 		}
 
@@ -241,8 +200,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		err = request.JSON(r, &body)
 		if err != nil {
-			response.JSON(w, http.StatusInternalServerError, nil)
-
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError("request json invalid"))
 			return
 		}
 
@@ -256,27 +214,7 @@ func (h *SellerDefault) Update() http.HandlerFunc {
 
 		seller, err := h.sv.Update(id, slPatch)
 		if err != nil {
-			if errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
-				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
-
-				return
-			}
-
-			if errors.Is(err, internal.ErrSellerInvalidFields) {
-				restErr := resterr.NewBadRequestError(err.Error())
-				response.JSON(w, restErr.Code, restErr)
-
-				return
-			}
-
-			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
-
-				return
-			}
-
-			response.JSON(w, http.StatusInternalServerError, nil)
-
+			h.handleError(w, err)
 			return
 		}
 
@@ -310,24 +248,56 @@ func (h *SellerDefault) Delete() http.HandlerFunc {
 
 		id, err := strconv.Atoi(idStr)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, nil)
-
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
 			return
 		}
 
 		err = h.sv.Delete(id)
 		if err != nil {
-			if errors.Is(err, internal.ErrSellerNotFound) {
-				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
-
-				return
-			}
-
-			response.JSON(w, http.StatusInternalServerError, nil)
-
+			h.handleError(w, err)
 			return
 		}
 
 		response.JSON(w, http.StatusNoContent, nil)
 	}
+}
+
+func (h *SellerDefault) handleError(w http.ResponseWriter, err error) {
+	if errors.As(err, &internal.DomainError{}) {
+		var domainError internal.DomainError
+		_ = errors.As(err, &domainError)
+
+		var causes []resterr.Causes
+		for _, cause := range domainError.Causes {
+			causes = append(causes, resterr.Causes{
+				Field:   cause.Field,
+				Message: cause.Message,
+			})
+		}
+
+		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, causes))
+
+		return
+	}
+
+	if errors.Is(err, internal.ErrSellerInvalidFields) {
+		restErr := resterr.NewBadRequestError(err.Error())
+		response.JSON(w, restErr.Code, restErr)
+
+		return
+	}
+
+	if errors.Is(err, internal.ErrSellerConflict) || errors.Is(err, internal.ErrSellerCIDAlreadyExists) {
+		response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
+
+		return
+	}
+
+	if errors.Is(err, internal.ErrSellerNotFound) || errors.Is(err, internal.ErrLocalityNotFound) {
+		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
+		return
+	}
+
+	response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError("internal server error"))
 }
