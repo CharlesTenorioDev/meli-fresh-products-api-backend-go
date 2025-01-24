@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 
@@ -113,6 +114,51 @@ func TestCreate_EmployeeUnitTest(t *testing.T) {
 
 		require.Error(t, err)
 	})
+	t.Run("internal fails to get all employees", func(t *testing.T) {
+		emp := internal.Employee{
+			ID:           0,
+			CardNumberID: "",
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			WarehouseID:  14,
+		}
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("GetAll").Return([]internal.Employee{}, internal.ErrEmployeeNotFound)
+		err := sv.Save(&emp)
+
+		require.Error(t, err)
+	})
+	t.Run("employee already exists", func(t *testing.T) {
+		emp := internal.Employee{
+			ID:           1,
+			CardNumberID: "",
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			WarehouseID:  14,
+		}
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("GetAll").Return([]internal.Employee{}, nil)
+		err := sv.Save(&emp)
+
+		require.Error(t, err)
+	})
+	t.Run("create an employee fails", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rpWarehouse.On("FindByID", 14).Return(internal.Warehouse{
+			ID: 14,
+		}, nil)
+		rp.On("GetAll").Return([]internal.Employee{}, nil)
+		rp.On("Save", &defaultEmployee).Return(-1, errors.New("failed to create employee"))
+		err := sv.Save(&defaultEmployee)
+
+		require.NoError(t, err)
+	})
 }
 
 func TestRead_EmployeeUnitTest(t *testing.T) {
@@ -220,6 +266,104 @@ func TestUpdate_EmployeeUnitTest(t *testing.T) {
 
 		require.NoError(t, err)
 	})
+	t.Run("update but fails to fetch employees", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("GetAll").Return([]internal.Employee{}, internal.ErrEmployeeNotFound)
+		employee := internal.Employee{
+			ID:       1,
+			LastName: "Fabio",
+		}
+
+		err := sv.Update(employee)
+		require.Error(t, err)
+	})
+	t.Run("card number id already in use", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("GetAll").Return([]internal.Employee{
+			{
+				ID:           1,
+				CardNumberID: "abcdef",
+			},
+			{
+				ID:           2,
+				CardNumberID: "cdef",
+			},
+		}, nil)
+		employee := internal.Employee{
+			ID:           2,
+			CardNumberID: "abcdef",
+		}
+
+		err := sv.Update(employee)
+		require.Error(t, err)
+	})
+	t.Run("missing required fields", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("GetAll").Return([]internal.Employee{
+			{
+				ID:           1,
+				CardNumberID: "abcdef",
+			},
+		}, nil)
+		employee := internal.Employee{
+			ID:           1,
+			CardNumberID: "",
+		}
+
+		err := sv.Update(employee)
+		require.Error(t, err)
+	})
+	t.Run("warehouse conflict", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rpWarehouse.On("FindByID", 1).Return(internal.Warehouse{}, service.ErrConflictInEmployee)
+		rp.On("GetAll").Return([]internal.Employee{
+			{
+				ID:           1,
+				CardNumberID: "abcdef",
+			},
+		}, nil)
+		employee := internal.Employee{
+			ID:           1,
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			WarehouseID:  1,
+			CardNumberID: "abcd",
+		}
+
+		err := sv.Update(employee)
+		require.Error(t, err)
+	})
+	t.Run("updating fails", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		employee := internal.Employee{
+			ID:           1,
+			FirstName:    "Fabio",
+			LastName:     "Nacarelli",
+			WarehouseID:  1,
+			CardNumberID: "abcd",
+		}
+		rpWarehouse.On("FindByID", 1).Return(internal.Warehouse{}, nil)
+		rp.On("GetAll").Return([]internal.Employee{
+			{
+				ID:           1,
+				CardNumberID: "abcdef",
+			},
+		}, nil)
+		rp.On("Update", 1, employee).Return(errors.New("internal err update"))
+
+		err := sv.Update(employee)
+		require.Error(t, err)
+	})
 }
 
 func TestDelete_EmployeeUnitTest(t *testing.T) {
@@ -242,5 +386,34 @@ func TestDelete_EmployeeUnitTest(t *testing.T) {
 
 		err := sv.Delete(1)
 		require.NoError(t, err)
+	})
+	t.Run("user does not exist pt2", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("GetByID", 1).Return(internal.Employee{}, errors.New("just coverage"))
+
+		err := sv.Delete(1)
+
+		require.Error(t, err)
+	})
+}
+
+func Test_CoverageEmployeeUnitTest(t *testing.T) {
+	t.Run("call count inbound orders per employee", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("CountInboundOrdersPerEmployee").Return([]internal.InboundOrdersPerEmployee{}, nil)
+
+		sv.CountInboundOrdersPerEmployee()
+	})
+	t.Run("call report inbound orders per employee", func(t *testing.T) {
+		rpWarehouse := NewWarehouseRepositoryMock()
+		rp := NewEmployeeRepositoryMock()
+		sv := service.NewEmployeeServiceDefault(rp, rpWarehouse)
+		rp.On("ReportInboundOrdersByID", 1).Return(internal.InboundOrdersPerEmployee{}, nil)
+
+		sv.ReportInboundOrdersByID(1)
 	})
 }
