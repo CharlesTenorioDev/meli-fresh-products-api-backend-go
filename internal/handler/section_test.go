@@ -37,7 +37,7 @@ func (m *MockSectionService) ReportProducts() ([]internal.ReportProduct, error) 
 }
 
 func (m *MockSectionService) ReportProductsByID(id int) (internal.ReportProduct, error) {
-	args := m.Called()
+	args := m.Called(id)
 	return args.Get(0).(internal.ReportProduct), args.Error(1)
 }
 
@@ -180,7 +180,10 @@ func (suite *SectionTestSuite) TestSaveSection() {
 		WarehouseID:        201,
 		ProductTypeID:      301,
 	}
-	suite.service.On("Save", &section).Return(nil)
+	suite.service.On("Save", mock.AnythingOfType("*internal.Section")).Run(func(args mock.Arguments) {
+		w := args.Get(0).(*internal.Section)
+		w.ID = section.ID
+	}).Return(nil)
 
 	body, _ := json.Marshal(section)
 	r := httptest.NewRequest(http.MethodPost, "/sections", bytes.NewReader(body))
@@ -191,7 +194,7 @@ func (suite *SectionTestSuite) TestSaveSection() {
 	assert.Equal(suite.T(), http.StatusCreated, w.Result().StatusCode)
 
 	var response struct {
-		Data internal.Section `json:"data"`
+		Data internal.Section
 	}
 	err := json.NewDecoder(w.Body).Decode(&response)
 	require.NoError(suite.T(), err)
@@ -289,7 +292,7 @@ func (suite *SectionTestSuite) TestDeleteSectionNotFound() {
 
 	suite.handler.Delete(w, r)
 
-	assert.Equal(suite.T(), http.StatusInternalServerError, w.Result().StatusCode)
+	assert.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
 	var response struct {
 		Error string `json:"data"`
 	}
