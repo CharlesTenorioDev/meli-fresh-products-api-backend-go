@@ -198,7 +198,7 @@ func (s *SectionService) updateWarehouseAndProduct(updateSection *internal.Secti
 	}
 
 	if updateSection.ProductTypeID != nil {
-		_, err := s.rpW.FindByID(*updateSection.ProductTypeID)
+		_, err := s.rpT.FindByID(*updateSection.ProductTypeID)
 		if err != nil {
 			return internal.ErrProductTypeNotFound
 		}

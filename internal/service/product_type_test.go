@@ -1,9 +1,13 @@
-package service
+package service_test
 
 import (
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/stretchr/testify/mock"
 )
+
+func NewProductTypeRepositoryMock() *ProductTypeRepositoryMock {
+	return &ProductTypeRepositoryMock{}
+}
 
 type ProductTypeRepositoryMock struct {
 	mock.Mock
