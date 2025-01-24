@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 
+	"github.com/go-sql-driver/mysql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -186,6 +187,14 @@ func (r *SectionMysql) Save(section *internal.Section) error {
 	)
 
 	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) {
+			switch mysqlErr.Number {
+			case 1062:
+				err = internal.ErrSectionUnprocessableEntity
+			}
+		}
+
 		return err
 	}
 
@@ -212,6 +221,18 @@ func (r *SectionMysql) Update(section *internal.Section) error {
 		section.ProductTypeID,
 		section.ID,
 	)
+
+	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) {
+			switch mysqlErr.Number {
+			case 1062:
+				err = internal.ErrSectionUnprocessableEntity
+			default:
+				err = internal.ErrSectionNotFound
+			}
+		}
+	}
 
 	return err
 }

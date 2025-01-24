@@ -142,6 +142,7 @@ func TestService_CreateSectionUnitTest(t *testing.T) {
 
 		err := sv.Save(&sectionCreate)
 
+		require.Error(t, err)
 		require.ErrorIs(t, err, internal.ErrSectionNumberAlreadyInUse)
 
 		rpSection.AssertExpectations(t)
@@ -151,6 +152,75 @@ func TestService_CreateSectionUnitTest(t *testing.T) {
 		rpProductType.AssertExpectations(t)
 		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
 		rpSection.AssertNumberOfCalls(t, "Save", 0)
+	})
+
+	t.Run("returns error when warehouse does not exist", func(t *testing.T) {
+		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
+
+		sectionCreate := newTestSection(0, 101, 99, 3)
+
+		rpSection.On("SectionNumberExists", sectionCreate.SectionNumber).Return(false, nil)
+		rpWareHouse.On("FindByID", sectionCreate.WarehouseID).Return(internal.Warehouse{}, internal.ErrWarehouseRepositoryNotFound)
+
+		err := sv.Save(&sectionCreate)
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, internal.ErrWarehouseRepositoryNotFound)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 1)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Save", 0)
+	})
+
+	t.Run("returns error when product type does not exist", func(t *testing.T) {
+		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
+
+		sectionCreate := newTestSection(0, 101, 3, 99)
+
+		rpSection.On("SectionNumberExists", sectionCreate.SectionNumber).Return(false, nil)
+		rpWareHouse.On("FindByID", sectionCreate.WarehouseID).Return(internal.Warehouse{}, nil)
+		rpProductType.On("FindByID", sectionCreate.ProductTypeID).Return(internal.ProductType{}, internal.ErrProductTypeNotFound)
+
+		err := sv.Save(&sectionCreate)
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, internal.ErrProductTypeNotFound)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 1)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "Save", 0)
+	})
+
+	t.Run("returns error when section fails to save", func(t *testing.T) {
+		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
+
+		sectionCreate := newTestSection(0, 101, 3, 99)
+
+		rpSection.On("SectionNumberExists", sectionCreate.SectionNumber).Return(false, nil)
+		rpWareHouse.On("FindByID", sectionCreate.WarehouseID).Return(internal.Warehouse{}, nil)
+		rpProductType.On("FindByID", sectionCreate.ProductTypeID).Return(internal.ProductType{}, nil)
+		rpSection.On("Save", &sectionCreate).Return(internal.ErrSectionUnprocessableEntity)
+
+		err := sv.Save(&sectionCreate)
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, internal.ErrSectionUnprocessableEntity)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 1)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "Save", 1)
 	})
 }
 
@@ -347,8 +417,8 @@ func TestService_UpdateSectionUnitTest(t *testing.T) {
 		require.Empty(t, updatedSection)
 
 		rpSection.AssertExpectations(t)
-		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 0)
 		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 0)
 		rpWareHouse.AssertExpectations(t)
 		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
 		rpProductType.AssertExpectations(t)
@@ -372,8 +442,8 @@ func TestService_UpdateSectionUnitTest(t *testing.T) {
 			ProductTypeID:      intPtr(7),
 		}
 
-		rpSection.On("SectionNumberExists", *updates.SectionNumber).Return(false, nil)
 		rpSection.On("FindByID", 1).Return(existingSection, nil)
+		rpSection.On("SectionNumberExists", *updates.SectionNumber).Return(false, nil)
 		rpWareHouse.On("FindByID", *updates.WarehouseID).Return(internal.Warehouse{ID: *updates.WarehouseID}, nil)
 		rpProductType.On("FindByID", *updates.ProductTypeID).Return(internal.ProductType{ID: *updates.ProductTypeID}, nil)
 
@@ -385,8 +455,297 @@ func TestService_UpdateSectionUnitTest(t *testing.T) {
 		require.NotEqual(t, existingSection, updatedSection)
 
 		rpSection.AssertExpectations(t)
-		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
 		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 1)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "Update", 1)
+	})
+
+	t.Run("returns error when find section number", func(t *testing.T) {
+		sv, rpSection, rpWareHouse, rpProductType := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("SectionNumberExists", 123).Return(false, errors.New("error when find section number"))
+
+		updatedSection, err := sv.Update(1, internal.SectionPatch{SectionNumber: intPtr(123)})
+
+		require.Error(t, err)
+		require.Equal(t, errors.New("error when find section number"), err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when section number is already in use", func(t *testing.T) {
+		sv, rpSection, rpWareHouse, rpProductType := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("SectionNumberExists", 123).Return(true, nil)
+
+		updatedSection, err := sv.Update(1, internal.SectionPatch{SectionNumber: intPtr(123)})
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionNumberAlreadyInUse, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when section number is less than or equal to zero", func(t *testing.T) {
+		sv, rpSection, rpWareHouse, rpProductType := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("SectionNumberExists", 0).Return(false, nil)
+
+		updatedSection, err := sv.Update(1, internal.SectionPatch{SectionNumber: intPtr(0)})
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionUnprocessableEntity, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when current temperature is below absolute zero", func(t *testing.T) {
+		sv, rpSection, rpWareHouse, rpProductType := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("SectionNumberExists", 123).Return(false, nil)
+
+		updatedSection, err := sv.Update(1, internal.SectionPatch{SectionNumber: intPtr(123), CurrentTemperature: float64Ptr(-274)})
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionUnprocessableEntity, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when minimum temperature is below absolute zero", func(t *testing.T) {
+		sv, rpSection, rpWareHouse, rpProductType := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("SectionNumberExists", 123).Return(false, nil)
+
+		updatedSection, err := sv.Update(1, internal.SectionPatch{SectionNumber: intPtr(123), MinimumTemperature: float64Ptr(-274)})
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionUnprocessableEntity, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when current capacity is less than zero", func(t *testing.T) {
+		sv, rpSection, rpWareHouse, rpProductType := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("SectionNumberExists", 123).Return(false, nil)
+
+		updatedSection, err := sv.Update(1, internal.SectionPatch{SectionNumber: intPtr(123), CurrentCapacity: intPtr(-2)})
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionUnprocessableEntity, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when minimum capacity is less than zero", func(t *testing.T) {
+		sv, rpSection, rpWareHouse, rpProductType := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("SectionNumberExists", 123).Return(false, nil)
+
+		updatedSection, err := sv.Update(1, internal.SectionPatch{SectionNumber: intPtr(123), MinimumCapacity: intPtr(-2)})
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionUnprocessableEntity, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when maximum capacity is less than zero", func(t *testing.T) {
+		sv, rpSection, rpWareHouse, rpProductType := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("SectionNumberExists", 123).Return(false, nil)
+
+		updatedSection, err := sv.Update(1, internal.SectionPatch{SectionNumber: intPtr(123), MaximumCapacity: intPtr(-2)})
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionUnprocessableEntity, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 0)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when warehouse does not exist", func(t *testing.T) {
+		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
+
+		existingSection := newTestSection(1, 100, 6, 7)
+
+		updates := internal.SectionPatch{
+			SectionNumber:      intPtr(456),
+			CurrentTemperature: float64Ptr(22.5),
+			MinimumTemperature: float64Ptr(15.0),
+			CurrentCapacity:    intPtr(502),
+			MinimumCapacity:    intPtr(302),
+			MaximumCapacity:    intPtr(150),
+			WarehouseID:        intPtr(7),
+			ProductTypeID:      intPtr(7),
+		}
+
+		rpSection.On("FindByID", 1).Return(existingSection, nil)
+		rpSection.On("SectionNumberExists", *updates.SectionNumber).Return(false, nil)
+		rpWareHouse.On("FindByID", *updates.WarehouseID).Return(internal.Warehouse{ID: *updates.WarehouseID}, internal.ErrWarehouseRepositoryNotFound)
+		//rpProductType.On("FindByID", *updates.ProductTypeID).Return(internal.ProductType{ID: *updates.ProductTypeID}, nil)
+
+		updatedSection, err := sv.Update(1, updates)
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrWarehouseRepositoryNotFound, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 1)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 0)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when product type does not exist", func(t *testing.T) {
+		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
+
+		existingSection := newTestSection(1, 100, 6, 7)
+
+		updates := internal.SectionPatch{
+			SectionNumber:      intPtr(456),
+			CurrentTemperature: float64Ptr(22.5),
+			MinimumTemperature: float64Ptr(15.0),
+			CurrentCapacity:    intPtr(502),
+			MinimumCapacity:    intPtr(302),
+			MaximumCapacity:    intPtr(150),
+			WarehouseID:        intPtr(7),
+			ProductTypeID:      intPtr(7),
+		}
+
+		rpSection.On("FindByID", 1).Return(existingSection, nil)
+		rpSection.On("SectionNumberExists", *updates.SectionNumber).Return(false, nil)
+		rpWareHouse.On("FindByID", *updates.WarehouseID).Return(internal.Warehouse{ID: *updates.WarehouseID}, nil)
+		rpProductType.On("FindByID", *updates.ProductTypeID).Return(internal.ProductType{ID: *updates.ProductTypeID}, internal.ErrProductTypeNotFound)
+
+		updatedSection, err := sv.Update(1, updates)
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrProductTypeNotFound, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
+		rpWareHouse.AssertExpectations(t)
+		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 1)
+		rpProductType.AssertExpectations(t)
+		rpProductType.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "Update", 0)
+	})
+
+	t.Run("returns error when section fails to update", func(t *testing.T) {
+		sv, rpSection, rpProductType, rpWareHouse := newSectionService()
+
+		existingSection := newTestSection(1, 100, 6, 7)
+
+		updates := internal.SectionPatch{
+			SectionNumber:      intPtr(456),
+			CurrentTemperature: float64Ptr(22.5),
+			MinimumTemperature: float64Ptr(15.0),
+			CurrentCapacity:    intPtr(502),
+			MinimumCapacity:    intPtr(302),
+			MaximumCapacity:    intPtr(150),
+			WarehouseID:        intPtr(7),
+			ProductTypeID:      intPtr(7),
+		}
+
+		rpSection.On("FindByID", 1).Return(existingSection, nil)
+		rpSection.On("SectionNumberExists", *updates.SectionNumber).Return(false, nil)
+		rpWareHouse.On("FindByID", *updates.WarehouseID).Return(internal.Warehouse{ID: *updates.WarehouseID}, nil)
+		rpProductType.On("FindByID", *updates.ProductTypeID).Return(internal.ProductType{ID: *updates.ProductTypeID}, nil)
+
+		rpSection.On("Update", mock.AnythingOfType("*internal.Section")).Return(internal.ErrSectionUnprocessableEntity)
+
+		updatedSection, err := sv.Update(1, updates)
+
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionUnprocessableEntity, err)
+		require.Empty(t, updatedSection)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "SectionNumberExists", 1)
 		rpWareHouse.AssertExpectations(t)
 		rpWareHouse.AssertNumberOfCalls(t, "FindByID", 1)
 		rpProductType.AssertExpectations(t)
@@ -403,7 +762,8 @@ func TestService_DeleteSectionUnitTest(t *testing.T) {
 
 		err := sv.Delete(1)
 
-		require.ErrorIs(t, err, internal.ErrSectionNotFound)
+		require.Error(t, err)
+		require.Equal(t, internal.ErrSectionNotFound, err)
 
 		rpSection.AssertExpectations(t)
 		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
@@ -421,6 +781,22 @@ func TestService_DeleteSectionUnitTest(t *testing.T) {
 		err := sv.Delete(1)
 
 		require.NoError(t, err)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
+		rpSection.AssertNumberOfCalls(t, "Delete", 1)
+	})
+
+	t.Run("return error when attempting to delete a nonexistent section", func(t *testing.T) {
+		sv, rpSection, _, _ := newSectionService()
+
+		rpSection.On("FindByID", 1).Return(internal.Section{}, nil)
+		rpSection.On("Delete", 1).Return(errors.New("error delete section"))
+
+		err := sv.Delete(1)
+
+		require.Error(t, err)
+		require.Equal(t, errors.New("error delete section"), err)
 
 		rpSection.AssertExpectations(t)
 		rpSection.AssertNumberOfCalls(t, "FindByID", 1)
