@@ -266,6 +266,7 @@ type TestCasesUnit struct {
 	expectedBody       string
 	expectedStatusCode int
 	expectedResponse   interface{}
+	expectedMockCalls  int
 }
 
 func TestHandler_BuyerCreateUnitTest(t *testing.T) {
@@ -283,6 +284,7 @@ func TestHandler_BuyerCreateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusCreated,
 			expectedResponse:   internal.Buyer{},
+			expectedMockCalls:  1,
 		},
 
 		{
@@ -298,6 +300,7 @@ func TestHandler_BuyerCreateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusUnprocessableEntity,
 			expectedResponse:   *resterr.NewUnprocessableEntityError("couldn't parse buyer"),
+			expectedMockCalls:  1,
 		},
 
 		{
@@ -313,6 +316,7 @@ func TestHandler_BuyerCreateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   *resterr.NewConflictError("buyer with given card number already registered"),
+			expectedMockCalls:  1,
 		},
 		{
 			name: "status code 409 (fail) - Failed to create a new buyer who is already registered",
@@ -327,6 +331,7 @@ func TestHandler_BuyerCreateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   *resterr.NewConflictError("buyer already exists"),
+			expectedMockCalls:  1,
 		},
 		{
 			name: "status code 400 (fail) - Attempt to create a new buyer with invalid input",
@@ -341,6 +346,7 @@ func TestHandler_BuyerCreateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   *resterr.NewBadRequestError("invalid input data"),
+			expectedMockCalls:  0,
 		},
 	}
 
@@ -362,6 +368,7 @@ func TestHandler_BuyerCreateUnitTest(t *testing.T) {
 			//Then
 			require.Equal(t, tc.expectedStatusCode, w.Code)
 			assert.Equal(t, tc.expectedBody, w.Body.String())
+			sv.AssertNumberOfCalls(t, "Save", tc.expectedMockCalls)
 		})
 	}
 
@@ -383,6 +390,7 @@ func TestHandler_BuyerReadUnitTest(t *testing.T) {
 			},
 
 			expectedStatusCode: http.StatusOK,
+			expectedMockCalls:  1,
 		},
 	}
 
@@ -404,6 +412,7 @@ func TestHandler_BuyerReadUnitTest(t *testing.T) {
 			//Then
 			require.Equal(t, tc.expectedStatusCode, w.Code)
 			assert.Equal(t, tc.expectedBody, w.Body.String())
+			sv.AssertNumberOfCalls(t, "GetAll", tc.expectedMockCalls)
 		})
 	}
 }
@@ -423,6 +432,7 @@ func TestHandler_BuyerReadByIdUnitTest(t *testing.T) {
 
 			expectedStatusCode: http.StatusNotFound,
 			expectedResponse:   resterr.NewNotFoundError("buyer not found"),
+			expectedMockCalls:  1,
 		},
 		{
 
@@ -436,6 +446,7 @@ func TestHandler_BuyerReadByIdUnitTest(t *testing.T) {
 			},
 
 			expectedStatusCode: http.StatusOK,
+			expectedMockCalls:  1,
 		},
 		{
 
@@ -448,6 +459,7 @@ func TestHandler_BuyerReadByIdUnitTest(t *testing.T) {
 
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   *resterr.NewBadRequestError("invalid id"),
+			expectedMockCalls:  0,
 		},
 	}
 
@@ -472,6 +484,7 @@ func TestHandler_BuyerReadByIdUnitTest(t *testing.T) {
 			//Then
 			require.Equal(t, tc.expectedStatusCode, w.Code)
 			assert.Equal(t, tc.expectedBody, w.Body.String())
+			sv.AssertNumberOfCalls(t, "FindByID", tc.expectedMockCalls)
 		})
 	}
 }
@@ -491,6 +504,7 @@ func TestHandler_BuyerUpdateUnitTest(t *testing.T) {
 				bm.On("Update", 0, mock.Anything).Return(nil)
 			},
 			expectedStatusCode: http.StatusOK,
+			expectedMockCalls:  1,
 		},
 		{
 			name: "status code 404 (fail) - Attempt to update a non existent buyer",
@@ -506,6 +520,7 @@ func TestHandler_BuyerUpdateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusNotFound,
 			expectedResponse:   resterr.NewNotFoundError("buyer not found"),
+			expectedMockCalls:  1,
 		},
 		{
 			name: "status code 400 (fail) - Attempt to update a buyer with invalid id",
@@ -521,6 +536,7 @@ func TestHandler_BuyerUpdateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   *resterr.NewBadRequestError("invalid id"),
+			expectedMockCalls:  0,
 		},
 		{
 			name: "status code 400 (fail) - Attempt to update a buyer with invalid input",
@@ -536,6 +552,7 @@ func TestHandler_BuyerUpdateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   *resterr.NewBadRequestError("invalid input data"),
+			expectedMockCalls:  0,
 		},
 		{
 			name: "status code 409 (fail) - Failed to update a buyer with given card number already registered",
@@ -551,6 +568,7 @@ func TestHandler_BuyerUpdateUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusConflict,
 			expectedResponse:   *resterr.NewConflictError("buyer with given card number already registered"),
+			expectedMockCalls:  1,
 		},
 	}
 
@@ -575,6 +593,7 @@ func TestHandler_BuyerUpdateUnitTest(t *testing.T) {
 			//Then
 			require.Equal(t, tc.expectedStatusCode, w.Code)
 			assert.Equal(t, tc.expectedBody, w.Body.String())
+			sv.AssertNumberOfCalls(t, "Update", tc.expectedMockCalls)
 		})
 	}
 
@@ -593,6 +612,7 @@ func TestHandler_BuyerDeleteUnitTest(t *testing.T) {
 			},
 			expectedStatusCode: http.StatusNotFound,
 			expectedResponse:   resterr.NewNotFoundError("buyer not found"),
+			expectedMockCalls:  1,
 		},
 		{
 			name: "status code 204 (success) - Successfully to delete a buyer",
@@ -602,6 +622,7 @@ func TestHandler_BuyerDeleteUnitTest(t *testing.T) {
 				bm.On("Delete", 3).Return(nil)
 			},
 			expectedStatusCode: http.StatusNoContent,
+			expectedMockCalls:  1,
 		},
 		{
 			name: "status code 400 (fail) - Attempt to delete a buyer with a invalid Id",
@@ -613,6 +634,7 @@ func TestHandler_BuyerDeleteUnitTest(t *testing.T) {
 
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   *resterr.NewBadRequestError("invalid id"),
+			expectedMockCalls:  0,
 		},
 	}
 
@@ -637,6 +659,7 @@ func TestHandler_BuyerDeleteUnitTest(t *testing.T) {
 			//Then
 			require.Equal(t, tc.expectedStatusCode, w.Code)
 			assert.Equal(t, tc.expectedBody, w.Body.String())
+			sv.AssertNumberOfCalls(t, "Delete", tc.expectedMockCalls)
 		})
 	}
 }
