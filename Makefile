@@ -6,15 +6,6 @@ unit_test_employees_svc:
 	@# Excludes lines that end with [no tests to run], [no test files] and no tests to run
 	go test -v ./... -run "^Test.*EmployeeUnitTestService$$" | grep -v -E "\[no tests to run\]$$|\[no test files\]$$|no tests to run$$"
 
-unit_test_sections_handler:
-	@# Excludes lines that end with [no tests to run], [no test files] and no tests to run
-	go test -v ./... -run "^TestHandler.*SectionUnitTest$$" | grep -v -E "\[no tests to run\]$$|\[no test files\]$$|no tests to run$$" 
-
-unit_test_sections_svc:
-	@# Excludes lines that end with [no tests to run], [no test files] and no tests to run
-	go test -v ./... -run "^TestService.*SectionUnitTest$$" | grep -v -E "\[no tests to run\]$$|\[no test files\]$$|no tests to run$$"
-
-
 test_coverage:
 	-go test -v ./... -coverprofile=coverage.out
 	go tool cover -html coverage.out -o cover.html

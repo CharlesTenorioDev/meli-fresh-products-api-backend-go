@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -103,6 +104,47 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Save() {
 		w.rp.AssertNumberOfCalls(w.T(), "Save", 0)
 		w.Equal(internal.ErrWarehouseRepositoryDuplicated, err)
 	})
+
+	w.T().Run("case 3 - error: Should return an error when trying to save a warehouse with invalid data", func(t *testing.T) {
+		w.SetupTest()
+		warehouse := internal.Warehouse{
+			ID:                 1,
+			WarehouseCode:      "warehouse_code",
+			Address:            "address",
+			Telephone:          "phone",
+			MinimumCapacity:    0,
+			MinimumTemperature: 1,
+		}
+
+		err := w.sv.Save(&warehouse)
+
+		w.rp.AssertExpectations(w.T())
+		w.rp.AssertNumberOfCalls(w.T(), "FindAll", 0)
+		w.rp.AssertNumberOfCalls(w.T(), "Save", 0)
+		w.Error(err, internal.ErrWarehouseUnprocessableEntity)
+	})
+
+	w.T().Run("case 4 - error: Should return an error when an internal error occurs", func(t *testing.T) {
+		w.SetupTest()
+		warehouse := internal.Warehouse{
+			ID:                 1,
+			WarehouseCode:      "warehouse_code",
+			Address:            "address",
+			Telephone:          "phone",
+			MinimumCapacity:    1,
+			MinimumTemperature: 1,
+		}
+		w.rp.On("FindAll").Return([]internal.Warehouse{}, errors.New("internal server error"))
+
+		err := w.sv.Save(&warehouse)
+
+		w.rp.AssertExpectations(w.T())
+		w.rp.AssertNumberOfCalls(w.T(), "FindAll", 1)
+		w.rp.AssertNumberOfCalls(w.T(), "Save", 0)
+		w.Error(err)
+
+	})
+
 }
 
 func (w *WarehouseServiceTestSuite) TestWarehouseService_FindAll() {
@@ -272,6 +314,44 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 		w.rp.AssertNumberOfCalls(w.T(), "FindByID", 1)
 		w.rp.AssertNumberOfCalls(w.T(), "Update", 0)
 		w.Equal(internal.ErrWarehouseRepositoryNotFound, err)
+	})
+
+	w.T().Run("case 4 - error: Should return an error when an internal error occurs", func(t *testing.T) {
+		w.SetupTest()
+		// attributes
+		warehouseCode := "W1"
+		address := "123 Main St"
+		telephone := "123-456-7890"
+		minimumCapacity := 100
+		minimumTemperature := 20.5
+
+		// warehouse patch
+		warehousePatch := internal.WarehousePatchUpdate{
+			WarehouseCode:      &warehouseCode,
+			Address:            &address,
+			Telephone:          &telephone,
+			MinimumCapacity:    &minimumCapacity,
+			MinimumTemperature: &minimumTemperature,
+		}
+		// warehouse for update
+		warehouse := internal.Warehouse{
+			ID:                 1,
+			WarehouseCode:      "warehouse_code",
+			Address:            "address",
+			Telephone:          "phone",
+			MinimumCapacity:    1,
+			MinimumTemperature: 1,
+		}
+
+		w.rp.On("FindByID", 1).Return(warehouse, nil)
+		w.rp.On("FindAll").Return([]internal.Warehouse{}, errors.New("internal server error"))
+
+		_, err := w.sv.Update(1, &warehousePatch)
+		w.rp.AssertExpectations(w.T())
+		w.rp.AssertNumberOfCalls(w.T(), "FindByID", 1)
+		w.rp.AssertNumberOfCalls(w.T(), "FindAll", 1)
+		w.rp.AssertNumberOfCalls(w.T(), "Update", 0)
+		require.Error(w.T(), err)
 	})
 }
 
