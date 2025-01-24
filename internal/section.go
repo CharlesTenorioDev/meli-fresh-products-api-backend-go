@@ -7,6 +7,7 @@ var (
 	ErrSectionAlreadyExists       = errors.New("section already exists")
 	ErrSectionNumberAlreadyInUse  = errors.New("section with given section number already registered")
 	ErrSectionUnprocessableEntity = errors.New("couldn't parse section")
+	ErrReportProductNotFound      = errors.New("report product not found")
 )
 
 type Section struct {

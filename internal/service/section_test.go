@@ -178,6 +178,21 @@ func TestService_ReadSectionUnitTest(t *testing.T) {
 		rpSection.AssertNumberOfCalls(t, "FindAll", 1)
 	})
 
+	t.Run("returns an error when no section exists", func(t *testing.T) {
+		sv, rpSection, _, _ := newSectionService()
+		expectedError := internal.ErrSectionNotFound
+
+		rpSection.On("FindAll").Return([]internal.Section{}, expectedError)
+
+		_, err := sv.FindAll()
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, expectedError)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "FindAll", 1)
+	})
+
 	t.Run("return error when reading a nonexistent section by ID", func(t *testing.T) {
 		sv, rpSection, _, _ := newSectionService()
 		expectedError := internal.ErrSectionNotFound
@@ -237,6 +252,21 @@ func TestService_ReportProductsUnitTest(t *testing.T) {
 
 		require.NoError(t, err)
 		require.Equal(t, expectedReports, reports)
+
+		rpSection.AssertExpectations(t)
+		rpSection.AssertNumberOfCalls(t, "ReportProducts", 1)
+	})
+
+	t.Run("returns an error when no report products exists", func(t *testing.T) {
+		sv, rpSection, _, _ := newSectionService()
+		expectedError := internal.ErrReportProductNotFound
+
+		rpSection.On("ReportProducts").Return([]internal.ReportProduct{}, expectedError)
+
+		_, err := sv.ReportProducts()
+
+		require.Error(t, err)
+		require.ErrorIs(t, err, expectedError)
 
 		rpSection.AssertExpectations(t)
 		rpSection.AssertNumberOfCalls(t, "ReportProducts", 1)

@@ -97,6 +97,10 @@ func (r *SectionMysql) ReportProducts() ([]internal.ReportProduct, error) {
 
 	rows, err := r.db.Query(query)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrReportProductNotFound
+		}
+
 		return nil, err
 	}
 	defer rows.Close()
@@ -111,6 +115,15 @@ func (r *SectionMysql) ReportProducts() ([]internal.ReportProduct, error) {
 		}
 
 		report = append(report, rp)
+	}
+
+	err = rows.Err()
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrReportProductNotFound
+		}
+
+		return nil, err
 	}
 
 	return report, nil
