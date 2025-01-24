@@ -508,6 +508,21 @@ func TestHandler_BuyerUpdateUnitTest(t *testing.T) {
 			expectedResponse:   resterr.NewNotFoundError("buyer not found"),
 		},
 		{
+			name: "status code 400 (fail) - Attempt to update a buyer with invalid id",
+			id:   "@",
+			body: `{
+				"card_number_id": "B500",
+				"first_name": 123,
+				"last_name": 9
+			}`,
+			expectedBody: `{"message":"failed to parse id","error":"bad_request","code":400,"causes":null}`,
+			mockService: func(bm *BuyerServiceMock) {
+				bm.On("Update", 0, mock.Anything).Return(resterr.NewBadRequestError("invalid id"))
+			},
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   *resterr.NewBadRequestError("invalid id"),
+		},
+		{
 			name: "status code 400 (fail) - Attempt to update a buyer with invalid input",
 			id:   "0",
 			body: `{
@@ -622,6 +637,109 @@ func TestHandler_BuyerDeleteUnitTest(t *testing.T) {
 			//Then
 			require.Equal(t, tc.expectedStatusCode, w.Code)
 			assert.Equal(t, tc.expectedBody, w.Body.String())
+		})
+	}
+}
+
+func TestHandler_BuyerReportPurchaseOrdersUnitTest(t *testing.T) {
+	testCases := []*TestCasesUnit{
+
+		{
+			name: "status code 200 (success) - Successfully get purchase orders for all buyers",
+			mockService: func(bm *BuyerServiceMock) {
+				bm.On("ReportPurchaseOrders").Return([]internal.PurchaseOrdersByBuyer{
+					{BuyerID: 1, CardNumberID: "123", FirstName: "Paloma", LastName: "Souza", PurchaseOrdersCount: 2},
+					{BuyerID: 2, CardNumberID: "234", FirstName: "Pah", LastName: "Gabi", PurchaseOrdersCount: 1},
+				}, nil)
+			},
+
+			expectedBody: `{"data":[{"id":1,"card_number_id":"123","first_name":"Paloma","last_name":"Souza","purchase_orders_count":2},{"id":2,"card_number_id":"234","first_name":"Pah","last_name":"Gabi","purchase_orders_count":1}]}`,
+
+			expectedStatusCode: http.StatusOK,
+		},
+		{
+			name: "status code 200 (success) - Successfully get purchase orders for a specific buyer by Id",
+			id:   "2",
+			mockService: func(bm *BuyerServiceMock) {
+				bm.On("ReportPurchaseOrdersByID", 2).Return([]internal.PurchaseOrdersByBuyer{
+					{BuyerID: 2, CardNumberID: "234", FirstName: "Pah", LastName: "Gabi", PurchaseOrdersCount: 1},
+				}, nil)
+			},
+
+			expectedBody: `{"data":[{"id":2,"card_number_id":"234","first_name":"Pah","last_name":"Gabi","purchase_orders_count":1}]}`,
+
+			expectedStatusCode: http.StatusOK,
+		},
+		{
+			name: "status code 400 (fail) - Attempt to get purchase orders with a invalid id parameter",
+			id:   "@",
+
+			mockService: func(bm *BuyerServiceMock) {},
+
+			expectedBody: `{"message":"failed to parse id","error":"bad_request","code":400,"causes":null}`,
+
+			expectedStatusCode: http.StatusBadRequest,
+		},
+		{
+			name: "status code 404 (fail) - Attempt to get purchase orders for a non existent buyer by Id",
+			id:   "550",
+
+			mockService: func(bm *BuyerServiceMock) {
+				bm.On("ReportPurchaseOrdersByID", 550).Return([]internal.PurchaseOrdersByBuyer{}, service.ErrBuyerNotFound)
+			},
+
+			expectedBody: `{"message":"buyer not found","error":"not_found","code":404,"causes":null}`,
+
+			expectedStatusCode: http.StatusNotFound,
+		},
+		{
+			name: "status code 500 (fail) - Internal server error while getting purchase orders for all buyers",
+
+			mockService: func(bm *BuyerServiceMock) {
+				bm.On("ReportPurchaseOrders").Return([]internal.PurchaseOrdersByBuyer{}, errors.New("Internal server error"))
+			},
+
+			expectedBody: `{"message":"Internal server error","error":"internal_server_error","code":500,"causes":null}`,
+
+			expectedStatusCode: http.StatusInternalServerError,
+		},
+		{
+			name: "status code 500 (fail) - Internal server error while getting purchase orders for a specific buyer by Id",
+			id:   "1",
+
+			mockService: func(bm *BuyerServiceMock) {
+				bm.On("ReportPurchaseOrdersByID", 1).Return([]internal.PurchaseOrdersByBuyer{}, errors.New("Internal server error"))
+			},
+
+			expectedBody: `{"message":"Internal server error","error":"internal_server_error","code":500,"causes":null}`,
+
+			expectedStatusCode: http.StatusInternalServerError,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			sv := new(BuyerServiceMock)
+			hd := handler.NewBuyerHandlerDefault(sv)
+			tc.mockService(sv)
+
+			//request
+			url := Api + "/report/purchase_orders"
+			if tc.id != "" {
+				url = Api + "/report/purchase_orders?id=" + tc.id
+			}
+			r := httptest.NewRequest(http.MethodGet, url, nil)
+			r.Header.Set("Content-Type", "application/json")
+			//response
+			w := httptest.NewRecorder()
+
+			//When
+			hd.ReportPurchaseOrders(w, r)
+
+			//Then
+			require.Equal(t, tc.expectedStatusCode, w.Code)
+			assert.Equal(t, tc.expectedBody, w.Body.String())
+
 		})
 	}
 }

@@ -122,7 +122,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Save() {
 		b.Equal(err, service.ErrBuyerUnprocessableEntity)
 	})
 
-	b.T().Run("case 3 - Should return bad request error when trying to save a buyer with invalid data", func(t *testing.T) {
+	b.T().Run("case 3 - Should return an error when trying to save a buyer with invalid data", func(t *testing.T) {
 		b.SetupTest()
 
 		buyer := internal.Buyer{
@@ -332,4 +332,92 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Delete() {
 		b.rp.AssertNumberOfCalls(b.T(), "Delete", 0)
 		b.Equal(err, service.ErrBuyerNotFound)
 	})
+}
+
+func (b *BuyerServiceTestSuite) TestBuyerService_ReportPurchaseOrders() {
+
+	b.T().Run("case 1 - Successfully to get all report purchase orders by buyer", func(t *testing.T) {
+		b.SetupTest()
+
+		purchaseOrders := []internal.PurchaseOrdersByBuyer{
+			{BuyerID: 1, CardNumberID: "111111", FirstName: "Paloma", LastName: "Souza", PurchaseOrdersCount: 3},
+			{BuyerID: 2, CardNumberID: "222222", FirstName: "Pah", LastName: "Gabi", PurchaseOrdersCount: 1},
+			{BuyerID: 3, CardNumberID: "333333", FirstName: "Brian", LastName: "May", PurchaseOrdersCount: 5},
+		}
+
+		b.rp.On("ReportPurchaseOrders").Return(purchaseOrders, nil)
+
+		allPurchaseOrders, err := b.sv.ReportPurchaseOrders()
+		require.Equal(b.T(), purchaseOrders, allPurchaseOrders)
+		require.NoError(b.T(), err)
+
+	})
+
+	b.T().Run("case 2 - Return purchase orders not found error when trying to get no buyers records", func(t *testing.T) {
+		b.SetupTest()
+
+		b.rp.On("ReportPurchaseOrders").Return([]internal.PurchaseOrdersByBuyer{}, nil)
+
+		_, err := b.sv.ReportPurchaseOrders()
+
+		b.rp.AssertExpectations(b.T())
+		b.rp.AssertNumberOfCalls(b.T(), "ReportPurchaseOrders", 1)
+		b.Equal(err, service.ErrPurchaseOrdersNotFound)
+	})
+
+	b.T().Run("case 3 - Successfully to get report purchase orders by buyer by Id parameter", func(t *testing.T) {
+		b.SetupTest()
+
+		purchaseOrdersByBuyer := []internal.PurchaseOrdersByBuyer{
+			{BuyerID: 2, CardNumberID: "222222", FirstName: "Pah", LastName: "Gabi", PurchaseOrdersCount: 1},
+		}
+
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{
+			1: {ID: 1, CardNumberID: "111111", FirstName: "Paloma", LastName: "Souza"},
+			2: {ID: 2, CardNumberID: "222222", FirstName: "Pah", LastName: "Gabi"},
+		})
+
+		b.rp.On("ReportPurchaseOrdersByID", 2).Return(purchaseOrdersByBuyer, nil)
+
+		resultById, err := b.sv.ReportPurchaseOrdersByID(2)
+
+		b.rp.AssertExpectations(b.T())
+		b.rp.AssertNumberOfCalls(b.T(), "GetAll", 1)
+		b.rp.AssertNumberOfCalls(b.T(), "ReportPurchaseOrdersByID", 1)
+		require.NoError(b.T(), err)
+		require.Equal(b.T(), purchaseOrdersByBuyer, resultById)
+
+	})
+
+	b.T().Run("case 4 - Return buyer not found error when trying to get an buyer not existent by Id parameter", func(t *testing.T) {
+		b.SetupTest()
+
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
+
+		_, err := b.sv.ReportPurchaseOrdersByID(255)
+
+		b.rp.AssertExpectations(b.T())
+		b.rp.AssertNumberOfCalls(b.T(), "ReportPurchaseOrdersByID", 0)
+		b.Equal(err, service.ErrBuyerNotFound)
+	})
+
+	b.T().Run("case 5 - Return an error when trying to get a buyer with no purchase orders", func(t *testing.T) {
+		b.SetupTest()
+
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{
+			1: {ID: 1, CardNumberID: "111111", FirstName: "Paloma", LastName: "Souza"},
+			2: {ID: 2, CardNumberID: "222222", FirstName: "Pah", LastName: "Gabi"},
+			3: {ID: 3, CardNumberID: "333333", FirstName: "Brian", LastName: "May"},
+			4: {ID: 4, CardNumberID: "444444", FirstName: "Jack", LastName: "Sparrow"},
+		})
+		b.rp.On("ReportPurchaseOrdersByID", 4).Return([]internal.PurchaseOrdersByBuyer{}, nil)
+
+		noPurchaseOrders, err := b.sv.ReportPurchaseOrdersByID(4)
+
+		require.Nil(b.T(), noPurchaseOrders)
+		require.Error(b.T(), err)
+		b.Equal(err, service.ErrPurchaseOrdersByBuyerNotFound)
+		b.rp.AssertExpectations(b.T())
+	})
+
 }
