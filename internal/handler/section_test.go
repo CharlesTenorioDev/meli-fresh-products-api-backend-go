@@ -22,19 +22,14 @@ type MockSectionService struct {
 	mock.Mock
 }
 
-func ok(s internal.Section) bool {
-	if s.SectionNumber <= 0 ||
-		s.CurrentTemperature < -273.15 ||
-		s.MinimumTemperature < -273.15 ||
-		s.CurrentCapacity < 0 ||
-		s.MinimumCapacity < 0 ||
-		s.MaximumCapacity < 0 ||
-		s.WarehouseID <= 0 ||
-		s.ProductTypeID <= 0 {
-		return false
-	}
-
-	return true
+type RequestSectionErrorJSON struct {
+	SectionNumber      int     `json:"section_number"`
+	MinimumTemperature float64 `json:"minimum_temperature"`
+	CurrentCapacity    int     `json:"current_capacity"`
+	MinimumCapacity    int     `json:"minimum_capacity"`
+	MaximumCapacity    int     `json:"maximum_capacity"`
+	WarehouseID        int     `json:"warehouse_id"`
+	ProductTypeID      int     `json:"product_type_id"`
 }
 
 func (m *MockSectionService) FindAll() ([]internal.Section, error) {
@@ -116,6 +111,30 @@ func TestHandler_CreateSectionUnitTest(t *testing.T) {
 				WarehouseID:        1,
 				ProductTypeID:      2,
 			},
+		},
+		{
+			name: "erro campo obrigatorio",
+			mockSetup: func(m *MockSectionService) {
+				m.On("Save", mock.Anything).Return(nil)
+			},
+			requestBody: RequestSectionErrorJSON{
+				SectionNumber:      123,
+				MinimumTemperature: 15.0,
+				CurrentCapacity:    50,
+				MinimumCapacity:    30,
+				MaximumCapacity:    100,
+				WarehouseID:        1,
+				ProductTypeID:      2,
+			},
+			expectedStatusCode: http.StatusUnprocessableEntity,
+			expectedResponse:   *resterr.NewUnprocessableEntityError("current_temperature is required"),
+		},
+		{
+			name:               "erro ao fazer decode",
+			mockSetup:          func(m *MockSectionService) {},
+			requestBody:        "invalid json",
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   *resterr.NewBadRequestError("json: cannot unmarshal string into Go value of type map[string]interface {}"),
 		},
 		{
 			name: "return fail error when required field is missing",
@@ -472,18 +491,27 @@ func TestHandler_ReportProductsUnitTest(t *testing.T) {
 				},
 			},
 		},
-		/*{
+		{
 			name: "should return report for specific section",
 			mockSetup: func(m *MockSectionService) {
-				// Adicione a expectativa correta para aceitar o ID
-				m.On("ReportProductsByID", 1).Return(internal.ReportProduct{SectionID: 1, SectionNumber: 123, ProductsCount: 10}, nil)
+				m.On("ReportProductsByID", 1).Return(internal.ReportProduct{
+					SectionID:     1,
+					SectionNumber: 123,
+					ProductsCount: 10,
+				}, nil)
 			},
-			queryID:            "1", // ID correto a ser passado na requisição
+			queryID:            "1",
 			expectedStatusCode: http.StatusOK,
 			expectedResponse: map[string]interface{}{
-				"data": internal.ReportProduct{SectionID: 1, SectionNumber: 123, ProductsCount: 10},
+				"data": []internal.ReportProduct{
+					{
+						SectionID:     1,
+						SectionNumber: 123,
+						ProductsCount: 10,
+					},
+				},
 			},
-		},*/
+		},
 		{
 			name:               "should return bad request error for invalid ID",
 			mockSetup:          func(m *MockSectionService) {},
@@ -491,24 +519,33 @@ func TestHandler_ReportProductsUnitTest(t *testing.T) {
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   nil,
 		},
-		/*{
-			name: "should return not found error for non-existing section",
+		{
+			name: "should return not found error when the section ID does not exist",
 			mockSetup: func(m *MockSectionService) {
-				m.On("ReportProductsByID", 1).Return(internal.ReportProduct{}, internal.ErrSectionNotFound)
+				m.On("ReportProductsByID", 2).Return(internal.ReportProduct{}, internal.ErrSectionNotFound)
 			},
-			queryID:            "1",
+			queryID:            "2",
 			expectedStatusCode: http.StatusNotFound,
 			expectedResponse:   *resterr.NewNotFoundError("section not found"),
 		},
 		{
-			name: "should return internal server error",
+			name: "should return not found error when the section ID does not exist",
 			mockSetup: func(m *MockSectionService) {
-				m.On("ReportProducts").Return(nil, errors.New("internal server error"))
+				m.On("ReportProductsByID", 2).Return(internal.ReportProduct{}, internal.ErrSectionUnprocessableEntity)
+			},
+			queryID:            "2",
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   *resterr.NewInternalServerError("couldn't parse section"),
+		},
+		{
+			name: "should return report product",
+			mockSetup: func(m *MockSectionService) {
+				m.On("ReportProducts").Return([]internal.ReportProduct{}, internal.ErrReportProductNotFound)
 			},
 			queryID:            "",
 			expectedStatusCode: http.StatusInternalServerError,
-			expectedResponse:   nil,
-		},*/
+			expectedResponse:   *resterr.NewInternalServerError("report product not found"),
+		},
 	}
 
 	for _, tt := range tests {
@@ -628,6 +665,15 @@ func TestHandler_UpdateSectionUnitTest(t *testing.T) {
 			requestBody:        nil,
 			expectedStatusCode: http.StatusBadRequest,
 			expectedResponse:   nil,
+		},
+		{
+			name: "erro ao fazer decode",
+			mockSetup: func(m *MockSectionService) {
+			},
+			id:                 "1",
+			requestBody:        "invalid json",
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   *resterr.NewBadRequestError("json: cannot unmarshal string into Go value of type handler.SectionsUpdateJSON"),
 		},
 		{
 			name: "should return unprocessable entity error for invalid request body",
