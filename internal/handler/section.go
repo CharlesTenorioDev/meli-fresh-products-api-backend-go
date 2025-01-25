@@ -165,7 +165,7 @@ func (h *SectionHandler) ReportProducts(w http.ResponseWriter, r *http.Request) 
 	}
 
 	response.JSON(w, http.StatusOK, map[string]any{
-		"data": report,
+		"data": []internal.ReportProduct{report},
 	})
 }
 
