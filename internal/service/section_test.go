@@ -290,7 +290,7 @@ func TestService_ReadSectionUnitTest(t *testing.T) {
 	})
 }
 
-func TestService_ReportProductsUnitTest(t *testing.T) {
+func TestService_ReportProductsSectionUnitTest(t *testing.T) {
 	t.Run("successfully report products", func(t *testing.T) {
 		sv, rpSection, _, _ := newSectionService()
 
@@ -339,7 +339,7 @@ func TestService_ReportProductsUnitTest(t *testing.T) {
 	})
 }
 
-func TestService_ReportProductsByIDUnitTest(t *testing.T) {
+func TestService_ReportProductsByIDSectionUnitTest(t *testing.T) {
 	t.Run("successfully report products by section ID", func(t *testing.T) {
 		sv, rpSection, _, _ := newSectionService()
 		sectionID := 1
@@ -659,7 +659,6 @@ func TestService_UpdateSectionUnitTest(t *testing.T) {
 		rpSection.On("FindByID", 1).Return(existingSection, nil)
 		rpSection.On("SectionNumberExists", *updates.SectionNumber).Return(false, nil)
 		rpWareHouse.On("FindByID", *updates.WarehouseID).Return(internal.Warehouse{ID: *updates.WarehouseID}, internal.ErrWarehouseRepositoryNotFound)
-		//rpProductType.On("FindByID", *updates.ProductTypeID).Return(internal.ProductType{ID: *updates.ProductTypeID}, nil)
 
 		updatedSection, err := sv.Update(1, updates)
 
