@@ -24,11 +24,11 @@ type PurchaseOrderJSON struct {
 
 // PurchaseOrderCreateRequest is a struct that represents a purchase order create request
 type PurchaseOrderCreateRequest struct {
-	OrderNumber     string `json:"order_number"`
-	OrderDate       string `json:"order_date"`
-	TrackingCode    string `json:"tracking_code"`
-	BuyerID         int    `json:"buyer_id"`
-	ProductRecordID int    `json:"product_record_id"`
+	OrderNumber     *string `json:"order_number"`
+	OrderDate       *string `json:"order_date"`
+	TrackingCode    *string `json:"tracking_code"`
+	BuyerID         *int    `json:"buyer_id"`
+	ProductRecordID *int    `json:"product_record_id"`
 }
 
 // NewPurchaseOrderHandler creates a new instance of the purchase order handler
@@ -64,33 +64,36 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 		// decoding the request
 		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
 			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+			return
+		}
 
+		// validating the request input required fields
+		causes := requestInput.ValidateRequiredFields()
+		if len(causes) > 0 {
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityWithCausesError(internal.ErrPurchaseOrderUnprocessableEntity.Error(), causes))
 			return
 		}
 
 		// validating the orderDate field
-		orderDate, err := time.Parse(time.DateOnly, requestInput.OrderDate)
+		orderDate, err := time.Parse(time.DateOnly, *requestInput.OrderDate)
 		if err != nil {
 			var causes []resterr.Causes
-
 			causes = append(causes, resterr.Causes{
 				Field:   "order_date",
 				Message: "invalid date format",
 			})
-
 			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(ErrInvalidData, causes))
-
 			return
 		}
 
 		// creating the purchase order
 		purchaseOrder := &internal.PurchaseOrder{
 			ID:              0,
-			OrderNumber:     requestInput.OrderNumber,
+			OrderNumber:     *requestInput.OrderNumber,
 			OrderDate:       orderDate,
-			TrackingCode:    requestInput.TrackingCode,
-			BuyerID:         requestInput.BuyerID,
-			ProductRecordID: requestInput.ProductRecordID,
+			TrackingCode:    *requestInput.TrackingCode,
+			BuyerID:         *requestInput.BuyerID,
+			ProductRecordID: *requestInput.ProductRecordID,
 		}
 
 		// saving the purchase order
@@ -98,9 +101,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			switch {
 			case errors.As(err, &internal.DomainError{}):
 				var domainError internal.DomainError
-
 				errors.As(err, &domainError)
-
 				var restCauses []resterr.Causes
 				for _, cause := range domainError.Causes {
 					restCauses = append(restCauses, resterr.Causes{
@@ -109,7 +110,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 					})
 				}
 
-				response.JSON(w, http.StatusUnprocessableEntity, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
+				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
 			case errors.Is(err, internal.ErrPurchaseOrderConflict):
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 			case errors.Is(err, internal.ErrProductRecordsNotFound):
@@ -138,4 +139,39 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			"data": purchaseOrderJSON,
 		})
 	}
+}
+
+// Validating the PurchaseOrderCreateRequest required fields
+func (p *PurchaseOrderCreateRequest) ValidateRequiredFields() (causes []resterr.Causes) {
+	if p.OrderNumber == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "order_number",
+			Message: "order number is required",
+		})
+	}
+	if p.OrderDate == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "order_date",
+			Message: "order date is required",
+		})
+	}
+	if p.TrackingCode == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "tracking_code",
+			Message: "tracking code is required",
+		})
+	}
+	if p.BuyerID == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "buyer_id",
+			Message: "buyer id is required",
+		})
+	}
+	if p.ProductRecordID == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "product_record_id",
+			Message: "product record id is required",
+		})
+	}
+	return
 }

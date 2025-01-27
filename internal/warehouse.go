@@ -1,6 +1,10 @@
 package internal
 
-import "errors"
+import (
+	"errors"
+
+	"github.com/meli-fresh-products-api-backend-t1/utils/validator"
+)
 
 // Warehouse is a struct that represents a warehouse
 type Warehouse struct {
@@ -27,27 +31,77 @@ var (
 	// ErrWarehouseRepositoryDuplicated is returned when the warehouse already exists
 	ErrWarehouseRepositoryDuplicated = errors.New("warehouse already exists")
 	// ErrWarehouseUnprocessableEntity is returned when the warehouse is unprocessable
-	ErrWarehouseUnprocessableEntity = errors.New("unprocessable entity")
+	ErrWarehouseUnprocessableEntity = errors.New("warehouse inputs are missing")
+	// ErrWarehouseBadRequest is returned when the warehouse request is bad
+	ErrWarehouseBadRequest = errors.New("warehouse inputs are invalid")
 )
 
-func (w *Warehouse) Validate() error {
-	if w.WarehouseCode == "" {
-		return errors.New("warehouse code is required")
+// Validate validates the business rules of the warehouse
+func (w *Warehouse) Validate() (causes []Causes) {
+	if validator.BlankString(w.WarehouseCode) {
+		causes = append(causes, Causes{
+			Field:   "warehouse_code",
+			Message: "warehouse code is required",
+		})
 	}
 
-	if w.Address == "" {
-		return errors.New("address is required")
+	if !validator.String(w.WarehouseCode, 1, 255) {
+		causes = append(causes, Causes{
+			Field:   "warehouse_code",
+			Message: "warehouse code is out of range",
+		})
 	}
 
-	if w.Telephone == "" {
-		return errors.New("telephone is required")
+	if validator.BlankString(w.Address) {
+		causes = append(causes, Causes{
+			Field:   "address",
+			Message: "address is required",
+		})
 	}
 
-	if w.MinimumCapacity == 0 {
-		return errors.New("minimum capacity is required")
+	if !validator.String(w.Address, 1, 255) {
+		causes = append(causes, Causes{
+			Field:   "address",
+			Message: "address is out of range",
+		})
 	}
 
-	return nil
+	if validator.BlankString(w.Telephone) {
+		causes = append(causes, Causes{
+			Field:   "telephone",
+			Message: "telephone is required",
+		})
+	}
+
+	if !validator.String(w.Telephone, 1, 255) {
+		causes = append(causes, Causes{
+			Field:   "telephone",
+			Message: "telephone is out of range",
+		})
+	}
+
+	if validator.IntIsZero(w.MinimumCapacity) {
+		causes = append(causes, Causes{
+			Field:   "minimum_capacity",
+			Message: "minimum capacity is required",
+		})
+	}
+
+	if validator.IntIsNegative(w.MinimumCapacity) {
+		causes = append(causes, Causes{
+			Field:   "minimum_capacity",
+			Message: "minimum capacity cannot be negative",
+		})
+	}
+
+	if !validator.FloatBetween(w.MinimumTemperature, -273.15, 1000) {
+		causes = append(causes, Causes{
+			Field:   "minimum_temperature",
+			Message: "minimum temperature is out of range",
+		})
+	}
+
+	return causes
 }
 
 // WarehouseRepository is an interface that contains the methods that the warehouse repository should support

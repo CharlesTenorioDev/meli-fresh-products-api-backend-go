@@ -121,7 +121,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Save() {
 		w.rp.AssertExpectations(w.T())
 		w.rp.AssertNumberOfCalls(w.T(), "FindAll", 0)
 		w.rp.AssertNumberOfCalls(w.T(), "Save", 0)
-		w.Error(err, internal.ErrWarehouseUnprocessableEntity)
+		w.ErrorContains(err, internal.ErrWarehouseBadRequest.Error())
 	})
 
 	w.T().Run("case 4 - error: Should return an error when an internal error occurs", func(t *testing.T) {

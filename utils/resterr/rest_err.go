@@ -102,3 +102,12 @@ func NewUnprocessableEntityError(message string) *RestErr {
 		Code:    http.StatusUnprocessableEntity,
 	}
 }
+
+func NewUnprocessableEntityWithCausesError(message string, causes []Causes) *RestErr {
+	return &RestErr{
+		Message: message,
+		Err:     "unprocessable_entity",
+		Code:    http.StatusUnprocessableEntity,
+		Causes:  causes,
+	}
+}
