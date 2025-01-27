@@ -113,7 +113,7 @@ func TestHandler_CreateSectionUnitTest(t *testing.T) {
 			},
 		},
 		{
-			name: "erro campo obrigatorio",
+			name: "mandatory field error",
 			mockSetup: func(m *MockSectionService) {
 				m.On("Save", mock.Anything).Return(nil)
 			},
@@ -130,7 +130,7 @@ func TestHandler_CreateSectionUnitTest(t *testing.T) {
 			expectedResponse:   *resterr.NewUnprocessableEntityError("current_temperature is required"),
 		},
 		{
-			name:               "erro ao fazer decode",
+			name:               "error while doing decode",
 			mockSetup:          func(m *MockSectionService) {},
 			requestBody:        "invalid json",
 			expectedStatusCode: http.StatusBadRequest,
@@ -466,7 +466,7 @@ func TestHandler_ReadByIdSectionUnitTest(t *testing.T) {
 	}
 }
 
-func TestHandler_ReportProductsUnitTest(t *testing.T) {
+func TestHandler_ReportProductsSectionUnitTest(t *testing.T) {
 	tests := []struct {
 		name               string
 		mockSetup          func(*MockSectionService)
@@ -667,7 +667,7 @@ func TestHandler_UpdateSectionUnitTest(t *testing.T) {
 			expectedResponse:   nil,
 		},
 		{
-			name: "erro ao fazer decode",
+			name: "error while doing decode",
 			mockSetup: func(m *MockSectionService) {
 			},
 			id:                 "1",
