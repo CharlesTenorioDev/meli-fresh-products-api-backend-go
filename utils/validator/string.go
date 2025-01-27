@@ -15,12 +15,12 @@ func BlankString(str string) bool {
 }
 
 func IsCep(cep string) bool {
-	cepRegex := regexp.MustCompile(`^\d{5}-\d{3}`)
+	cepRegex := regexp.MustCompile(`^\d{5}-\d{3}$`)
 	return cepRegex.MatchString(cep)
 }
 
 func IsEmail(e string) bool {
-	emailRegex := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9]+([._-][0-9a-zA-Z]+)*@[a-zA-Z0-9]+([.-][0-9a-zA-Z]+)*\.[a-zA-Z]{2,}$`)
 	return emailRegex.MatchString(e)
 }
 
