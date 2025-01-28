@@ -88,7 +88,7 @@ func (suite *BuyerSuiteTest) SetupTest() {
 	for i, b := range buyers {
 		suite.buyersFromFile[i] = b
 	}
-	rp := repository.NewBuyerMap(DbPath)
+	rp, _ := repository.NewBuyerMap(DbPath)
 	sv := service.NewBuyerService(rp)
 	suite.hd = handler.NewBuyerHandlerDefault(sv)
 }

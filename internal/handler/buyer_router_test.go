@@ -25,7 +25,7 @@ type BuyerRouterSuite struct {
 }
 
 func (s *BuyerRouterSuite) SetupTest() {
-	repo := repository.NewBuyerMap("../../db/buyer.json")
+	repo, _ := repository.NewBuyerMap("../../db/buyer.json")
 	svc := service.NewBuyerService(repo)
 	s.hd = handler.NewBuyerHandlerDefault(svc)
 	s.rt = chi.NewRouter()

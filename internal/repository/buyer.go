@@ -2,7 +2,6 @@ package repository
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -13,29 +12,30 @@ type BuyerMap struct {
 	lastID int
 }
 
-func NewBuyerMap(dbPath string) *BuyerMap {
+func NewBuyerMap(dbPath string) (mp *BuyerMap, err error) {
 	var buyers []internal.Buyer
 
 	db := make(map[int]*internal.Buyer)
 
 	file, err := os.Open(dbPath)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
 	err = json.NewDecoder(file).Decode(&buyers)
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
 	for i, b := range buyers {
 		db[i] = &b
 	}
 
-	return &BuyerMap{
+	mp = &BuyerMap{
 		db:     db,
 		lastID: len(buyers),
 	}
+	return
 }
 
 func (r *BuyerMap) GetAll() (db map[int]internal.Buyer) {
