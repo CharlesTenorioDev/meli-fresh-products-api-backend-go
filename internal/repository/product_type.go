@@ -1,44 +1,38 @@
 package repository
 
 import (
-	"errors"
-
+	"database/sql"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
-	"github.com/meli-fresh-products-api-backend-t1/internal/loader"
 )
 
-func NewProductType() *ProductTypeDB {
-	bdProdTypes := make(map[int]*internal.ProductType)
+const FindByIDProductType = `
+SELECT 
+	id,
+	description          
+FROM 
+	product_type
+WHERE 
+	id = ?`
 
-	prodTypeDBList, err := loader.ReadAllProductsTypeToFile()
+func NewProductTypeMysql(db *sql.DB) *ProductTypeMysql {
+	return &ProductTypeMysql{db}
+}
+
+type ProductTypeMysql struct {
+	db *sql.DB
+}
+
+func (r *ProductTypeMysql) FindByID(id int) (internal.ProductType, error) {
+	var pt internal.ProductType
+	err := r.db.QueryRow(FindByIDProductType, id).Scan(
+		&pt.ID,
+		&pt.Description,
+	)
+	
 	if err != nil {
-		return &ProductTypeDB{
-			DB: bdProdTypes,
-		}
+		return pt, internal.ErrProductTypeNotFound
+		
 	}
 
-	for _, value := range prodTypeDBList {
-		section := internal.ProductType{
-			ID: value.ID,
-		}
-
-		bdProdTypes[value.ID] = &section
-	}
-
-	return &ProductTypeDB{
-		DB: bdProdTypes,
-	}
-}
-
-type ProductTypeDB struct {
-	DB map[int]*internal.ProductType
-}
-
-func (r *ProductTypeDB) FindByID(id int) (internal.ProductType, error) {
-	productType, exists := r.DB[id]
-	if !exists {
-		return internal.ProductType{}, errors.New("product_type not found")
-	}
-
-	return *productType, nil
+	return pt, nil
 }
