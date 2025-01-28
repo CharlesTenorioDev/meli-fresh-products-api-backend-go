@@ -7,14 +7,12 @@ import (
 	"github.com/meli-fresh-products-api-backend-t1/internal/loader"
 )
 
-func NewRepositorySection() *SectionDB {
+func NewRepositorySection(dbPath string) (mp *SectionDB, err error) {
 	bdSections := make(map[int]*internal.Section)
 
-	sectionList, err := loader.ReadAllSectionsToFile()
+	sectionList, err := loader.ReadAllSectionsToFile(dbPath)
 	if err != nil {
-		return &SectionDB{
-			DB: bdSections,
-		}
+		return
 	}
 
 	for _, value := range sectionList {
@@ -33,10 +31,11 @@ func NewRepositorySection() *SectionDB {
 		bdSections[value.ID] = &section
 	}
 
-	return &SectionDB{
+	mp = &SectionDB{
 		DB:     bdSections,
 		lastID: len(bdSections),
 	}
+	return
 }
 
 type SectionDB struct {
