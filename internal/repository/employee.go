@@ -2,7 +2,6 @@ package repository
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 
 	"github.com/meli-fresh-products-api-backend-t1/internal"
@@ -12,35 +11,28 @@ type EmployeeRepositoryDefault struct {
 	db map[int]*internal.Employee
 }
 
-func NewEmployeeRepository() *EmployeeRepositoryDefault {
+func NewEmployeeRepository(dbPath string) (mp *EmployeeRepositoryDefault, err error) {
 	var employees []internal.Employee
-
 	db := make(map[int]*internal.Employee)
-	file, err := os.Open("db/employees.json") // open file employees
 
+	file, err := os.Open(dbPath) // open file employees
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
-	// decode json and memory store in employees
 	err = json.NewDecoder(file).Decode(&employees)
-
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
 
-	// save employees in db
 	for _, employee := range employees {
-		if employee.ID > 0 {
-			db[employee.ID] = &employee
-		} else {
-			log.Fatal(employee)
-		}
+		db[employee.ID] = &employee
 	}
 
-	return &EmployeeRepositoryDefault{ // return repository with db employees updated
+	mp = &EmployeeRepositoryDefault{
 		db: db,
 	}
+	return
 }
 
 func (r *EmployeeRepositoryDefault) GetAll() (db map[int]internal.Employee) {
