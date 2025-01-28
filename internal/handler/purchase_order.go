@@ -114,9 +114,9 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 			case errors.Is(err, internal.ErrPurchaseOrderConflict):
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 			case errors.Is(err, internal.ErrProductRecordsNotFound):
-				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 			case errors.Is(err, service.ErrBuyerNotFound):
-				response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 			default:
 				response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 			}
