@@ -1,6 +1,8 @@
 package validator
 
-import "regexp"
+import (
+	"regexp"
+)
 
 func String(str string, minV int, maxV int) bool {
 	return len(str) >= minV && len(str) <= maxV && !BlankString(str)
@@ -11,7 +13,8 @@ func EmptyString(str string) bool {
 }
 
 func BlankString(str string) bool {
-	return str == " " || len(str) <= 0
+	re := regexp.MustCompile(`^\s*$`)
+	return re.MatchString(str)
 }
 
 func IsCep(cep string) bool {

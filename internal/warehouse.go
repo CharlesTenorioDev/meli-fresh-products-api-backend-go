@@ -45,7 +45,7 @@ func (w *Warehouse) Validate() (causes []Causes) {
 		})
 	}
 
-	if !validator.String(w.WarehouseCode, 1, 255) {
+	if !validator.String(w.WarehouseCode, 1, 255) && !validator.BlankString(w.WarehouseCode) {
 		causes = append(causes, Causes{
 			Field:   "warehouse_code",
 			Message: "warehouse code is out of range",
@@ -59,7 +59,7 @@ func (w *Warehouse) Validate() (causes []Causes) {
 		})
 	}
 
-	if !validator.String(w.Address, 1, 255) {
+	if !validator.String(w.Address, 1, 255) && !validator.BlankString(w.Address) {
 		causes = append(causes, Causes{
 			Field:   "address",
 			Message: "address is out of range",
@@ -73,7 +73,14 @@ func (w *Warehouse) Validate() (causes []Causes) {
 		})
 	}
 
-	if !validator.String(w.Telephone, 1, 255) {
+	if !validator.IsTelephone(w.Telephone) {
+		causes = append(causes, Causes{
+			Field:   "telephone",
+			Message: `telephone number is invalid, should be formatted as XX XXXXX-XXXX`,
+		})
+	}
+
+	if !validator.String(w.Telephone, 1, 255) && !validator.BlankString(w.Telephone) {
 		causes = append(causes, Causes{
 			Field:   "telephone",
 			Message: "telephone is out of range",

@@ -37,7 +37,7 @@ func (p *PurchaseOrder) Validate() (causes []Causes) {
 		})
 	}
 
-	if !validator.String(p.OrderNumber, 1, 255) {
+	if !validator.String(p.OrderNumber, 1, 255) && !validator.BlankString(p.OrderNumber) {
 		causes = append(causes, Causes{
 			Field:   "order_number",
 			Message: "order number is out of range",
@@ -51,7 +51,7 @@ func (p *PurchaseOrder) Validate() (causes []Causes) {
 		})
 	}
 
-	if !validator.String(p.TrackingCode, 1, 255) {
+	if !validator.String(p.TrackingCode, 1, 255) && !validator.BlankString(p.TrackingCode) {
 		causes = append(causes, Causes{
 			Field:   "tracking_code",
 			Message: "tracking code is out of range",
