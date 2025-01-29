@@ -3,7 +3,6 @@ package handler
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -183,10 +182,8 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product.ID = id
-	fmt.Print(product)
 
 	updatedProduct, err := h.s.Update(product)
-	fmt.Print(updatedProduct)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrSellerIdNotFound) || errors.Is(err, internal.ErrProductTypeIDNotFound) || errors.Is(err, internal.ErrProductNotFound) {
@@ -233,7 +230,6 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	err = h.s.Delete(id)
-	fmt.Printf("erro do handler %v", err)
 
 	if err != nil {
 		if errors.Is(err, internal.ErrProductConflit) || errors.Is(err, internal.ErrProductConflitEntity) {
