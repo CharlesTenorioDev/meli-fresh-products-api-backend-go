@@ -1,9 +1,9 @@
-package repository_test
+package repository
 
 import (
-	"fmt"
+	"database/sql"
+	"errors"
 	"github.com/go-sql-driver/mysql"
-	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
@@ -12,174 +12,309 @@ import (
 )
 
 func TestSellerMysql_FindAll(t *testing.T) {
-	// Inicializa o mock do banco de dados
-	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
-	defer mockDB.Close()
+	defer db.Close()
 
-	// Inicializa o txdb com o mock do banco de dados
+	t.Run("Success", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"id", "cid", "company_name", "address", "telephone"}).
+			AddRow(1, 123, "Company 1", "Address 1", "1234567890").
+			AddRow(2, 456, "Company 2", "Address 2", "9876543210")
+		mock.ExpectQuery("SELECT `s.id`, `s.cid`, `s.company_name`, `s.address`, `s.telephone` FROM `sellers` AS `s`").WillReturnRows(rows)
 
-	// Define o comportamento esperado do mock
-	rows := sqlmock.NewRows([]string{"id", "cid", "company_name", "address", "telephone"}).
-		AddRow(1, 123, "Test Seller", "Rua 1", "1234567890").
-		AddRow(2, 456, "Another Seller", "Rua 2", "9876543210")
-	mock.ExpectQuery("SELECT `s.id`, `s.cid`, `s.company_name`, `s.address`, `s.telephone` FROM `sellers` AS `s`").WillReturnRows(rows)
+		r := NewSellerMysql(db)
+		sellers, err := r.FindAll()
 
-	// Cria o repositório
-	repo := repository.NewSellerMysql(mockDB)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, len(sellers))
+		assert.Equal(t, 1, sellers[0].ID)
+		assert.Equal(t, 2, sellers[1].ID)
+	})
 
-	// Executa a função FindAll dentro de uma transação
+	t.Run("No sellers found", func(t *testing.T) {
+		mock.ExpectQuery("SELECT `s.id`, `s.cid`, `s.company_name`, `s.address`, `s.telephone` FROM `sellers` AS `s`").WillReturnError(sql.ErrNoRows)
 
-	sellers, err := repo.FindAll()
-	assert.NoError(t, err)
-	assert.Equal(t, 2, len(sellers))
-	assert.Equal(t, 1, sellers[0].ID)
-	assert.Equal(t, 2, sellers[1].ID)
+		r := NewSellerMysql(db)
+		sellers, err := r.FindAll()
+
+		assert.ErrorIs(t, err, internal.ErrSellerNotFound)
+		assert.Empty(t, sellers)
+	})
+
+	t.Run("Database error", func(t *testing.T) {
+		mock.ExpectQuery("SELECT `s.id`, `s.cid`, `s.company_name`, `s.address`, `s.telephone` FROM `sellers` AS `s`").WillReturnError(errors.New("database error"))
+
+		r := NewSellerMysql(db)
+		sellers, err := r.FindAll()
+
+		assert.Error(t, err)
+		assert.Empty(t, sellers)
+	})
+
+	t.Run("Row Scan error", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"id", "cid", "company_name", "address", "telephone"}).
+			AddRow(1, "Company 1", "Address 1", 1342, "1234567890")
+		mock.ExpectQuery("SELECT `s.id`, `s.cid`, `s.company_name`, `s.address`, `s.telephone` FROM `sellers` AS `s`").WillReturnRows(rows)
+
+		r := NewSellerMysql(db)
+		sellers, err := r.FindAll()
+
+		assert.Error(t, err)
+		assert.Empty(t, sellers)
+	})
 
 }
 
 func TestSellerMysql_FindByID(t *testing.T) {
-	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
-	defer mockDB.Close()
+	defer db.Close()
 
-	row := sqlmock.NewRows([]string{"id", "cid", "company_name", "address", "telephone"}).
-		AddRow(1, 123, "Test Seller", "Rua 1", "1234567890")
-	mock.ExpectQuery("SELECT `id`, `cid`, `company_name`, `address`, `telephone` FROM `sellers`  WHERE `id` = ?").WithArgs(1).WillReturnRows(row)
+	t.Run("Success", func(t *testing.T) {
+		row := sqlmock.NewRows([]string{"id", "cid", "company_name", "address", "telephone"}).
+			AddRow(1, 123, "Company 1", "Address 1", "1234567890")
+		mock.ExpectQuery("SELECT `id`, `cid`, `company_name`, `address`, `telephone` FROM `sellers`  WHERE `id` = ?").WithArgs(1).WillReturnRows(row)
 
-	repo := repository.NewSellerMysql(mockDB)
+		r := NewSellerMysql(db)
+		seller, err := r.FindByID(1)
 
-	seller, err := repo.FindByID(1)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, seller.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, seller.ID)
+	})
 
+	t.Run("Seller not found", func(t *testing.T) {
+		mock.ExpectQuery("SELECT `id`, `cid`, `company_name`, `address`, `telephone` FROM `sellers`  WHERE `id` = ?").WithArgs(1).WillReturnError(sql.ErrNoRows)
+
+		r := NewSellerMysql(db)
+		seller, err := r.FindByID(1)
+
+		assert.ErrorIs(t, err, internal.ErrSellerNotFound)
+		assert.Equal(t, internal.Seller{}, seller)
+	})
+
+	t.Run("Database error", func(t *testing.T) {
+		mock.ExpectQuery("SELECT `id`, `cid`, `company_name`, `address`, `telephone` FROM `sellers`  WHERE `id` = ?").WithArgs(1).WillReturnError(errors.New("database error"))
+
+		r := NewSellerMysql(db)
+		seller, err := r.FindByID(1)
+
+		assert.Error(t, err)
+		assert.Equal(t, internal.Seller{}, seller)
+	})
 }
 
 func TestSellerMysql_FindByCID(t *testing.T) {
-	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
-	defer mockDB.Close()
+	defer db.Close()
 
-	row := sqlmock.NewRows([]string{"id", "cid", "company_name", "address", "telephone"}).
-		AddRow(1, 123, "Test Seller", "Rua 1", "1234567890")
-	mock.ExpectQuery("SELECT `id`, `cid`, `company_name`, `address`, `telephone` FROM `sellers` WHERE `cid` = ?").WithArgs(123).WillReturnRows(row)
+	t.Run("Success", func(t *testing.T) {
+		row := sqlmock.NewRows([]string{"id", "cid", "company_name", "address", "telephone"}).
+			AddRow(1, 123, "Company 1", "Address 1", "1234567890")
+		mock.ExpectQuery("SELECT `id`, `cid`, `company_name`, `address`, `telephone` FROM `sellers` WHERE `cid` = ?").WithArgs(123).WillReturnRows(row)
 
-	repo := repository.NewSellerMysql(mockDB)
+		r := NewSellerMysql(db)
+		seller, err := r.FindByCID(123)
 
-	seller, err := repo.FindByCID(123)
-	assert.NoError(t, err)
-	assert.Equal(t, 123, seller.CID)
+		assert.NoError(t, err)
+		assert.Equal(t, 123, seller.CID)
+	})
 
+	t.Run("Seller not found", func(t *testing.T) {
+		mock.ExpectQuery("SELECT `id`, `cid`, `company_name`, `address`, `telephone` FROM `sellers` WHERE `cid` = ?").WithArgs(123).WillReturnError(sql.ErrNoRows)
+
+		r := NewSellerMysql(db)
+		seller, err := r.FindByCID(123)
+
+		assert.ErrorIs(t, err, internal.ErrSellerNotFound)
+		assert.Equal(t, internal.Seller{}, seller)
+	})
+
+	t.Run("Database error", func(t *testing.T) {
+		mock.ExpectQuery("SELECT `id`, `cid`, `company_name`, `address`, `telephone` FROM `sellers` WHERE `cid` = ?").WithArgs(123).WillReturnError(errors.New("database error"))
+
+		r := NewSellerMysql(db)
+		seller, err := r.FindByCID(123)
+
+		assert.Error(t, err)
+		assert.Equal(t, internal.Seller{}, seller)
+	})
 }
 
 func TestSellerMysql_Save(t *testing.T) {
-	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
-	defer mockDB.Close()
+	defer db.Close()
 
-	seller := &internal.Seller{
-		CID:         123,
-		CompanyName: "Test Seller",
-		Address:     "Rua 1",
-		Telephone:   "1234567890",
-		Locality:    1,
-	}
+	t.Run("Success", func(t *testing.T) {
+		seller := &internal.Seller{
+			CID:         123,
+			CompanyName: "Company 1",
+			Address:     "Address 1",
+			Telephone:   "1234567890",
+			Locality:    1,
+		}
 
-	mock.ExpectExec("INSERT INTO `sellers` (`cid`, `company_name`, `address`, `telephone`, `locality_id`) VALUES (?, ?, ?, ?, ?)").
-		WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+		mock.ExpectExec("INSERT INTO `sellers` (`cid`, `company_name`, `address`, `telephone`, `locality_id`) VALUES (?, ?, ?, ?, ?)").
+			WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality).
+			WillReturnResult(sqlmock.NewResult(1, 1))
 
-	repo := repository.NewSellerMysql(mockDB)
+		r := NewSellerMysql(db)
+		err := r.Save(seller)
 
-	err = repo.Save(seller)
-	assert.NoError(t, err)
-	assert.Equal(t, 1, seller.ID)
+		assert.NoError(t, err)
+		assert.Equal(t, 1, seller.ID)
+	})
 
+	t.Run("Seller conflict", func(t *testing.T) {
+		seller := &internal.Seller{
+			CID:         123,
+			CompanyName: "Company 1",
+			Address:     "Address 1",
+			Telephone:   "1234567890",
+			Locality:    1,
+		}
+
+		mock.ExpectExec("INSERT INTO `sellers` (`cid`, `company_name`, `address`, `telephone`, `locality_id`) VALUES (?, ?, ?, ?, ?)").
+			WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality).
+			WillReturnError(&mysql.MySQLError{Number: 1062})
+
+		r := NewSellerMysql(db)
+		err := r.Save(seller)
+
+		assert.ErrorIs(t, err, internal.ErrSellerConflict)
+	})
+
+	t.Run("Database error", func(t *testing.T) {
+		seller := &internal.Seller{
+			CID:         123,
+			CompanyName: "Company 1",
+			Address:     "Address 1",
+			Telephone:   "1234567890",
+			Locality:    1,
+		}
+
+		mock.ExpectExec("INSERT INTO `sellers` (`cid`, `company_name`, `address`, `telephone`, `locality_id`) VALUES (?, ?, ?, ?, ?)").
+			WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality).
+			WillReturnError(errors.New("database error"))
+
+		r := NewSellerMysql(db)
+		err := r.Save(seller)
+
+		assert.Error(t, err)
+	})
 }
 
 func TestSellerMysql_Update(t *testing.T) {
-	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
-	defer mockDB.Close()
+	defer db.Close()
 
-	seller := &internal.Seller{
-		ID:          1,
-		CID:         123,
-		CompanyName: "Test Seller",
-		Address:     "Rua 1",
-		Telephone:   "1234567890",
-		Locality:    1,
-	}
+	t.Run("Success", func(t *testing.T) {
+		seller := &internal.Seller{
+			ID:          1,
+			CID:         123,
+			CompanyName: "Company 1",
+			Address:     "Address 1",
+			Telephone:   "1234567890",
+			Locality:    1,
+		}
 
-	mock.ExpectExec("UPDATE `sellers` SET `cid` = ?, `company_name` = ?, `address` = ?, `telephone` = ?, `locality_id` = ? WHERE `id` = ?").
-		WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality, seller.ID).
-		WillReturnResult(sqlmock.NewResult(1, 1))
+		mock.ExpectExec("UPDATE `sellers` SET `cid` = ?, `company_name` = ?, `address` = ?, `telephone` = ?, `locality_id` = ? WHERE `id` = ?").
+			WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality, seller.ID).
+			WillReturnResult(sqlmock.NewResult(1, 1))
 
-	repo := repository.NewSellerMysql(mockDB)
+		r := NewSellerMysql(db)
+		err := r.Update(seller)
 
-	err = repo.Update(seller)
-	assert.NoError(t, err)
+		assert.NoError(t, err)
+	})
 
+	t.Run("Seller not found", func(t *testing.T) {
+		seller := &internal.Seller{
+			ID:          1,
+			CID:         123,
+			CompanyName: "Company 1",
+			Address:     "Address 1",
+			Telephone:   "1234567890",
+			Locality:    1,
+		}
+
+		mock.ExpectExec("UPDATE `sellers` SET `cid` = ?, `company_name` = ?, `address` = ?, `telephone` = ?, `locality_id` = ? WHERE `id` = ?").
+			WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality, seller.ID).
+			WillReturnError(&mysql.MySQLError{Number: 1000})
+
+		r := NewSellerMysql(db)
+		err := r.Update(seller)
+
+		assert.ErrorIs(t, err, internal.ErrSellerNotFound)
+	})
+
+	t.Run("Seller conflict", func(t *testing.T) {
+		seller := &internal.Seller{
+			ID:          1,
+			CID:         123,
+			CompanyName: "Company 1",
+			Address:     "Address 1",
+			Telephone:   "1234567890",
+			Locality:    1,
+		}
+
+		mock.ExpectExec("UPDATE `sellers` SET `cid` = ?, `company_name` = ?, `address` = ?, `telephone` = ?, `locality_id` = ? WHERE `id` = ?").
+			WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality, seller.ID).
+			WillReturnError(&mysql.MySQLError{Number: 1062})
+
+		r := NewSellerMysql(db)
+		err := r.Update(seller)
+
+		assert.ErrorIs(t, err, internal.ErrSellerConflict)
+	})
+
+	t.Run("Database error", func(t *testing.T) {
+		seller := &internal.Seller{
+			ID:          1,
+			CID:         123,
+			CompanyName: "Company 1",
+			Address:     "Address 1",
+			Telephone:   "1234567890",
+			Locality:    1,
+		}
+
+		mock.ExpectExec("UPDATE `sellers` SET `cid` = ?, `company_name` = ?, `address` = ?, `telephone` = ?, `locality_id` = ? WHERE `id` = ?").
+			WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality, seller.ID).
+			WillReturnError(errors.New("database error"))
+
+		r := NewSellerMysql(db)
+		err := r.Update(seller)
+
+		assert.Error(t, err)
+	})
 }
 
 func TestSellerMysql_Delete(t *testing.T) {
-	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	db, mock, err := sqlmock.New()
 	assert.NoError(t, err)
-	defer mockDB.Close()
+	defer db.Close()
 
-	mock.ExpectExec("DELETE FROM `sellers` WHERE `id` = ?").WithArgs(1).WillReturnResult(sqlmock.NewResult(1, 1))
+	t.Run("Success", func(t *testing.T) {
+		mock.ExpectExec("DELETE FROM `sellers` WHERE `id` = ?").
+			WithArgs(1).
+			WillReturnResult(sqlmock.NewResult(1, 1))
 
-	repo := repository.NewSellerMysql(mockDB)
+		r := NewSellerMysql(db)
+		err := r.Delete(1)
 
-	err = repo.Delete(1)
+		assert.NoError(t, err)
+	})
 
-	assert.NoError(t, err)
-}
+	t.Run("Database error", func(t *testing.T) {
+		mock.ExpectExec("DELETE FROM `sellers` WHERE `id` = ?").
+			WithArgs(1).
+			WillReturnError(errors.New("database error"))
 
-func TestSellerMysql_Save_Error(t *testing.T) {
-	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-	assert.NoError(t, err)
-	defer mockDB.Close()
+		r := NewSellerMysql(db)
+		err := r.Delete(1)
 
-	seller := &internal.Seller{
-		CID:         123,
-		CompanyName: "Test Seller",
-		Address:     "Rua 1",
-		Telephone:   "1234567890",
-		Locality:    1,
-	}
-
-	mock.ExpectExec("INSERT INTO `sellers` (`cid`, `company_name`, `address`, `telephone`, `locality_id`) VALUES (?, ?, ?, ?, ?)").
-		WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality).
-		WillReturnError(fmt.Errorf("some error"))
-
-	repo := repository.NewSellerMysql(mockDB)
-
-	err = repo.Save(seller)
-	assert.Error(t, err)
-
-}
-
-func TestSellerMysql_Save_Conflict(t *testing.T) {
-	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
-	assert.NoError(t, err)
-	defer mockDB.Close()
-
-	seller := &internal.Seller{
-		CID:         123,
-		CompanyName: "Test Seller",
-		Address:     "Rua 1",
-		Telephone:   "1234567890",
-		Locality:    1,
-	}
-
-	mock.ExpectExec("INSERT INTO `sellers` (`cid`, `company_name`, `address`, `telephone`, `locality_id`) VALUES (?, ?, ?, ?, ?)").
-		WithArgs(seller.CID, seller.CompanyName, seller.Address, seller.Telephone, seller.Locality).
-		WillReturnError(&mysql.MySQLError{Number: 1062})
-
-	repo := repository.NewSellerMysql(mockDB)
-
-	err = repo.Save(seller)
-	assert.ErrorIs(t, err, internal.ErrSellerConflict)
-
+		assert.Error(t, err)
+	})
 }
