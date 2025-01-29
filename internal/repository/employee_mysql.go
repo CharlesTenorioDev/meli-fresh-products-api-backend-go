@@ -89,9 +89,9 @@ func (r *EmployeeMysql) Update(id int, employee internal.Employee) (err error) {
 	return
 }
 
-func (r *EmployeeMysql) Delete(id int) error {
-	_, err := r.db.Exec("DELETE FROM employees WHERE id = ?", id)
-	return err
+func (r *EmployeeMysql) Delete(id int) (err error) {
+	_, err = r.db.Exec("DELETE FROM employees WHERE id = ?", id)
+	return
 }
 
 func (r *EmployeeMysql) CountInboundOrdersPerEmployee() (io []internal.InboundOrdersPerEmployee, err error) {
