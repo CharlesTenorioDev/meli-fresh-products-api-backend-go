@@ -19,21 +19,24 @@ type BuyerRepositoryMock struct {
 	mock.Mock
 }
 
-func (rm *BuyerRepositoryMock) GetAll() map[int]internal.Buyer {
+func (rm *BuyerRepositoryMock) GetAll() (db map[int]internal.Buyer, err error) {
 	args := rm.Called()
-	return args.Get(0).(map[int]internal.Buyer)
+	return args.Get(0).(map[int]internal.Buyer), args.Error(1)
 }
 
-func (rm *BuyerRepositoryMock) Add(buyer *internal.Buyer) {
-	rm.Called(buyer)
+func (rm *BuyerRepositoryMock) Add(buyer *internal.Buyer) (id int64, err error) {
+	args := rm.Called(buyer)
+	return args.Get(0).(int64), args.Error(1)
 }
 
-func (rm *BuyerRepositoryMock) Update(id int, buyer internal.BuyerPatch) {
-	rm.Called(id, buyer)
+func (rm *BuyerRepositoryMock) Update(id int, buyer internal.BuyerPatch) (err error) {
+	args := rm.Called(id, buyer)
+	return args.Error(0)
 }
 
-func (rm *BuyerRepositoryMock) Delete(id int) {
-	rm.Called(id)
+func (rm *BuyerRepositoryMock) Delete(id int) (rowsAffected int64, err error) {
+	args := rm.Called(id)
+	return args.Get(0).(int64), args.Error(1)
 }
 
 func (rm *BuyerRepositoryMock) ReportPurchaseOrders() (purchaseOrders []internal.PurchaseOrdersByBuyer, err error) {
@@ -74,8 +77,8 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Save() {
 			FirstName:    "Paloma",
 			LastName:     "Souza",
 		}
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
-		b.rp.On("Add", &buyer)
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{}, nil)
+		b.rp.On("Add", &buyer).Return(int64(1), nil)
 
 		err := b.sv.Save(&buyer)
 
@@ -94,7 +97,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Save() {
 			FirstName:    "Brian",
 			LastName:     "May",
 		}
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{1: {ID: 1, CardNumberID: "3445342", FirstName: "Paloma", LastName: "Souza"}})
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{1: {ID: 1, CardNumberID: "3445342", FirstName: "Paloma", LastName: "Souza"}}, nil)
 		err := b.sv.Save(&buyer)
 
 		b.rp.AssertExpectations(b.T())
@@ -113,7 +116,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Save() {
 			FirstName:    "Pah",
 			LastName:     "Gabi",
 		}
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{}, nil)
 		err := b.sv.Save(&buyer)
 
 		b.rp.AssertExpectations(b.T())
@@ -130,7 +133,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Save() {
 			CardNumberID: "6544666",
 			FirstName:    "Jack",
 		}
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{}, nil)
 		err := b.sv.Save(&buyer)
 
 		b.rp.AssertExpectations(b.T())
@@ -153,7 +156,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Read() {
 			3: {ID: 3, CardNumberID: "3445344", FirstName: "Pah", LastName: "Gabi"},
 		}
 
-		b.rp.On("GetAll").Return(buyer)
+		b.rp.On("GetAll").Return(buyer, nil)
 
 		buyers := b.sv.GetAll()
 		require.Equal(b.T(), buyer, buyers)
@@ -162,7 +165,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Read() {
 	b.T().Run("case 2 - Return an error when trying to get a buyer by a non existent id", func(t *testing.T) {
 		b.SetupTest()
 
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{}, nil)
 		_, err := b.sv.FindByID(500)
 
 		b.rp.AssertExpectations(b.T())
@@ -179,7 +182,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Read() {
 			1: {ID: 1, CardNumberID: "3445342", FirstName: "Paloma", LastName: "Souza"},
 		}
 
-		b.rp.On("GetAll").Return(buyer)
+		b.rp.On("GetAll").Return(buyer, nil)
 
 		result, err := b.sv.FindByID(1)
 
@@ -192,7 +195,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Read() {
 	b.T().Run("case 4 - Return an error when trying to get a buyer by an invalid id", func(t *testing.T) {
 		b.SetupTest()
 
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{}, nil)
 		_, err := b.sv.FindByID(-20)
 
 		b.rp.AssertExpectations(b.T())
@@ -234,7 +237,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Update() {
 
 		b.rp.On("GetAll").Return(map[int]internal.Buyer{
 			1: buyer,
-		})
+		}, nil)
 
 		b.rp.On("Update", mock.AnythingOfType("int"), mock.AnythingOfType("internal.BuyerPatch")).Run(func(args mock.Arguments) {
 			id := args.Get(0).(int)
@@ -256,7 +259,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Update() {
 		b.SetupTest()
 
 		buyerPatch := internal.BuyerPatch{}
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{}, nil)
 		err := b.sv.Update(55, buyerPatch)
 
 		b.rp.AssertExpectations(b.T())
@@ -287,7 +290,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Update() {
 
 		b.rp.On("GetAll").Return(map[int]internal.Buyer{
 			2: buyerWithCardNumberInUse,
-		})
+		}, nil)
 
 		err := b.sv.Update(2, buyerPatch)
 
@@ -309,8 +312,8 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Delete() {
 			1: {ID: 1, CardNumberID: "111111", FirstName: "Paloma", LastName: "Souza"},
 		}
 
-		b.rp.On("GetAll").Return(buyer)
-		b.rp.On("Delete", 1).Return(nil)
+		b.rp.On("GetAll").Return(buyer, nil)
+		b.rp.On("Delete", 1).Return(int64(0), nil)
 
 		err := b.sv.Delete(1)
 
@@ -323,7 +326,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_Delete() {
 	b.T().Run("case 2 - Returns not found error when trying to delete non existent buyer", func(t *testing.T) {
 		b.SetupTest()
 
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{}, nil)
 
 		err := b.sv.Delete(55)
 
@@ -375,7 +378,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_ReportPurchaseOrders() {
 		b.rp.On("GetAll").Return(map[int]internal.Buyer{
 			1: {ID: 1, CardNumberID: "111111", FirstName: "Paloma", LastName: "Souza"},
 			2: {ID: 2, CardNumberID: "222222", FirstName: "Pah", LastName: "Gabi"},
-		})
+		}, nil)
 
 		b.rp.On("ReportPurchaseOrdersByID", 2).Return(purchaseOrdersByBuyer, nil)
 
@@ -392,7 +395,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_ReportPurchaseOrders() {
 	b.T().Run("case 4 - Return buyer not found error when trying to get an buyer not existent by Id parameter", func(t *testing.T) {
 		b.SetupTest()
 
-		b.rp.On("GetAll").Return(map[int]internal.Buyer{})
+		b.rp.On("GetAll").Return(map[int]internal.Buyer{}, nil)
 
 		_, err := b.sv.ReportPurchaseOrdersByID(255)
 
@@ -409,7 +412,7 @@ func (b *BuyerServiceTestSuite) TestBuyerService_ReportPurchaseOrders() {
 			2: {ID: 2, CardNumberID: "222222", FirstName: "Pah", LastName: "Gabi"},
 			3: {ID: 3, CardNumberID: "333333", FirstName: "Brian", LastName: "May"},
 			4: {ID: 4, CardNumberID: "444444", FirstName: "Jack", LastName: "Sparrow"},
-		})
+		}, nil)
 		b.rp.On("ReportPurchaseOrdersByID", 4).Return([]internal.PurchaseOrdersByBuyer{}, nil)
 
 		noPurchaseOrders, err := b.sv.ReportPurchaseOrdersByID(4)

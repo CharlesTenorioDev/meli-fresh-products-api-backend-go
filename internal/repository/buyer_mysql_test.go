@@ -1,7 +1,6 @@
 package repository_test
 
 import (
-	"database/sql"
 	"database/sql/driver"
 	"errors"
 	"testing"
@@ -15,7 +14,6 @@ import (
 
 type MysqlBuyerTestSuite struct {
 	suite.Suite
-	db   *sql.DB
 	mock sqlmock.Sqlmock
 	rp   *repository.BuyerMysqlRepository
 }
@@ -24,9 +22,8 @@ func (s *MysqlBuyerTestSuite) Setup() {
 	db, mock, e := sqlmock.New()
 
 	require.NoError(s.T(), e)
-	s.db = db
 	s.mock = mock
-	s.rp = repository.NewBuyerMysqlRepository(s.db)
+	s.rp = repository.NewBuyerMysqlRepository(db)
 }
 
 func (s *MysqlBuyerTestSuite) TestGetAll() {
