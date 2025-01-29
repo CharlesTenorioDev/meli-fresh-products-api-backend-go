@@ -35,20 +35,9 @@ jobs:
 
     - name: Run tests with coverage
       run: |
-        go test -v -coverprofile=coverage.out ./... 
+        go test -coverprofile=coverage.out ./... 
           
 
     - name: Display test coverage
       run: |
-        go tool cover -func=coverage.out
-
-    - name: Generate HTML coverage report
-      run: |
-        go tool cover -html=coverage.out -o coverage.html
-
-
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: coverage.html
+        go tool cover -func="coverage.out"
