@@ -296,7 +296,6 @@ func (h *WarehouseDefault) Delete() http.HandlerFunc {
 
 			return
 		}
-
 		response.JSON(w, http.StatusNoContent, nil)
 	}
 }
