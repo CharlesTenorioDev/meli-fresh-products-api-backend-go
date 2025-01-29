@@ -280,6 +280,6 @@ func (s *MysqlEmployeeTestSuite) TestReportInboundOrdersByID() {
 	})
 }
 
-func TestRepositoryMysqlBuyerUnit(t *testing.T) {
+func TestRepositoryMysqlEmployeeUnit(t *testing.T) {
 	suite.Run(t, new(MysqlEmployeeTestSuite))
 }
