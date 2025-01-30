@@ -34,7 +34,7 @@ func (r *CarriesMysql) FindAll() (carries []internal.Carries, e error) {
 	for rows.Next() {
 		var carry internal.Carries
 
-		e = rows.Scan(
+		rows.Scan(
 			&carry.ID,
 			&carry.Cid,
 			&carry.CompanyName,
@@ -42,13 +42,11 @@ func (r *CarriesMysql) FindAll() (carries []internal.Carries, e error) {
 			&carry.PhoneNumber,
 			&carry.LocalityID,
 		)
-		if e != nil {
-			return
-		}
 
 		carries = append(carries, carry)
 	}
 
+	e = rows.Err()
 	return
 }
 
