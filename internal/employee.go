@@ -55,9 +55,9 @@ func (emp EmployeePatch) EmployeePatch(empUpdate *Employee) {
 type EmployeeRepository interface {
 	GetAll() (db []Employee, err error)
 	GetByID(id int) (emp Employee, err error)
-	Save(emp *Employee) (int, error)
-	Update(id int, employee Employee) error
-	Delete(id int) error
+	Save(emp *Employee) (id int64, err error)
+	Update(id int, employee Employee) (err error)
+	Delete(id int) (err error)
 	CountInboundOrdersPerEmployee() (io []InboundOrdersPerEmployee, err error)
 	ReportInboundOrdersByID(employeeID int) (io InboundOrdersPerEmployee, err error)
 }

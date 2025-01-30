@@ -29,17 +29,17 @@ func (r *EmployeeRepositoryMock) GetByID(id int) (emp internal.Employee, err err
 	return args.Get(0).(internal.Employee), args.Error(1)
 }
 
-func (r *EmployeeRepositoryMock) Save(emp *internal.Employee) (int, error) {
+func (r *EmployeeRepositoryMock) Save(emp *internal.Employee) (id int64, err error) {
 	args := r.Called(emp)
-	return args.Get(0).(int), args.Error(1)
+	return args.Get(0).(int64), args.Error(1)
 }
 
-func (r *EmployeeRepositoryMock) Update(id int, employee internal.Employee) error {
+func (r *EmployeeRepositoryMock) Update(id int, employee internal.Employee) (err error) {
 	args := r.Called(id, employee)
 	return args.Error(0)
 }
 
-func (r *EmployeeRepositoryMock) Delete(id int) error {
+func (r *EmployeeRepositoryMock) Delete(id int) (err error) {
 	args := r.Called(id)
 	return args.Error(0)
 }
@@ -70,7 +70,7 @@ func TestCreate_EmployeeUnitTest(t *testing.T) {
 			ID: 14,
 		}, nil)
 		rp.On("GetAll").Return([]internal.Employee{}, nil)
-		rp.On("Save", &defaultEmployee).Return(defaultEmployee.ID, nil)
+		rp.On("Save", &defaultEmployee).Return(int64(defaultEmployee.ID), nil)
 		err := sv.Save(&defaultEmployee)
 
 		require.NoError(t, err)
@@ -154,7 +154,7 @@ func TestCreate_EmployeeUnitTest(t *testing.T) {
 			ID: 14,
 		}, nil)
 		rp.On("GetAll").Return([]internal.Employee{}, nil)
-		rp.On("Save", &defaultEmployee).Return(-1, errors.New("failed to create employee"))
+		rp.On("Save", &defaultEmployee).Return(int64(-1), errors.New("failed to create employee"))
 		err := sv.Save(&defaultEmployee)
 
 		require.Error(t, err)
