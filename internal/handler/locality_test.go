@@ -23,13 +23,13 @@ type MockLocalityService struct {
 }
 
 func (m *MockLocalityService) ReportCarries(localityId int) (int, error) {
-	//TODO implement me
-	panic("implement me")
+	args := m.Called(localityId)
+	return args.Get(0).(int), args.Error(1)
 }
 
 func (m *MockLocalityService) GetAmountOfCarriesForEveryLocality() ([]internal.CarriesCountPerLocality, error) {
-	//TODO implement me
-	panic("implement me")
+	args := m.Called()
+	return args.Get(0).([]internal.CarriesCountPerLocality), args.Error(1)
 }
 
 // ReportSellers mock
@@ -284,6 +284,15 @@ func TestLocalityDefault_Save(t *testing.T) {
 			expectedResponse:   nil,
 		},
 		{
+			name: "should return json bad request error",
+			mockSetup: func(m *MockLocalityService) {
+				m.On("Save", mock.Anything).Return(nil)
+			},
+			requestBody:        `fd:2"lfs"`,
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   nil,
+		},
+		{
 			name: "should return bad request error",
 			mockSetup: func(m *MockLocalityService) {
 				m.On("Save", mock.Anything).Return(internal.DomainError{
@@ -346,6 +355,148 @@ func TestLocalityDefault_Save(t *testing.T) {
 					assert.Equal(t, response["data"], actualResponse.Data)
 				case resterr.RestErr:
 					var actualResponse resterr.RestErr
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, actualResponse)
+				default:
+					t.Fatalf("Tipo de resposta inesperado: %T", response)
+				}
+			}
+		})
+	}
+}
+
+func TestReportCarries(t *testing.T) {
+
+	tests := []struct {
+		name               string
+		mockSetup          func(*MockLocalityService)
+		requestBody        interface{}
+		id                 string
+		expectedStatusCode int
+		expectedResponse   interface{}
+	}{
+		{
+			name: "id is empty, should return status ok",
+			mockSetup: func(m *MockLocalityService) {
+				m.On("GetAmountOfCarriesForEveryLocality").Return([]internal.CarriesCountPerLocality{
+					{
+						CarriesCount: 12,
+						LocalityID:   1,
+						LocalityName: "Test Locality",
+					},
+				}, nil)
+			},
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: struct {
+				Data []internal.CarriesCountPerLocality `json:"data"`
+			}{
+				Data: []internal.CarriesCountPerLocality{
+					{
+						CarriesCount: 12,
+						LocalityID:   1,
+						LocalityName: "Test Locality",
+					},
+				},
+			},
+		},
+		{
+			name: "id is empty, should return status internal server error",
+			mockSetup: func(m *MockLocalityService) {
+				m.On("GetAmountOfCarriesForEveryLocality").Return([]internal.CarriesCountPerLocality{}, errors.New("internal server error"))
+			},
+			expectedStatusCode: http.StatusInternalServerError,
+			expectedResponse:   resterr.NewInternalServerError("failed to fetch carries"),
+		},
+		{
+			name:               "id is not empty, but is not a int, should return bad request",
+			mockSetup:          func(m *MockLocalityService) {},
+			id:                 "abc",
+			expectedStatusCode: http.StatusBadRequest,
+			expectedResponse:   resterr.NewBadRequestError("id should be a number"),
+		},
+		{
+			name: "id is not empty, should return not found",
+			mockSetup: func(m *MockLocalityService) {
+				m.On("ReportCarries", 1).Return(0, errors.New("not found"))
+			},
+			id:                 "1",
+			expectedStatusCode: http.StatusNotFound,
+			expectedResponse:   resterr.NewNotFoundError("not carries on locality_id 1"),
+		},
+		{
+			name: "id is not empty, should return status ok",
+			mockSetup: func(m *MockLocalityService) {
+				m.On("ReportCarries", 1).Return(1, nil)
+			},
+			id:                 "1",
+			expectedStatusCode: http.StatusOK,
+			expectedResponse: struct {
+				Data struct {
+					AmountOfCarries int `json:"amount_of_carries"`
+				} `json:"data"`
+			}{
+				Data: struct {
+					AmountOfCarries int `json:"amount_of_carries"`
+				}{AmountOfCarries: 1},
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockService := new(MockLocalityService)
+			localityHandler := handler.NewLocalityDefault(mockService)
+			tt.mockSetup(mockService)
+
+			req, err := http.NewRequest(http.MethodGet, "/localities/reportCarries?id="+tt.id, nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			rr := httptest.NewRecorder()
+
+			rctx := chi.NewRouteContext()
+			rctx.URLParams.Add("id", tt.id)
+			req = req.WithContext(context.WithValue(req.Context(), chi.RouteCtxKey, rctx))
+
+			hd := localityHandler.ReportCarries()
+			hd.ServeHTTP(rr, req)
+
+			assert.Equal(t, tt.expectedStatusCode, rr.Code)
+
+			if tt.expectedResponse != nil {
+				switch response := tt.expectedResponse.(type) {
+				case struct {
+					Data []internal.CarriesCountPerLocality "json:\"data\""
+				}:
+					var actualResponse struct {
+						Data []internal.CarriesCountPerLocality `json:"data"`
+					}
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response.Data, actualResponse.Data)
+				case *resterr.RestErr:
+					var actualResponse resterr.RestErr
+					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
+					if err != nil {
+						t.Fatal(err)
+					}
+					assert.Equal(t, response, &actualResponse)
+				case struct {
+					Data struct {
+						AmountOfCarries int `json:"amount_of_carries"`
+					} `json:"data"`
+				}:
+					var actualResponse struct {
+						Data struct {
+							AmountOfCarries int `json:"amount_of_carries"`
+						} `json:"data"`
+					}
 					err = json.NewDecoder(rr.Body).Decode(&actualResponse)
 					if err != nil {
 						t.Fatal(err)
