@@ -165,3 +165,15 @@ func NewTooManyRequestsError(message string) *RestErr {
 		Code:    http.StatusTooManyRequests,
 	}
 }
+
+// NewUnprocessableEntityWithCausesError returns a RestErr with http.StatusUnprocessableEntity code and causes.
+//
+// It should be used when the request is well-formed, but the server is unable to process the contained instructions.
+func NewUnprocessableEntityWithCausesError(message string, causes []Causes) *RestErr {
+	return &RestErr{
+		Message: message,
+		Err:     "unprocessable_entity",
+		Code:    http.StatusUnprocessableEntity,
+		Causes:  causes,
+	}
+}

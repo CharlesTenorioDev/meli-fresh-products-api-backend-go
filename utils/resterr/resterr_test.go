@@ -1,10 +1,11 @@
 package resterr_test
 
 import (
-	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
-	"github.com/stretchr/testify/require"
 	"net/http"
 	"testing"
+
+	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
+	"github.com/stretchr/testify/require"
 )
 
 func TestRestErr_Error(t *testing.T) {
@@ -106,6 +107,28 @@ func TestRestErrWithCauses_Error(t *testing.T) {
 				Message: "bad request",
 				Err:     "bad_request",
 				Code:    http.StatusBadRequest,
+				Causes: []resterr.Causes{
+					{
+						Field:   "error",
+						Message: "error",
+					},
+				},
+			},
+		},
+		{
+			name:         "Test_NewUnprocessableEntityWithCausesError",
+			function:     resterr.NewUnprocessableEntityWithCausesError,
+			inputMessage: "unprocessable entity",
+			inputCauses: []resterr.Causes{
+				{
+					Field:   "error",
+					Message: "error",
+				},
+			},
+			expectedError: &resterr.RestErr{
+				Message: "unprocessable entity",
+				Err:     "unprocessable_entity",
+				Code:    http.StatusUnprocessableEntity,
 				Causes: []resterr.Causes{
 					{
 						Field:   "error",

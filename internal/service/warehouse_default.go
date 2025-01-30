@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 )
 
@@ -50,9 +48,14 @@ func (s *WarehouseDefault) FindByID(id int) (warehouse internal.Warehouse, err e
 
 // Save creates a new warehouse
 func (s *WarehouseDefault) Save(warehouse *internal.Warehouse) (err error) {
-	// Validating the warehouse
-	if err := warehouse.Validate(); err != nil {
-		return fmt.Errorf("%w: %v", internal.ErrWarehouseUnprocessableEntity, err)
+	// Validate the purchase order entity
+	causes := warehouse.Validate()
+
+	if len(causes) > 0 {
+		return internal.DomainError{
+			Message: internal.ErrWarehouseBadRequest.Error(),
+			Causes:  causes,
+		}
 	}
 
 	// We`re gonna check if there is a warehouse with the same code

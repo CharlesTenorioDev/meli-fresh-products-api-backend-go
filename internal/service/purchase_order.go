@@ -33,7 +33,7 @@ func (s *PurchaseOrderService) Save(p *internal.PurchaseOrder) (err error) {
 
 	if len(causes) > 0 {
 		return internal.DomainError{
-			Message: "Purchase Order inputs are Invalid",
+			Message: internal.ErrPurchaseOrderBadRequest.Error(),
 			Causes:  causes,
 		}
 	}
