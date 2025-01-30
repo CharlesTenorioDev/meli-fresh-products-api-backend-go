@@ -1,28 +1,21 @@
 package handler_test
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"strconv"
 	"strings"
 	"testing"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/handler"
-	"github.com/meli-fresh-products-api-backend-t1/internal/repository"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/meli-fresh-products-api-backend-t1/utils/resterr"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
-	"github.com/stretchr/testify/suite"
 )
 
 const (
@@ -70,194 +63,6 @@ func (bm *BuyerServiceMock) ReportPurchaseOrdersByID(id int) ([]internal.Purchas
 	return args.Get(0).([]internal.PurchaseOrdersByBuyer), args.Error(1)
 }
 
-type BuyerSuiteTest struct {
-	buyersFromFile map[int]internal.Buyer
-	hd             *handler.BuyerHandlerDefault
-	suite.Suite
-}
-
-func (suite *BuyerSuiteTest) SetupTest() {
-	suite.buyersFromFile = make(map[int]internal.Buyer)
-	file, err := os.Open(DbPath)
-	if err != nil {
-		log.Fatal("Failed to open db file: ", err)
-	}
-	var buyers []internal.Buyer
-	json.NewDecoder(file).Decode(&buyers) // Assume JSON is always valid
-
-	for i, b := range buyers {
-		suite.buyersFromFile[i] = b
-	}
-	rp := repository.NewBuyerMap(DbPath)
-	sv := service.NewBuyerService(rp)
-	suite.hd = handler.NewBuyerHandlerDefault(sv)
-}
-
-func (suite *BuyerSuiteTest) TestGetAllBuyers() {
-	r := httptest.NewRequest(http.MethodGet, Api, nil)
-	w := httptest.NewRecorder()
-	suite.hd.GetAll(w, r)
-	assert.Equal(suite.T(), http.StatusOK, w.Result().StatusCode)
-
-	var buyers struct {
-		Data map[string]internal.Buyer `json:"data"`
-	}
-	err := json.NewDecoder(w.Body).Decode(&buyers)
-	require.NoError(suite.T(), err)
-
-	// Validate if all buyers are correct
-	for i := 0; i < len(suite.buyersFromFile); i++ {
-		require.Equal(suite.T(), suite.buyersFromFile[i], buyers.Data[strconv.Itoa(i)])
-	}
-}
-
-func (suite *BuyerSuiteTest) TestGetBuyersById() {
-	suite.Run("get several ids", func() {
-		for i := range suite.buyersFromFile {
-			r := httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
-			rctx := chi.NewRouteContext()
-			rctx.URLParams.Add("id", strconv.Itoa(i))
-			r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-			w := httptest.NewRecorder()
-			suite.hd.GetByID(w, r)
-			var buyers struct {
-				Data internal.Buyer `json:"data"`
-			}
-			err := json.NewDecoder(w.Body).Decode(&buyers)
-			require.NoError(suite.T(), err)
-			require.Equal(suite.T(), suite.buyersFromFile[i], buyers.Data)
-		}
-	})
-}
-
-func (suite *BuyerSuiteTest) TestCreateBuyer() {
-	// Insert the object
-	bc := internal.Buyer{
-		FirstName:    "Fabio",
-		LastName:     "Nacarelli",
-		CardNumberID: "80028922",
-	}
-	b, _ := json.Marshal(bc)
-	r := httptest.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
-	w := httptest.NewRecorder()
-	suite.hd.Create(w, r)
-	assert.Equal(suite.T(), http.StatusCreated, w.Result().StatusCode)
-
-	// Test if it was actually inserted
-	r = httptest.NewRequest(http.MethodGet, Api+"/5", nil)
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("id", "5")
-	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-	w = httptest.NewRecorder()
-	suite.hd.GetByID(w, r)
-
-	var buyerCreated struct {
-		Data internal.Buyer `json:"data"`
-	}
-	json.NewDecoder(w.Body).Decode(&buyerCreated)
-	require.Equal(suite.T(), 5, buyerCreated.Data.ID)
-	require.Equal(suite.T(), bc.FirstName, buyerCreated.Data.FirstName)
-	require.Equal(suite.T(), bc.LastName, buyerCreated.Data.LastName)
-	require.Equal(suite.T(), bc.CardNumberID, buyerCreated.Data.CardNumberID)
-}
-
-func (suite *BuyerSuiteTest) TestCreateBuyerWithMissingParameters() {
-	bc := internal.Buyer{}
-	b, _ := json.Marshal(bc)
-	r := httptest.NewRequest(http.MethodPost, Api, bytes.NewReader(b))
-	w := httptest.NewRecorder()
-	suite.hd.Create(w, r)
-	assert.Equal(suite.T(), http.StatusUnprocessableEntity, w.Result().StatusCode)
-}
-
-func (suite *BuyerSuiteTest) TestGetIdThatDoesntExist() {
-	r := httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("id", "200")
-	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-	w := httptest.NewRecorder()
-	suite.hd.GetByID(w, r)
-	var buyers struct {
-		Data internal.Buyer `json:"data"`
-	}
-	err := json.NewDecoder(w.Body).Decode(&buyers)
-	require.NoError(suite.T(), err)
-	require.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
-}
-
-func (suite *BuyerSuiteTest) TestPatchBuyer() {
-	fname := "Doe"
-	lname := "John"
-	cardNumberId := "404"
-	suite.Run("apply changes", func() {
-		bp := internal.BuyerPatch{
-			FirstName:    &fname,
-			LastName:     &lname,
-			CardNumberID: &cardNumberId,
-		}
-		b, _ := json.Marshal(bp)
-		r := httptest.NewRequest(http.MethodPatch, Api+"/{id}", bytes.NewReader(b))
-		rctx := chi.NewRouteContext()
-		rctx.URLParams.Add("id", "0")
-		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-		w := httptest.NewRecorder()
-		suite.hd.Update(w, r)
-		require.Equal(suite.T(), http.StatusOK, w.Result().StatusCode)
-
-		var updatedBuyer struct {
-			Data internal.Buyer `json:"data"`
-		}
-		json.NewDecoder(w.Body).Decode(&updatedBuyer)
-		require.Equal(suite.T(), fname, updatedBuyer.Data.FirstName)
-		require.Equal(suite.T(), lname, updatedBuyer.Data.LastName)
-		require.Equal(suite.T(), cardNumberId, updatedBuyer.Data.CardNumberID)
-	})
-
-	// Check if changes were applied
-	suite.Run("check if changes were applied", func() {
-		r := httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
-		rctx := chi.NewRouteContext()
-		rctx.URLParams.Add("id", "0")
-		r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-		w := httptest.NewRecorder()
-		suite.hd.GetByID(w, r)
-		var buyers struct {
-			Data internal.Buyer `json:"data"`
-		}
-		err := json.NewDecoder(w.Body).Decode(&buyers)
-		require.NoError(suite.T(), err)
-		require.Equal(suite.T(), http.StatusOK, w.Result().StatusCode)
-		require.Equal(suite.T(), fname, buyers.Data.FirstName)
-		require.Equal(suite.T(), lname, buyers.Data.LastName)
-		require.Equal(suite.T(), cardNumberId, buyers.Data.CardNumberID)
-	})
-}
-
-func (suite *BuyerSuiteTest) TestDeleteBuyer() {
-	// Test delete
-	r := httptest.NewRequest(http.MethodDelete, Api+"/{id}", nil)
-	rctx := chi.NewRouteContext()
-	rctx.URLParams.Add("id", "0")
-	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-	w := httptest.NewRecorder()
-	suite.hd.Delete(w, r)
-	require.Equal(suite.T(), http.StatusNoContent, w.Result().StatusCode)
-
-	// Test if deleted
-	r = httptest.NewRequest(http.MethodGet, Api+"/{id}", nil)
-	rctx = chi.NewRouteContext()
-	rctx.URLParams.Add("id", "0")
-	r = r.WithContext(context.WithValue(r.Context(), chi.RouteCtxKey, rctx))
-	w = httptest.NewRecorder()
-	suite.hd.GetByID(w, r)
-	require.Equal(suite.T(), http.StatusNotFound, w.Result().StatusCode)
-}
-
-func TestBuyerSuiteTest(t *testing.T) {
-	suite.Run(t, new(BuyerSuiteTest))
-}
-
-// Unit tests
 type TestCasesUnit struct {
 	name               string
 	mockService        func(*BuyerServiceMock)

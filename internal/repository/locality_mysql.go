@@ -95,7 +95,7 @@ func (r *LocalityMysql) ReportSellers() (localities []internal.Locality, err err
 			err = internal.ErrLocalityNotFound
 		}
 
-		return localities, err
+		return
 	}
 
 	for rows.Next() {
@@ -103,22 +103,13 @@ func (r *LocalityMysql) ReportSellers() (localities []internal.Locality, err err
 
 		err = rows.Scan(&locality.ID, &locality.LocalityName, &locality.ProvinceName, &locality.CountryName, &locality.Sellers)
 		if err != nil {
-			return localities, err
+			return
 		}
 
 		localities = append(localities, locality)
 	}
 
-	err = rows.Err()
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = internal.ErrLocalityNotFound
-		}
-
-		return localities, err
-	}
-
-	return localities, err
+	return
 }
 
 // ReportSellersByID returns a seller from the database by its id
@@ -133,6 +124,7 @@ func (r *LocalityMysql) ReportSellersByID(id int) (localities []internal.Localit
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrLocalityNotFound
 		}
+		return
 	}
 
 	localities = append(localities, locality)

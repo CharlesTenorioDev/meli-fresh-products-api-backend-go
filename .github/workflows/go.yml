@@ -23,32 +23,10 @@ jobs:
       with:
         go-version: '1.22.5'
 
-    - name: Cache dependencies
-      uses: actions/cache@v4.2.0
-      with:
-        path: |
-          ~/go/pkg/mod
-        key: ${{ runner.os }}-go-mod-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-mod-
-
-
     - name: Run tests with coverage
       run: |
-        go test -v -coverprofile=coverage.out ./... 
-          
+        go test -coverprofile=coverage.out ./... 
 
     - name: Display test coverage
       run: |
-        go tool cover -func=coverage.out
-
-    - name: Generate HTML coverage report
-      run: |
-        go tool cover -html=coverage.out -o coverage.html
-
-
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v4
-      with:
-        name: coverage-report
-        path: coverage.html
+        go tool cover -func="coverage.out"

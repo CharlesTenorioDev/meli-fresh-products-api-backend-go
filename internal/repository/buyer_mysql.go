@@ -14,7 +14,7 @@ type BuyerMysqlRepository struct {
 	db *sql.DB
 }
 
-func (r *BuyerMysqlRepository) GetAll() (db map[int]internal.Buyer) {
+func (r *BuyerMysqlRepository) GetAll() (db map[int]internal.Buyer, err error) {
 	db = make(map[int]internal.Buyer)
 	query := `
 		SELECT
@@ -23,37 +23,40 @@ func (r *BuyerMysqlRepository) GetAll() (db map[int]internal.Buyer) {
 			buyers;
 	`
 
-	/// executing the query
-	rows, _ := r.db.Query(query)
-	// iterating over the rows
+	rows, err := r.db.Query(query)
+	if err != nil {
+		return
+	}
+
 	for rows.Next() {
 		var buyer internal.Buyer
 
-		_ = rows.Scan(&buyer.ID, &buyer.CardNumberID, &buyer.FirstName, &buyer.LastName) // TODO Actually check the error
+		rows.Scan(&buyer.ID, &buyer.CardNumberID, &buyer.FirstName, &buyer.LastName)
 		db[buyer.ID] = buyer
 	}
 
+	err = rows.Err()
 	return
 }
 
-func (r *BuyerMysqlRepository) Add(buyer *internal.Buyer) {
-	// Inserting the buyer
+func (r *BuyerMysqlRepository) Add(buyer *internal.Buyer) (id int64, err error) {
 	query := `
 		INSERT INTO buyers (card_number_id, first_name, last_name)
 		VALUES (?, ?, ?)
 	`
 
-	result, _ := r.db.Exec(query, (*buyer).CardNumberID, (*buyer).FirstName, (*buyer).LastName)
+	result, err := r.db.Exec(query, (*buyer).CardNumberID, (*buyer).FirstName, (*buyer).LastName)
+	if err != nil {
+		return
+	}
 
-	// Get the ID of the last inserted purchase order
-	id, _ := result.LastInsertId()
+	id, err = result.LastInsertId()
 
-	// Set the ID of the purchase order
 	(*buyer).ID = int(id)
+	return
 }
 
-func (r *BuyerMysqlRepository) Update(id int, buyer internal.BuyerPatch) {
-	// Finding the buyer
+func (r *BuyerMysqlRepository) Update(id int, buyer internal.BuyerPatch) (err error) {
 	query :=
 		`
 		SELECT
@@ -66,7 +69,7 @@ func (r *BuyerMysqlRepository) Update(id int, buyer internal.BuyerPatch) {
 	row := r.db.QueryRow(query, id)
 
 	var b internal.Buyer
-	_ = row.Scan(&b.ID, &b.CardNumberID, &b.FirstName, &b.LastName) // TODO Actually check the error
+	row.Scan(&b.ID, &b.CardNumberID, &b.FirstName, &b.LastName)
 
 	buyer.Patch(&b)
 
@@ -78,17 +81,24 @@ func (r *BuyerMysqlRepository) Update(id int, buyer internal.BuyerPatch) {
 			id = ?;
 	`
 
-	_, _ = r.db.Exec(query, buyer.CardNumberID, buyer.FirstName, buyer.LastName, id) // TODO: Actually check the error
+	_, err = r.db.Exec(query, buyer.CardNumberID, buyer.FirstName, buyer.LastName, id)
+	return
 }
 
-func (r *BuyerMysqlRepository) Delete(id int) {
+func (r *BuyerMysqlRepository) Delete(id int) (rowsAffected int64, err error) {
 	query := `
 		DELETE FROM 
 			buyers
 		WHERE
 			id = ?;
 	`
-	_, _ = r.db.Exec(query, id) // TODO Actually check the error
+	res, err := r.db.Exec(query, id)
+	if err != nil {
+		return
+	}
+
+	rowsAffected, err = res.RowsAffected()
+	return
 }
 
 func (r *BuyerMysqlRepository) ReportPurchaseOrders() (purchaseOrders []internal.PurchaseOrdersByBuyer, err error) {
@@ -102,30 +112,21 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrders() (purchaseOrders []internal
 		GROUP BY
 			b.id;
 	`
-	// executing the query
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
 
-	// iterating over the rows
 	for rows.Next() {
 		var purchaseOrder internal.PurchaseOrdersByBuyer
 
-		err = rows.Scan(&purchaseOrder.BuyerID, &purchaseOrder.CardNumberID, &purchaseOrder.FirstName, &purchaseOrder.LastName, &purchaseOrder.PurchaseOrdersCount)
-		if err != nil {
-			return purchaseOrders, err
-		}
+		rows.Scan(&purchaseOrder.BuyerID, &purchaseOrder.CardNumberID, &purchaseOrder.FirstName, &purchaseOrder.LastName, &purchaseOrder.PurchaseOrdersCount)
 
 		purchaseOrders = append(purchaseOrders, purchaseOrder)
 	}
 
 	err = rows.Err()
-	if err != nil {
-		return purchaseOrders, err
-	}
-
 	return purchaseOrders, err
 }
 
@@ -142,31 +143,20 @@ func (r *BuyerMysqlRepository) ReportPurchaseOrdersByID(id int) (purchaseOrders 
 		HAVING
 			b.id = ?;
 	`
-	// executing the query
 	rows, err := r.db.Query(query, id)
-
 	if err != nil {
 		return nil, err
 	}
-
 	defer rows.Close()
 
-	// iterating over the rows
 	for rows.Next() {
 		var purchaseOrder internal.PurchaseOrdersByBuyer
 
 		err = rows.Scan(&purchaseOrder.BuyerID, &purchaseOrder.CardNumberID, &purchaseOrder.FirstName, &purchaseOrder.LastName, &purchaseOrder.PurchaseOrdersCount)
-		if err != nil {
-			return purchaseOrders, err
-		}
 
 		purchaseOrders = append(purchaseOrders, purchaseOrder)
 	}
 
 	err = rows.Err()
-	if err != nil {
-		return purchaseOrders, err
-	}
-
 	return purchaseOrders, err
 }

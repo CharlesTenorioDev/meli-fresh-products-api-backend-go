@@ -72,7 +72,7 @@ func (a *ServerChi) Run() (err error) {
 	rt.Get("/swagger/*", httpSwagger.WrapHandler)
 
 	buMysqlRepository := repository.NewBuyerMysqlRepository(db)
-	whRepository := repository.NewRepositoryWarehouse(nil, "db/warehouse.json")
+	whRepository := repository.NewWarehouseMysqlRepository(db)
 	slRepository := repository.NewSellerMysql(db)
 	lcRepository := repository.NewLocalityMysql(db)
 	pdRepository := repository.NewProductSQL(db)

@@ -3,7 +3,6 @@ package handler_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -100,10 +99,12 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			url:         endpointWarehouse,
 			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300}`,
 			expectedBody: `{
-				"message": "unprocessable entity: minimum temperature is required",
+				"message": "warehouse inputs are missing",
 				"error": "unprocessable_entity",
 				"code": 422,
-				"causes": null
+				"causes": [
+					{"field": "minimum_temperature", "message": "minimum temperature is required"}
+				]
 			}`,
 			expectedCode:   http.StatusUnprocessableEntity,
 			expectedHeader: jsonHeader,
@@ -119,19 +120,20 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			url:         endpointWarehouse,
 			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_temperature":5}`,
 			expectedBody: `{
-				"message": "unprocessable entity: minimum capacity is required",
+				"message": "warehouse inputs are missing",
 				"error": "unprocessable_entity",
 				"code": 422,
-				"causes": null
+				"causes": [
+					{"field": "minimum_capacity", "message": "minimum capacity is required"}
+				]
 			}`,
 			expectedCode:   http.StatusUnprocessableEntity,
 			expectedHeader: jsonHeader,
 			mock: func() *WarehouseServiceMock {
 				mk := NewWarehouseServiceMock()
-				mk.On("Save", mock.Anything).Return(fmt.Errorf("%w: %v", internal.ErrWarehouseUnprocessableEntity, "minimum capacity is required"))
 				return mk
 			},
-			expectedMockCalls: 1,
+			expectedMockCalls: 0,
 		},
 		{
 			description: "case 4 - error: Attempt to create a new warehouse with invalid data",
@@ -188,6 +190,50 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			mock: func() *WarehouseServiceMock {
 				mk := NewWarehouseServiceMock()
 				mk.On("Save", mock.Anything).Return(errors.New("unexpected error"))
+				return mk
+			},
+			expectedMockCalls: 1,
+		},
+		{
+			description: "case 7 - error: Attempt to create a new warehouse with a negative minimum capacity",
+			method:      "POST",
+			url:         endpointWarehouse,
+			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":-300,"minimum_temperature":5}`,
+			expectedBody: `{
+				"message": "warehouse inputs are missing",
+				"error": "bad_request",
+				"code": 400,
+				"causes": [
+					{"field": "minimum_capacity", "message": "minimum capacity cannot be negative"}
+				]
+			}`,
+			expectedCode:   http.StatusBadRequest,
+			expectedHeader: jsonHeader,
+			mock: func() *WarehouseServiceMock {
+				mk := NewWarehouseServiceMock()
+				mk.On("Save", mock.Anything).Return(internal.DomainError{Message: "warehouse inputs are missing", Causes: []internal.Causes{{Field: "minimum_capacity", Message: "minimum capacity cannot be negative"}}})
+				return mk
+			},
+			expectedMockCalls: 1,
+		},
+		{
+			description: "case 8 - error: Attempt to create a new warehouse with a minimum temperature out of range",
+			method:      "POST",
+			url:         endpointWarehouse,
+			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":100,"minimum_temperature":-300.00}`,
+			expectedBody: `{
+				"message": "warehouse inputs are missing",
+				"error": "bad_request",
+				"code": 400,
+				"causes": [
+					{"field": "minimum_temperature", "message": "minimum temperature is out of range"}
+				]
+			}`,
+			expectedCode:   http.StatusBadRequest,
+			expectedHeader: jsonHeader,
+			mock: func() *WarehouseServiceMock {
+				mk := NewWarehouseServiceMock()
+				mk.On("Save", mock.Anything).Return(internal.DomainError{Message: "warehouse inputs are missing", Causes: []internal.Causes{{Field: "minimum_temperature", Message: "minimum temperature is out of range"}}})
 				return mk
 			},
 			expectedMockCalls: 1,
