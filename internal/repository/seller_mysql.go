@@ -46,16 +46,6 @@ func (r *SellerMysql) FindAll() (sellers []internal.Seller, err error) {
 		sellers = append(sellers, seller)
 	}
 
-	// check for errors
-	err = rows.Err()
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = internal.ErrSellerNotFound
-		}
-
-		return sellers, err
-	}
-
 	return sellers, err
 }
 
