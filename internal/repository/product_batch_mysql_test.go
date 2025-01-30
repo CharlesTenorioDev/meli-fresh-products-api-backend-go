@@ -27,9 +27,6 @@ func (s *MysqlProductBatchTestSuite) Setup() {
 	s.rp = repository.NewProductBatchMysql(db)
 }
 
-//docker exec -it mysql /bin/bash
-//mysql -u root -p
-
 func (s *MysqlProductBatchTestSuite) TestRepository_CreateProductBatchUnitTest() {
 	s.T().Run("success", func(t *testing.T) {
 		expectedId := 1
