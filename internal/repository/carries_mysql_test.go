@@ -151,6 +151,6 @@ func (s *MysqlCarriesTestSuite) TestCreate() {
 	})
 }
 
-func TestRepositoryMysqlBuyerUnit(t *testing.T) {
+func TestRepositoryMysqlCarriesUnit(t *testing.T) {
 	suite.Run(t, new(MysqlCarriesTestSuite))
 }
