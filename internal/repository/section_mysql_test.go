@@ -27,9 +27,6 @@ func (s *MysqlSectionTestSuite) Setup() {
 	s.rp = repository.NewSectionMysql(db)
 }
 
-//docker exec -it mysql /bin/bash
-//mysql -u root -p
-
 func (s *MysqlSectionTestSuite) TestRepository_ReadSectionUnitTest() {
 	s.T().Run("success", func(t *testing.T) {
 		sections := []internal.Section{
