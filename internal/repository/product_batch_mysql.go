@@ -81,7 +81,7 @@ func (r *ProductBatchMysql) Save(prodBatch *internal.ProductBatch) error {
 		if errors.As(err, &mysqlErr) {
 			switch mysqlErr.Number {
 			case 1062:
-				return internal.ErrProductBatchAlreadyExists
+				return internal.ErrProductBatchUnprocessableEntity
 			}
 		}
 

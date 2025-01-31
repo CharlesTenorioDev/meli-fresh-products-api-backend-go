@@ -39,7 +39,14 @@ coverage_employee_unit_test:
 
 coverage_section_unit_test:
 	-go test -v ./... -run "SectionUnitTest$$" -coverprofile=coverage.out
-	@cat coverage.out | (head -n 1 coverage.out && grep -E "^(github.com/meli-fresh-products-api-backend-t1/internal/service/section.go|github.com/meli-fresh-products-api-backend-t1/internal/handler/section)" coverage.out) > section_coverage.out
+	@cat coverage.out | (head -n 1 coverage.out && grep -E "^(github.com/meli-fresh-products-api-backend-t1/internal/repository/section|github.com/meli-fresh-products-api-backend-t1/internal/service/section|github.com/meli-fresh-products-api-backend-t1/internal/handler/section)" coverage.out) > section_coverage.out
 	@rm coverage.out
 	go tool cover -html section_coverage.out -o cover.html
+	@open cover.html
+
+coverage_product_batch_unit_test:
+	-go test -v ./... -run "ProductBatchUnitTest$$" -coverprofile=coverage.out
+	@cat coverage.out | (head -n 1 coverage.out && grep -E "^(github.com/meli-fresh-products-api-backend-t1/internal/repository/product_batch_mysql|github.com/meli-fresh-products-api-backend-t1/internal/service/product_batch|github.com/meli-fresh-products-api-backend-t1/internal/handler/product_batch)" coverage.out) > product_batch_coverage.out
+	@rm coverage.out
+	go tool cover -html product_batch_coverage.out -o cover.html
 	@open cover.html
