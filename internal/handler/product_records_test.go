@@ -83,13 +83,13 @@ func Test_ProductRecordsHandler_Create(t *testing.T) {
 			name: "Error: Product unprocessable entity",
 			mockSetup: func(p *MockProductRecordsService) {
 				mockProduct := internal.ProductRecords{
-					ProductID: 2, LastUpdateDate: time.Now().Truncate(24 * time.Hour),
+					ProductID: 2, LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.UTC),
 					PurchasePrice: 200.0, SalePrice: 300.0,
 				}
 				p.On("Create", mockProduct).Return(internal.ProductRecords{}, internal.ErrProductUnprocessableEntity)
 			},
 			requestBody: internal.ProductRecords{
-				ProductID: 2, LastUpdateDate: time.Now().Truncate(24 * time.Hour),
+				ProductID: 2, LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.UTC),
 				PurchasePrice: 200.0, SalePrice: 300.0,
 			},
 			expectedStatus: http.StatusUnprocessableEntity,
@@ -99,13 +99,13 @@ func Test_ProductRecordsHandler_Create(t *testing.T) {
 			name: "Error: Product ID not found",
 			mockSetup: func(p *MockProductRecordsService) {
 				mockProduct := internal.ProductRecords{
-					ProductID: 3, LastUpdateDate: time.Now().Truncate(24 * time.Hour),
+					ProductID: 3, LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.UTC),
 					PurchasePrice: 150.0, SalePrice: 250.0,
 				}
 				p.On("Create", mockProduct).Return(internal.ProductRecords{}, internal.ErrProductIdNotFound)
 			},
 			requestBody: internal.ProductRecords{
-				ProductID: 3, LastUpdateDate: time.Now().Truncate(24 * time.Hour),
+				ProductID: 3, LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.UTC),
 				PurchasePrice: 150.0, SalePrice: 250.0,
 			},
 			expectedStatus: http.StatusConflict,
