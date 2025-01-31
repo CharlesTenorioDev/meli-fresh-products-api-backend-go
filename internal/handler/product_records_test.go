@@ -51,27 +51,23 @@ func Test_ProductRecordsHandler_Create(t *testing.T) {
 			mockSetup: func(p *MockProductRecordsService) {
 				mockProduct := internal.ProductRecords{
 					LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.UTC),
-
-					PurchasePrice: 100.0, SalePrice: 150.0,
+					PurchasePrice:  100.0, SalePrice: 150.0, ProductID: 1,
 				}
 				mockCreatedProduct := internal.ProductRecords{
 					LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.UTC),
-
-					PurchasePrice: 100.0, SalePrice: 150.0,
+					PurchasePrice:  100.0, SalePrice: 150.0, ProductID: 1,
 				}
 				p.On("Create", mockProduct).Return(mockCreatedProduct, nil)
 			},
 			requestBody: internal.ProductRecords{
 				LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.UTC),
-
-				PurchasePrice: 100.0, SalePrice: 150.0,
+				PurchasePrice:  100.0, SalePrice: 150.0, ProductID: 1,
 			},
 			expectedStatus: http.StatusCreated,
 			expectedBody: ResponseCreate{
 				Data: internal.ProductRecords{
 					LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.UTC),
-
-					PurchasePrice: 100.0, SalePrice: 150.0,
+					PurchasePrice:  100.0, SalePrice: 150.0, ProductID: 1,
 				},
 			},
 		},
