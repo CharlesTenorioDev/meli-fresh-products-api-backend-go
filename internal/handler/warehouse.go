@@ -23,10 +23,10 @@ type WarehouseJSON struct {
 }
 
 type WarehouseCreateRequest struct {
-	WarehouseCode      string   `json:"warehouse_code"`
-	Address            string   `json:"address"`
-	Telephone          string   `json:"telephone"`
-	MinimumCapacity    int      `json:"minimum_capacity"`
+	WarehouseCode      *string  `json:"warehouse_code"`
+	Address            *string  `json:"address"`
+	Telephone          *string  `json:"telephone"`
+	MinimumCapacity    *int     `json:"minimum_capacity"`
 	MinimumTemperature *float64 `json:"minimum_temperature"`
 }
 
@@ -156,19 +156,20 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 			return
 		}
 
-		// check if the minimum temperature is nil (can be 0)
-		if requestInput.MinimumTemperature == nil {
-			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError("unprocessable entity: minimum temperature is required"))
+		// validating the request input required fields
+		causes := requestInput.ValidateRequiredFields()
+		if len(causes) > 0 {
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityWithCausesError(internal.ErrWarehouseUnprocessableEntity.Error(), causes))
 			return
 		}
 
 		// create the warehouse
 		warehouse := internal.Warehouse{
 			ID:                 0,
-			WarehouseCode:      requestInput.WarehouseCode,
-			Address:            requestInput.Address,
-			Telephone:          requestInput.Telephone,
-			MinimumCapacity:    requestInput.MinimumCapacity,
+			WarehouseCode:      *requestInput.WarehouseCode,
+			Address:            *requestInput.Address,
+			Telephone:          *requestInput.Telephone,
+			MinimumCapacity:    *requestInput.MinimumCapacity,
 			MinimumTemperature: *requestInput.MinimumTemperature,
 		}
 
@@ -176,6 +177,17 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 		err := h.sv.Save(&warehouse)
 		if err != nil {
 			switch {
+			case errors.As(err, &internal.DomainError{}):
+				var domainError internal.DomainError
+				errors.As(err, &domainError)
+				var restCauses []resterr.Causes
+				for _, cause := range domainError.Causes {
+					restCauses = append(restCauses, resterr.Causes{
+						Field:   cause.Field,
+						Message: cause.Message,
+					})
+				}
+				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 			case errors.Is(err, internal.ErrWarehouseUnprocessableEntity):
@@ -299,4 +311,39 @@ func (h *WarehouseDefault) Delete() http.HandlerFunc {
 
 		response.JSON(w, http.StatusNoContent, nil)
 	}
+}
+
+// Validating the WarehouseCreateRequest required fields
+func (r *WarehouseCreateRequest) ValidateRequiredFields() (causes []resterr.Causes) {
+	if r.WarehouseCode == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "warehouse_code",
+			Message: "warehouse code is required",
+		})
+	}
+	if r.Address == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "address",
+			Message: "address is required",
+		})
+	}
+	if r.Telephone == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "telephone",
+			Message: "telephone is required",
+		})
+	}
+	if r.MinimumCapacity == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "minimum_capacity",
+			Message: "minimum capacity is required",
+		})
+	}
+	if r.MinimumTemperature == nil {
+		causes = append(causes, resterr.Causes{
+			Field:   "minimum_temperature",
+			Message: "minimum temperature is required",
+		})
+	}
+	return causes
 }

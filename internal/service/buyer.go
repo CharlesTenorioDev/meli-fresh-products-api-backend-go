@@ -36,13 +36,16 @@ func NewBuyerService(r internal.BuyerRepository) *BuyerServiceDefault {
 }
 
 func (s *BuyerServiceDefault) GetAll() map[int]internal.Buyer {
-	all := s.repo.GetAll()
+	all, _ := s.repo.GetAll()
 
 	return all
 }
 
 func (s *BuyerServiceDefault) FindByID(id int) (b internal.Buyer, err error) {
-	all := s.repo.GetAll()
+	all, err := s.repo.GetAll()
+	if err != nil {
+		return
+	}
 
 	b, ok := all[id]
 	if !ok {
@@ -53,7 +56,10 @@ func (s *BuyerServiceDefault) FindByID(id int) (b internal.Buyer, err error) {
 }
 
 func (s *BuyerServiceDefault) Save(buyer *internal.Buyer) (err error) {
-	all := s.repo.GetAll()
+	all, err := s.repo.GetAll()
+	if err != nil {
+		return
+	}
 
 	ok := buyer.Parse()
 	if !ok {
@@ -72,7 +78,10 @@ func (s *BuyerServiceDefault) Save(buyer *internal.Buyer) (err error) {
 }
 
 func (s *BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (err error) {
-	all := s.repo.GetAll()
+	all, err := s.repo.GetAll()
+	if err != nil {
+		return
+	}
 
 	_, ok := all[id]
 	if !ok {
@@ -91,7 +100,10 @@ func (s *BuyerServiceDefault) Update(id int, buyerPatch internal.BuyerPatch) (er
 }
 
 func (s *BuyerServiceDefault) Delete(id int) (err error) {
-	all := s.repo.GetAll()
+	all, err := s.repo.GetAll()
+	if err != nil {
+		return
+	}
 
 	_, ok := all[id]
 	if !ok {

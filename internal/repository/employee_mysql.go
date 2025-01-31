@@ -40,83 +40,58 @@ func (r *EmployeeMysql) GetAll() (db []internal.Employee, err error) {
 
 	for rows.Next() {
 		var emp internal.Employee
-		if err := rows.Scan(&emp.ID, &emp.CardNumberID, &emp.FirstName, &emp.LastName, &emp.WarehouseID); err != nil {
-			return nil, err
-		}
+		rows.Scan(&emp.ID, &emp.CardNumberID, &emp.FirstName, &emp.LastName, &emp.WarehouseID)
 
 		db = append(db, emp)
 	}
 
 	err = rows.Err()
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			err = internal.ErrEmployeeNotFound
-		}
-
-		return
-	}
-
 	return
 }
 
 func (r *EmployeeMysql) GetByID(id int) (emp internal.Employee, err error) {
 	row := r.db.QueryRow("SELECT id, card_number_id, first_name, last_name, warehouse_id FROM employees WHERE id = ?", id)
-
-	if err := row.Scan(&emp.ID, &emp.CardNumberID, &emp.FirstName, &emp.LastName, &emp.WarehouseID); err != nil {
-		if err == sql.ErrNoRows {
-			return emp, fmt.Errorf("employee not found")
-		}
-
-		return emp, err
-	}
-
-	return emp, nil
+	err = row.Scan(&emp.ID, &emp.CardNumberID, &emp.FirstName, &emp.LastName, &emp.WarehouseID)
+	return
 }
 
-func (r *EmployeeMysql) Save(emp *internal.Employee) (int, error) {
-	var err error
-
+func (r *EmployeeMysql) Save(emp *internal.Employee) (id int64, err error) {
 	var existingEmployee internal.Employee
+
 	err = r.db.QueryRow(
 		"SELECT id FROM employees WHERE card_number_id = ?",
 		emp.CardNumberID).Scan(&existingEmployee.ID)
-
 	if err == nil {
-		return 0, fmt.Errorf("employee with card_number_id %s already exists", emp.CardNumberID)
+		err = fmt.Errorf("employee with card_number_id %s already exists", emp.CardNumberID)
+		return
 	} else if err != sql.ErrNoRows {
-		return 0, err
+		return
 	}
 
-	_, err = r.db.Exec(
+	result, err := r.db.Exec(
 		"INSERT INTO employees (card_number_id, first_name, last_name, warehouse_id) VALUES (?, ?, ?, ?)",
 		emp.CardNumberID, emp.FirstName, emp.LastName, emp.WarehouseID)
-
 	if err != nil {
-		return 0, err
+		return
 	}
 
-	err = r.db.QueryRow("SELECT LAST_INSERT_ID()").Scan(&emp.ID)
-	if err != nil {
-		return 0, err
-	}
+	id, err = result.LastInsertId()
 
-	return emp.ID, nil
+	return
 }
 
-func (r *EmployeeMysql) Update(id int, employee internal.Employee) error {
-	_, err := r.db.Exec(
+func (r *EmployeeMysql) Update(id int, employee internal.Employee) (err error) {
+	_, err = r.db.Exec(
 		"UPDATE employees SET card_number_id = ?, first_name = ?, last_name = ?, warehouse_id = ? WHERE id = ?",
-		employee.CardNumberID, employee.FirstName, employee.LastName, employee.WarehouseID, id)
-	if err != nil {
-		return err
-	}
+		employee.CardNumberID, employee.FirstName, employee.LastName, employee.WarehouseID, id,
+	)
 
-	return nil
+	return
 }
 
-func (r *EmployeeMysql) Delete(id int) error {
-	_, err := r.db.Exec("DELETE FROM employees WHERE id = ?", id)
-	return err
+func (r *EmployeeMysql) Delete(id int) (err error) {
+	_, err = r.db.Exec("DELETE FROM employees WHERE id = ?", id)
+	return
 }
 
 func (r *EmployeeMysql) CountInboundOrdersPerEmployee() (io []internal.InboundOrdersPerEmployee, err error) {
@@ -128,10 +103,7 @@ func (r *EmployeeMysql) CountInboundOrdersPerEmployee() (io []internal.InboundOr
 	for row.Next() {
 		var countInboundPerEmployee internal.InboundOrdersPerEmployee
 
-		err = row.Scan(&countInboundPerEmployee.CountInOrders, &countInboundPerEmployee.ID, &countInboundPerEmployee.CardNumberID, &countInboundPerEmployee.FirstName, &countInboundPerEmployee.LastName, &countInboundPerEmployee.WarehouseID)
-		if err != nil {
-			return
-		}
+		row.Scan(&countInboundPerEmployee.CountInOrders, &countInboundPerEmployee.ID, &countInboundPerEmployee.CardNumberID, &countInboundPerEmployee.FirstName, &countInboundPerEmployee.LastName, &countInboundPerEmployee.WarehouseID)
 
 		io = append(io, countInboundPerEmployee)
 	}

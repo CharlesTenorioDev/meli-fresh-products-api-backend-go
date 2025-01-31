@@ -3,7 +3,6 @@ package handler_test
 import (
 	"bytes"
 	"errors"
-	"fmt"
 
 	"context"
 	"encoding/json"
@@ -437,7 +436,6 @@ func Test_Create(t *testing.T) {
 
 			err = json.NewDecoder(rec.Body).Decode(&actualResponse)
 			require.NoError(t, err)
-			fmt.Print(actualResponse)
 			assert.Equal(t, actualResponse, tt.expectedResponse)
 
 		})
@@ -608,7 +606,6 @@ func Test_Update(t *testing.T) {
 
 			err = json.NewDecoder(rec.Body).Decode(&actualResponse)
 			require.NoError(t, err)
-			fmt.Print(actualResponse)
 			assert.Equal(t, actualResponse, tt.expectedResponse)
 
 		})

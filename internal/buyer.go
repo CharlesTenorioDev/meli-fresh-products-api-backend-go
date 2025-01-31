@@ -22,10 +22,10 @@ type PurchaseOrdersByBuyer struct {
 }
 
 type BuyerRepository interface {
-	GetAll() (db map[int]Buyer)
-	Add(buyer *Buyer)
-	Update(id int, buyer BuyerPatch)
-	Delete(id int)
+	GetAll() (db map[int]Buyer, err error)
+	Add(buyer *Buyer) (id int64, err error)
+	Update(id int, buyer BuyerPatch) (err error)
+	Delete(id int) (rowsAffected int64, err error)
 	ReportPurchaseOrders() (purchaseOrders []PurchaseOrdersByBuyer, err error)
 	ReportPurchaseOrdersByID(id int) (purchaseOrders []PurchaseOrdersByBuyer, err error)
 }

@@ -24,7 +24,7 @@ CREATE TABLE `sellers`
     `address`      varchar(255) NOT NULL,
     `telephone`    varchar(15)  NOT NULL,
     `locality_id`  int(11) NOT NULL,
-    FOREIGN KEY (`locality_id`) REFERENCES localities (id),
+    FOREIGN KEY (`locality_id`) REFERENCES localities (id) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -80,8 +80,8 @@ CREATE TABLE `products`
     width                            float       NOT NULL,
     seller_id                        int(11) NOT NULL,
     product_type_id                  int(11) NOT NULL,
-    FOREIGN KEY (`seller_id`) REFERENCES sellers(id),
-    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id),
+    FOREIGN KEY (`seller_id`) REFERENCES sellers(id) ON DELETE CASCADE,
+    FOREIGN KEY (`product_type_id`) REFERENCES product_type(id) ON DELETE CASCADE,
     PRIMARY KEY (id)
 
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
@@ -94,7 +94,7 @@ CREATE TABLE `employees`
     `first_name`     varchar(50) NOT NULL,
     `last_name`      varchar(50) NOT NULL,
     `warehouse_id`   int(11) NOT NULL,
-    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id),
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses(id) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -116,7 +116,7 @@ CREATE TABLE product_records
 	purchase_price    float NOT NULL,
 	sale_price        float NOT NULL,
 	product_id        int NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products (id),
+    FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
 	PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -129,8 +129,8 @@ CREATE TABLE `purchase_orders`
     `tracking_code` varchar(255) NOT NULL,
     `buyer_id` int(11) NULL,
     `product_record_id` int(11) NULL,
-    FOREIGN KEY (`buyer_id`) REFERENCES buyers (id) ON DELETE SET NULL,
-    FOREIGN KEY (`product_record_id`) REFERENCES product_records (id) ON DELETE SET NULL,
+    FOREIGN KEY (`buyer_id`) REFERENCES buyers (id) ON DELETE CASCADE,
+    FOREIGN KEY (`product_record_id`) REFERENCES product_records (id) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -143,7 +143,7 @@ CREATE TABLE `carries`
 	`address`        varchar(100) NOT NULL,
 	`phone_number`   varchar(20) NOT NULL,
 	`locality_id`    int(11) NOT NULL,
-    FOREIGN KEY (`locality_id`) REFERENCES localities (id),
+    FOREIGN KEY (`locality_id`) REFERENCES localities (id) ON DELETE CASCADE,
 	PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -174,9 +174,9 @@ CREATE TABLE `inbound_orders`
     `employee_id`      int(11) NOT NULL,
     `product_batch_id` int(11) NOT NULL,
     `warehouse_id`     int(11) NOT NULL,
-    FOREIGN KEY (`employee_id`) REFERENCES employees (id),
-    FOREIGN KEY (`product_batch_id`) REFERENCES product_batches (id),
-    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses (id),
+    FOREIGN KEY (`employee_id`) REFERENCES employees (id) ON DELETE CASCADE,
+    FOREIGN KEY (`product_batch_id`) REFERENCES product_batches (id) ON DELETE CASCADE,
+    FOREIGN KEY (`warehouse_id`) REFERENCES warehouses (id) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 

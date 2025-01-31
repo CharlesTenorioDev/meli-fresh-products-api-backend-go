@@ -42,7 +42,7 @@ CREATE TABLE product_records
 	purchase_price    float NOT NULL,
 	sale_price        float NOT NULL,
 	product_id        int NOT NULL,
-    FOREIGN KEY (product_id) REFERENCES products (id),
+    FOREIGN KEY (product_id) REFERENCES products (id) ON DELETE CASCADE,
 	PRIMARY KEY (id)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 
@@ -55,8 +55,8 @@ CREATE TABLE `purchase_orders`
     `tracking_code` varchar(255) NOT NULL,
     `buyer_id` int(11) NULL,
     `product_record_id` int(11) NULL,
-    FOREIGN KEY (`buyer_id`) REFERENCES buyers (id) ON DELETE SET NULL,
-    FOREIGN KEY (`product_record_id`) REFERENCES product_records (id) ON DELETE SET NULL,
+    FOREIGN KEY (`buyer_id`) REFERENCES buyers (id) ON DELETE CASCADE,
+    FOREIGN KEY (`product_record_id`) REFERENCES product_records (id) ON DELETE CASCADE,
     PRIMARY KEY (`id`)
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8;
 

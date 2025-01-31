@@ -70,7 +70,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Save() {
 			ID:                 1,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    1,
 			MinimumTemperature: 1,
 		}
@@ -91,7 +91,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Save() {
 			ID:                 1,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    1,
 			MinimumTemperature: 1,
 		}
@@ -111,7 +111,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Save() {
 			ID:                 1,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    0,
 			MinimumTemperature: 1,
 		}
@@ -121,7 +121,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Save() {
 		w.rp.AssertExpectations(w.T())
 		w.rp.AssertNumberOfCalls(w.T(), "FindAll", 0)
 		w.rp.AssertNumberOfCalls(w.T(), "Save", 0)
-		w.Error(err, internal.ErrWarehouseUnprocessableEntity)
+		w.ErrorContains(err, internal.ErrWarehouseBadRequest.Error())
 	})
 
 	w.T().Run("case 4 - error: Should return an error when an internal error occurs", func(t *testing.T) {
@@ -130,7 +130,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Save() {
 			ID:                 1,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    1,
 			MinimumTemperature: 1,
 		}
@@ -153,7 +153,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_FindAll() {
 			ID:                 1,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    1,
 			MinimumTemperature: 1,
 		},
@@ -161,7 +161,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_FindAll() {
 			ID:                 2,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    1,
 			MinimumTemperature: 1,
 		},
@@ -180,7 +180,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_FindByID() {
 			ID:                 1,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    1,
 			MinimumTemperature: 1,
 		}
@@ -213,7 +213,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 		// attributes
 		warehouseCode := "W1"
 		address := "123 Main St"
-		telephone := "123-456-7890"
+		telephone := "11 12345-6789"
 		minimumCapacity := 100
 		minimumTemperature := 20.5
 
@@ -230,7 +230,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 			ID:                 1,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    1,
 			MinimumTemperature: 1,
 		}
@@ -239,7 +239,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 			ID:                 1,
 			WarehouseCode:      "W1",
 			Address:            "123 Main St",
-			Telephone:          "123-456-7890",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    100,
 			MinimumTemperature: 20.5,
 		}
@@ -250,7 +250,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 			w := args.Get(0).(*internal.Warehouse)
 			w.WarehouseCode = "W1"
 			w.Address = "123 Main St"
-			w.Telephone = "123-456-7890"
+			w.Telephone = "11 12345-6789"
 			w.MinimumCapacity = 100
 			w.MinimumTemperature = 20.5
 		}).Return(nil)
@@ -269,7 +269,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 		// attributes
 		warehouseCode := "W1"
 		address := "123 Main St"
-		telephone := "123-456-7890"
+		telephone := "11 12345-6789"
 		minimumCapacity := 100
 		minimumTemperature := 20.5
 
@@ -286,7 +286,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 			ID:                 2,
 			WarehouseCode:      "W1",
 			Address:            "123 Main St",
-			Telephone:          "123-456-7890",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    100,
 			MinimumTemperature: 20.5,
 		}
@@ -321,7 +321,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 		// attributes
 		warehouseCode := "W1"
 		address := "123 Main St"
-		telephone := "123-456-7890"
+		telephone := "11 12345-6789"
 		minimumCapacity := 100
 		minimumTemperature := 20.5
 
@@ -338,7 +338,7 @@ func (w *WarehouseServiceTestSuite) TestWarehouseService_Update() {
 			ID:                 1,
 			WarehouseCode:      "warehouse_code",
 			Address:            "address",
-			Telephone:          "phone",
+			Telephone:          "11 12345-6789",
 			MinimumCapacity:    1,
 			MinimumTemperature: 1,
 		}
