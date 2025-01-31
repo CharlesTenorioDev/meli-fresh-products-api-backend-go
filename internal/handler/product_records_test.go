@@ -50,24 +50,24 @@ func Test_ProductRecordsHandler_Create(t *testing.T) {
 			name: "Create_ok_status_200",
 			mockSetup: func(p *MockProductRecordsService) {
 				mockProduct := internal.ProductRecords{
-					ProductID: 1, LastUpdateDate: time.Now().Truncate(24 * time.Hour),
-					PurchasePrice: 100.0, SalePrice: 150.0,
+					LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.Local),
+					PurchasePrice:  100.0, SalePrice: 150.0,
 				}
 				mockCreatedProduct := internal.ProductRecords{
-					ProductID: 1, LastUpdateDate: time.Now().Truncate(24 * time.Hour),
-					PurchasePrice: 100.0, SalePrice: 150.0,
+					LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.Local),
+					PurchasePrice:  100.0, SalePrice: 150.0,
 				}
 				p.On("Create", mockProduct).Return(mockCreatedProduct, nil)
 			},
 			requestBody: internal.ProductRecords{
-				ProductID: 1, LastUpdateDate: time.Now().Truncate(24 * time.Hour),
-				PurchasePrice: 100.0, SalePrice: 150.0,
+				LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.Local),
+				PurchasePrice:  100.0, SalePrice: 150.0,
 			},
 			expectedStatus: http.StatusCreated,
 			expectedBody: ResponseCreate{
 				Data: internal.ProductRecords{
-					ProductID: 1, LastUpdateDate: time.Now().Truncate(24 * time.Hour),
-					PurchasePrice: 100.0, SalePrice: 150.0,
+					LastUpdateDate: time.Date(2025, 3, 21, 14, 30, 0, 0, time.Local),
+					PurchasePrice:  100.0, SalePrice: 150.0,
 				},
 			},
 		},
