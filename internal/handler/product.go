@@ -16,7 +16,7 @@ type ProductHandlerDefault struct {
 	s internal.ProductService
 }
 
-func NewProducHandlerDefault(phd internal.ProductService) *ProductHandlerDefault {
+func NewProductHandlerDefault(phd internal.ProductService) *ProductHandlerDefault {
 	return &ProductHandlerDefault{s: phd}
 }
 
@@ -49,13 +49,13 @@ func (h *ProductHandlerDefault) GetAll(w http.ResponseWriter, r *http.Request) {
 
 // GetByID godoc
 // @Summary Get product by ID
-// @Description Retrieves a single product by its Id
+// @Description Retrieves a single product by its ID
 // @Tags Product
 // @Accept json
 // @Produce json
 // @Param id path int true "Product ID"
 // @Success 200 {object} map[string]any "Product data"
-// @Failure 400 {object} resterr.RestErr "Invalid Id format"
+// @Failure 400 {object} resterr.RestErr "Invalid ID format"
 // @Failure 404 {object} resterr.RestErr "Product not found"
 // @Router /api/v1/products/{id} [get]
 func (h *ProductHandlerDefault) GetByID(w http.ResponseWriter, r *http.Request) {
@@ -206,16 +206,16 @@ func (h *ProductHandlerDefault) Update(w http.ResponseWriter, r *http.Request) {
 
 // Delete godoc
 // @Summary Delete a product
-// @Description Deletes a product by its Id
+// @Description Deletes a product by itsID
 // @Tags Product
 // @Accept json
 // @Produce json
-// @Param id path int true "Product ID"
+// @ParamID path int true "ProductID"
 // @Success 204 {object} nil "No content"
-// @Failure 400 {object} resterr.RestErr "Invalid Id format"
+// @Failure 400 {object} resterr.RestErr "InvalidID format"
 // @Failure 404 {object} resterr.RestErr "Product not found"
 // @Failure 500 {object} resterr.RestErr "Internal server error"
-// @Failure 400 {object} resterr.RestErr "Invalid Id format"
+// @Failure 400 {object} resterr.RestErr "InvalidID format"
 // @Failure 404 {object} resterr.RestErr "Product not found"
 // @Failure 500 {object} resterr.RestErr "Internal server error"
 // @Router /api/v1/products/{id} [delete]
@@ -252,15 +252,15 @@ func (h *ProductHandlerDefault) Delete(w http.ResponseWriter, r *http.Request) {
 
 // ReportRecords godoc
 // @Summary Get product records
-// @Description Retrieves records of products, or a specific record by product Id
+// @Description Retrieves records of products, or a specific record by productID
 // @Tags Product
 // @Accept json
 // @Produce json
-// @Param id query int false "Product ID"
+// @ParamID query int false "ProductID"
 // @Success 200 {object} map[string]interface{} "Product records"
-// @Failure 400 {object} resterr.RestErr "Invalid Id"
+// @Failure 400 {object} resterr.RestErr "InvalidID"
 // @Failure 404 {object} resterr.RestErr "Product not found"
-// @Failure 400 {object} resterr.RestErr "Invalid Id"
+// @Failure 400 {object} resterr.RestErr "InvalidID"
 // @Failure 404 {object} resterr.RestErr "Product not found"
 // @Router /api/v1/products/report-records [get]
 func (h *ProductHandlerDefault) ReportRecords(w http.ResponseWriter, r *http.Request) {

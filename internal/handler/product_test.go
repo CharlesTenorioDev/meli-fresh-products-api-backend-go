@@ -139,12 +139,20 @@ func Test_GetAll(t *testing.T) {
 			expectedStatus: http.StatusInternalServerError,
 			expectedBody:   nil,
 		},
+		{
+			name: "Find_All_status_404",
+			mockSetup: func(p *MockProductService) {
+				p.On("GetAll").Return([]internal.Product{}, internal.ErrProductNotFound)
+			},
+			expectedStatus: http.StatusNotFound,
+			expectedBody:   nil,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := new(MockProductService)
-			productHandler := handler.NewProducHandlerDefault(mockService)
+			productHandler := handler.NewProductHandlerDefault(mockService)
 			tt.mockSetup(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/products", nil)
@@ -248,7 +256,7 @@ func Test_GetByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := new(MockProductService)
-			productHandler := handler.NewProducHandlerDefault(mockService)
+			productHandler := handler.NewProductHandlerDefault(mockService)
 			tt.mockSetup(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/products/"+tt.id, nil)
@@ -325,7 +333,7 @@ func Test_Create(t *testing.T) {
 				ExpirationRate:                 1,
 				RecommendedFreezingTemperature: 18,
 				FreezingRate:                   18,
-				ProductTypeID:                  int(1),
+				ProductTypeID:                  1,
 				SellerID:                       1,
 				Width:                          10.0,
 			},
@@ -340,7 +348,7 @@ func Test_Create(t *testing.T) {
 					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
-					ProductTypeID:                  int(1),
+					ProductTypeID:                  1,
 					SellerID:                       1,
 					Width:                          10.0,
 				},
@@ -394,12 +402,19 @@ func Test_Create(t *testing.T) {
 			expectedStatus:   http.StatusInternalServerError,
 			expectedResponse: ResponseCreate{},
 		},
+		{
+			name:             "create_fail_status_404",
+			mockSetup:        func(m *MockProductService) {},
+			requestBody:      []byte(`{invalid json}`),
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: ResponseCreate{},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := new(MockProductService)
-			productHandler := handler.NewProducHandlerDefault(mockService)
+			productHandler := handler.NewProductHandlerDefault(mockService)
 			tt.mockSetup(mockService)
 
 			requestBody, err := json.Marshal(tt.requestBody)
@@ -467,7 +482,7 @@ func Test_Update(t *testing.T) {
 				ExpirationRate:                 1,
 				RecommendedFreezingTemperature: 18,
 				FreezingRate:                   18,
-				ProductTypeID:                  int(1),
+				ProductTypeID:                  1,
 				SellerID:                       1,
 				Width:                          10.0,
 			},
@@ -484,7 +499,7 @@ func Test_Update(t *testing.T) {
 					ExpirationRate:                 1,
 					RecommendedFreezingTemperature: 18,
 					FreezingRate:                   18,
-					ProductTypeID:                  int(1),
+					ProductTypeID:                  1,
 					SellerID:                       1,
 					Width:                          10.0,
 				},
@@ -542,12 +557,31 @@ func Test_Update(t *testing.T) {
 			expectedStatus:   http.StatusInternalServerError,
 			expectedResponse: ResponseCreate{},
 		},
+		{
+			name: "update_fail_status_400_invalid_id",
+			mockSetup: func(m *MockProductService) {
+			},
+			requestBody:      internal.Product{},
+			id:               "invalid",
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: ResponseCreate{},
+		},
+
+		{
+			name: "update_fail_status_400_invalid_json",
+			mockSetup: func(m *MockProductService) {
+			},
+			requestBody:      []byte(`{invalid json}`),
+			id:               "1",
+			expectedStatus:   http.StatusBadRequest,
+			expectedResponse: ResponseCreate{},
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := new(MockProductService)
-			productHandler := handler.NewProducHandlerDefault(mockService)
+			productHandler := handler.NewProductHandlerDefault(mockService)
 			tt.mockSetup(mockService)
 
 			requestBody, err := json.Marshal(tt.requestBody)
@@ -634,7 +668,7 @@ func Test_Delete(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := new(MockProductService)
-			productHandler := handler.NewProducHandlerDefault(mockService)
+			productHandler := handler.NewProductHandlerDefault(mockService)
 			tt.mockSetup(mockService)
 
 			req, err := http.NewRequest(http.MethodDelete, "/products/"+tt.id, nil)
@@ -707,7 +741,7 @@ func Test_ReportRecords_All(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := new(MockProductService)
-			productHandler := handler.NewProducHandlerDefault(mockService)
+			productHandler := handler.NewProductHandlerDefault(mockService)
 			tt.mockSetup(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/productRecords", nil)
@@ -780,7 +814,7 @@ func Test_ReportRecords_ByID(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			mockService := new(MockProductService)
-			productHandler := handler.NewProducHandlerDefault(mockService)
+			productHandler := handler.NewProductHandlerDefault(mockService)
 			tt.mockSetup(mockService)
 
 			req := httptest.NewRequest(http.MethodGet, "/productRecords?id=1", nil)
