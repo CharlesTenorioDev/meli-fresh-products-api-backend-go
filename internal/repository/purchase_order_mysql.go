@@ -22,10 +22,6 @@ func (r *PurchaseOrderRepository) FindByID(id int) (purchaseOrder internal.Purch
 	`
 	row := r.db.QueryRow(query, id)
 
-	if err = row.Err(); err != nil {
-		return
-	}
-
 	// scanning the row
 	err = row.Scan(
 		&purchaseOrder.ID,
@@ -69,10 +65,7 @@ func (r *PurchaseOrderRepository) Save(purchaseOrder *internal.PurchaseOrder) er
 	}
 
 	// Get the ID of the last inserted purchase order
-	id, err := result.LastInsertId()
-	if err != nil {
-		return err
-	}
+	id, _ := result.LastInsertId()
 
 	// Set the ID of the purchase order
 	(*purchaseOrder).ID = int(id)
