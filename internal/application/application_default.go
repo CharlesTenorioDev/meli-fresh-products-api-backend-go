@@ -210,7 +210,7 @@ func buyerRouter(r chi.Router, buRepository internal.BuyerRepository) {
 
 func productRoutes(r chi.Router, pdRepository internal.ProductRepository, slRepository internal.SellerRepository, ptRepository internal.ProductTypeRepository) {
 	svc := service.NewProductService(pdRepository, slRepository, ptRepository)
-	hd := handler.NewProducHandlerDefault(svc)
+	hd := handler.NewProductHandlerDefault(svc)
 
 	r.Get("/", hd.GetAll)
 	r.Get("/{id}", hd.GetByID)

@@ -49,9 +49,7 @@ func (psql *ProductSQL) FindAll() (products []internal.Product, err error) {
 			&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature,
 			&product.Width, &product.ProductTypeID, &product.SellerID)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				err = internal.ErrProductNotFound
-			}
+			err = internal.ErrProductNotFound
 
 			return products, err
 		}
@@ -69,11 +67,11 @@ func (psql *ProductSQL) FindByID(id int) (internal.Product, error) {
 	err := row.Scan(&product.ID, &product.Description, &product.ExpirationRate, &product.FreezingRate,
 		&product.Height, &product.Length, &product.NetWeight, &product.ProductCode, &product.RecommendedFreezingTemperature,
 		&product.Width, &product.ProductTypeID, &product.SellerID)
-	
-		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				err = internal.ErrProductNotFound
-			}
+
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			err = internal.ErrProductNotFound
+		}
 
 		return product, err
 	}
@@ -192,9 +190,7 @@ func (psql *ProductSQL) FindAllRecord() ([]internal.ProductRecordsJSONCount, err
 
 		err := rows.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				err = internal.ErrProductNotFound
-			}
+			err = internal.ErrProductNotFound
 
 			return products, err
 		}
@@ -210,7 +206,7 @@ func (psql *ProductSQL) FindByIDRecord(id int) (internal.ProductRecordsJSONCount
 
 	row := psql.db.QueryRow(FindByIDRecordString, id)
 	err := row.Scan(&product.ProductID, &product.Description, &product.RecordsCount)
-	
+
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = internal.ErrProductIdNotFound
