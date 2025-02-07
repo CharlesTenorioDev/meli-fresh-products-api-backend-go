@@ -269,7 +269,7 @@ func (h *ProductHandlerDefault) ReportRecords(w http.ResponseWriter, r *http.Req
 	if id != "" {
 		productID, err := strconv.Atoi(id)
 		if err != nil {
-			response.JSON(w, http.StatusBadRequest, resterr.NewNotFoundError(err.Error()))
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("error parsing id with invalid syntax"))
 
 			return
 		}
