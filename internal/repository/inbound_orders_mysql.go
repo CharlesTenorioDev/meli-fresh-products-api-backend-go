@@ -22,10 +22,7 @@ func NewInboundOrderMysql(db *sql.DB) *InboundOrdersMysql {
 func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err error) {
 	var exists bool
 
-	err = rp.db.QueryRow("SELECT 1 FROM `inbound_orders` WHERE `order_number` = ?", io.OrderNumber).Scan(&exists) //check 1 line
-	if err != nil && err != sql.ErrNoRows {
-		return id, err
-	}
+	rp.db.QueryRow("SELECT 1 FROM `inbound_orders` WHERE `order_number` = ?", io.OrderNumber).Scan(&exists) //check 1 line
 
 	if exists {
 		return 0, internal.ErrOrderNumberAlreadyExists
@@ -33,10 +30,7 @@ func (rp *InboundOrdersMysql) Create(io internal.InboundOrders) (id int64, err e
 
 	var empExists bool
 
-	err = rp.db.QueryRow("SELECT 1 FROM `employees` WHERE `id` = ?", io.EmployeeID).Scan(&empExists) //check 1 line
-	if err != nil && err != sql.ErrNoRows {
-		return id, err
-	}
+	rp.db.QueryRow("SELECT 1 FROM `employees` WHERE `id` = ?", io.EmployeeID).Scan(&empExists) //check 1 line
 
 	if !empExists {
 		return 0, internal.ErrEmployeeNotFound
