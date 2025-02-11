@@ -192,10 +192,8 @@ func TestProductServiceDefault_Create(t *testing.T) {
 		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)
 		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, internal.ErrProductTypeIDNotFound)
 
-		// Executa o método que será testado
 		_, err := svc.Create(product)
 
-		// Verifica se o erro retornado é o esperado
 		assert.NotNil(t, err)
 		assert.Equal(t, internal.ErrProductTypeIDNotFound, err)
 	})
@@ -317,6 +315,7 @@ func TestProductServiceDefault_Update(t *testing.T) {
 		// Verifica se não houve erro
 		assert.NotNil(t, err)
 	})
+
 	t.Run("should error if repository FindAll", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
 		sellerRepo := new(sellerRepositoryMock)
@@ -332,6 +331,7 @@ func TestProductServiceDefault_Update(t *testing.T) {
 		assert.NotNil(t, err)
 		assert.Equal(t, "repository error", err.Error())
 	})
+
 	t.Run("should fill missing fields from existing product", func(t *testing.T) {
 		productRepo := new(RepositoryProductMock)
 		sellerRepo := new(sellerRepositoryMock)
@@ -383,6 +383,144 @@ func TestProductServiceDefault_Update(t *testing.T) {
 		assert.Equal(t, existingProduct.FreezingRate, updatedProduct.FreezingRate)
 		assert.Equal(t, existingProduct.ProductTypeID, updatedProduct.ProductTypeID)
 		assert.Equal(t, existingProduct.SellerID, updatedProduct.SellerID)
+	})
+
+	t.Run("should return error if product code already exists", func(t *testing.T) {
+		// Configura os mocks
+		productRepo := new(RepositoryProductMock)
+		sellerRepo := new(sellerRepositoryMock)
+		productTypeRepo := new(ProductTypeRepositoryMock)
+
+		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
+
+		// Produto existente com o mesmo código
+		existingProducts := []internal.Product{
+			{
+				ID:          2,
+				ProductCode: "code-1", // Mesmo código do produto a ser atualizado
+			},
+		}
+
+		product := internal.Product{
+			ID:          1,
+			ProductCode: "code-1", // Produto atualizado com código duplicado
+		}
+
+		// Configuração do mock para FindAll
+		productRepo.On("FindAll").Return(existingProducts, nil)
+		productRepo.On("FindByID", product.ID).Return(product, nil)                               // O produto atualizado existe
+		productRepo.On("Update", product).Return(product, nil)                                    // Configuração para Update
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)                // Seller válido
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, nil) // ProductType válido
+
+		// Executa o método
+		_, err := svc.Update(product)
+
+		// Verifica se o erro esperado é retornado
+		assert.NotNil(t, err)
+		assert.Equal(t, internal.ErrProductCodeAlreadyExists, err)
+	})
+
+	t.Run("should return error if seller ID is not found", func(t *testing.T) {
+		// Configura os mocks
+		productRepo := new(RepositoryProductMock)
+		sellerRepo := new(sellerRepositoryMock)
+		productTypeRepo := new(ProductTypeRepositoryMock)
+
+		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
+
+		// Produto a ser atualizado
+		product := internal.Product{
+			ID:          1,
+			ProductCode: "code-1",
+			SellerID:    99, // ID do vendedor que não existe
+		}
+
+		// Configuração do mock para FindAll e FindByID
+		productRepo.On("FindAll").Return([]internal.Product{}, nil)
+		productRepo.On("FindByID", product.ID).Return(product, nil)
+		productRepo.On("Update", product).Return(product, nil)
+
+		// Mock para simular que o SellerID não é encontrado
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, internal.ErrSellerIdNotFound)
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, nil) // ProductType válido
+
+		// Executa o método
+		_, err := svc.Update(product)
+
+		// Verifica se o erro esperado é retornado
+		assert.NotNil(t, err)
+		assert.Equal(t, internal.ErrSellerIdNotFound, err)
+	})
+
+	t.Run("should return error if product type ID is not found", func(t *testing.T) {
+		// Configura os mocks
+		productRepo := new(RepositoryProductMock)
+		sellerRepo := new(sellerRepositoryMock)
+		productTypeRepo := new(ProductTypeRepositoryMock)
+
+		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
+
+		// Produto a ser atualizado
+		product := internal.Product{
+			ID:            1,
+			ProductCode:   "code-1",
+			ProductTypeID: 99, // ID do tipo de produto que não existe
+			SellerID:      1,  // ID do vendedor válido
+		}
+
+		// Configuração dos mocks
+		productRepo.On("FindAll").Return([]internal.Product{}, nil)
+		productRepo.On("FindByID", product.ID).Return(product, nil)
+		productRepo.On("Update", product).Return(product, nil)
+
+		// Mock para validar o SellerID (válido)
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)
+
+		// Mock para simular que o ProductTypeID não é encontrado
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, internal.ErrProductTypeNotFound)
+
+		// Executa o método
+		_, err := svc.Update(product)
+
+		// Verifica se o erro esperado é retornado
+		assert.NotNil(t, err)
+		assert.Equal(t, internal.ErrProductTypeNotFound, err)
+	})
+
+	t.Run("should return error if repository returns a generic error", func(t *testing.T) {
+		// Configura os mocks
+		productRepo := new(RepositoryProductMock)
+		sellerRepo := new(sellerRepositoryMock)
+		productTypeRepo := new(ProductTypeRepositoryMock)
+
+		svc := service.NewProductService(productRepo, sellerRepo, productTypeRepo)
+
+		// Produto a ser atualizado
+		product := internal.Product{
+			ID:            1,
+			ProductCode:   "code-1",
+			ProductTypeID: 1,
+			SellerID:      1,
+		}
+
+		// Configuração dos mocks
+		productRepo.On("FindAll").Return([]internal.Product{}, nil)
+		productRepo.On("FindByID", product.ID).Return(product, nil)
+
+		// Mock para validar o SellerID e ProductTypeID
+		sellerRepo.On("FindByID", product.SellerID).Return(internal.Seller{}, nil)
+		productTypeRepo.On("FindByID", product.ProductTypeID).Return(internal.ProductType{}, nil)
+
+		// Mock para simular um erro genérico ao atualizar o produto
+		productRepo.On("Update", product).Return(internal.Product{}, errors.New("repository update error"))
+
+		// Executa o método
+		_, err := svc.Update(product)
+
+		// Verifica se o erro esperado é retornado
+		assert.NotNil(t, err)
+		assert.Equal(t, "repository update error", err.Error())
 	})
 
 }

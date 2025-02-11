@@ -27,6 +27,8 @@ type ProductBatchRepository interface {
 	FindByID(id int) (ProductBatch, error)
 	Save(prodBatch *ProductBatch) error
 	ProductBatchNumberExists(batchNumber int) (bool, error)
+	ReportProducts() (prodBatches []ProductBatch, err error)
+	ReportProductsByID(id int) (prodBatches []ProductBatch, err error)
 }
 
 type ProductBatchService interface {

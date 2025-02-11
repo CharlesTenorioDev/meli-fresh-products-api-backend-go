@@ -1,6 +1,7 @@
 package repository_test
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -45,6 +46,47 @@ func TestProductRecordsMysql_FinAll(t *testing.T) {
 	assert.Equal(t, 1, products[0].ID)
 	assert.Equal(t, 2, products[1].ID)
 }
+
+func TestProductRecordsMysql_FindAll_query_error(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	mock.ExpectQuery(repository.FindAllProductRecords).WillReturnError(errors.New("query execution error"))
+
+	repo := repository.NewProductRecordsSQL(mockDB)
+
+	productRecords, err := repo.FindAll()
+	assert.Error(t, err)
+	assert.Nil(t, productRecords)
+	assert.Equal(t, "query execution error", err.Error())
+}
+
+func TestProductRecordsMysql_FindAll_scan_error(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	rows := sqlmock.NewRows([]string{
+		"id",
+		"last_update_date",
+		"purchase_price",
+		"sale_price",
+		"product_id",
+	}).
+		AddRow(nil, nil, nil, nil, nil).
+		RowError(1, errors.New("scan error"))
+
+	mock.ExpectQuery(repository.FindAllProductRecords).WillReturnRows(rows)
+
+	repo := repository.NewProductRecordsSQL(mockDB)
+
+	productRecords, err := repo.FindAll()
+	assert.Error(t, err) 
+	assert.Nil(t, productRecords)
+	assert.Equal(t, internal.ErrProductNotFound, err)
+}
+
 
 func TestProductRecordsMysql_FinAByID_ok(t *testing.T) {
 	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
