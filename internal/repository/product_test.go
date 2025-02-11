@@ -1,6 +1,8 @@
 package repository_test
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -57,6 +59,54 @@ func TestProductMysql_FinAll(t *testing.T) {
 	assert.Equal(t, 2, len(products))
 	assert.Equal(t, 1, products[0].ID)
 	assert.Equal(t, 2, products[1].ID)
+}
+
+func TestProductMysql_FinAll_no_rows(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	mock.ExpectQuery(repository.FindAllString).WillReturnError(sql.ErrNoRows)
+
+	repo := repository.NewProductSQL(mockDB)
+
+	products, err := repo.FindAll()
+
+	assert.Error(t, err)
+	assert.Equal(t, internal.ErrProductNotFound, err)
+	assert.Nil(t, products)
+
+}
+
+func TestProductMysql_FindAll_scan_error_no_rows(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	rows := sqlmock.NewRows([]string{
+		"id",
+		"product_code",
+		"description",
+		"height",
+		"length",
+		"net_weight",
+		"expiration_rate",
+		"recommended_freezing_temperature",
+		"width",
+		"freezing_rate",
+		"product_type_id",
+		"seller_id",
+	}).AddRow(nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil)
+
+	mock.ExpectQuery(repository.FindAllString).WillReturnRows(rows)
+
+	repo := repository.NewProductSQL(mockDB)
+
+	products, err := repo.FindAll()
+
+	assert.Error(t, err)
+	assert.Equal(t, internal.ErrProductNotFound, err)
+	assert.Nil(t, products)
 }
 
 func TestProductMysql_FinAByID_ok(t *testing.T) {
@@ -120,7 +170,6 @@ func TestProductMysql_FinAByID_not_found(t *testing.T) {
 }
 
 func TestProductMysql_save_ok(t *testing.T) {
-	// Cria um mock do banco de dados e configura a expectativa para a consulta SQL
 	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err) // Verifica se não teve erro ao criar o mock do banco
 	defer mockDB.Close()   // Garante que o mock do banco será fechado no final do teste
@@ -268,6 +317,92 @@ func TestProductMysql_Update_not_found(t *testing.T) {
 	assert.Equal(t, internal.ErrProductNotFound, err)
 }
 
+func TestProductMysql_Update_mysql_error(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	// Simular erro do tipo MySQL com código 1062 (duplicado)
+	mock.ExpectExec(repository.UpdateString).
+		WithArgs(
+			product.Description,
+			product.ExpirationRate,
+			product.FreezingRate,
+			product.Height,
+			product.Length,
+			product.NetWeight,
+			product.ProductCode,
+			product.RecommendedFreezingTemperature,
+			product.Width,
+			product.ProductTypeID,
+			product.SellerID,
+			product.ID,
+		).WillReturnError(&mysql.MySQLError{Number: 1062})
+
+	repo := repository.NewProductSQL(mockDB)
+
+	_, err = repo.Update(product)
+	assert.Error(t, err)
+	assert.Equal(t, internal.ErrProductConflit, err)
+}
+
+func TestProductMysql_Update_mysql_generic_error(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	// Simular erro genérico do tipo MySQL
+	mock.ExpectExec(repository.UpdateString).
+		WithArgs(
+			product.Description,
+			product.ExpirationRate,
+			product.FreezingRate,
+			product.Height,
+			product.Length,
+			product.NetWeight,
+			product.ProductCode,
+			product.RecommendedFreezingTemperature,
+			product.Width,
+			product.ProductTypeID,
+			product.SellerID,
+			product.ID,
+		).WillReturnError(&mysql.MySQLError{Number: 1234})
+
+	repo := repository.NewProductSQL(mockDB)
+
+	_, err = repo.Update(product)
+	assert.Error(t, err)
+	assert.Equal(t, internal.ErrProductNotFound, err)
+}
+
+func TestProductMysql_Update_rows_affected_error(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	mock.ExpectExec(repository.UpdateString).
+		WithArgs(
+			product.Description,
+			product.ExpirationRate,
+			product.FreezingRate,
+			product.Height,
+			product.Length,
+			product.NetWeight,
+			product.ProductCode,
+			product.RecommendedFreezingTemperature,
+			product.Width,
+			product.ProductTypeID,
+			product.SellerID,
+			product.ID,
+		).WillReturnResult(sqlmock.NewErrorResult(internal.ErrProductNotFound))
+
+	repo := repository.NewProductSQL(mockDB)
+
+	_, err = repo.Update(product)
+	assert.Error(t, err)
+	assert.Equal(t, internal.ErrProductNotFound, err)
+}
+
 func TestProductMysql_Delete_ok(t *testing.T) {
 	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
@@ -300,6 +435,42 @@ func TestProductMysql_Delete_not_found(t *testing.T) {
 	assert.Error(t, internal.ErrProductIdNotFound, err)
 }
 
+func TestProductMysql_Delete_conflict_entity(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	// Simular erro do MySQL com código 1451 (conflito de integridade referencial)
+	mock.ExpectExec(repository.DeleteString).
+		WithArgs(1).
+		WillReturnError(&mysql.MySQLError{Number: 1451})
+
+	repo := repository.NewProductSQL(mockDB)
+
+	err = repo.Delete(1)
+
+	assert.Error(t, err)
+	assert.Equal(t, internal.ErrProductConflitEntity, err)
+}
+
+func TestProductMysql_Delete_mysql_generic_error(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	// Simular erro genérico do MySQL
+	mock.ExpectExec(repository.DeleteString).
+		WithArgs(1).
+		WillReturnError(&mysql.MySQLError{Number: 9999})
+
+	repo := repository.NewProductSQL(mockDB)
+
+	err = repo.Delete(1)
+
+	assert.Error(t, err)
+	assert.Equal(t, internal.ErrProductNotFound, err)
+}
+
 func TestProductMysql_FindAllRecord(t *testing.T) {
 	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 	assert.NoError(t, err)
@@ -322,6 +493,45 @@ func TestProductMysql_FindAllRecord(t *testing.T) {
 	assert.Equal(t, 2, len(productRecords))
 	assert.Equal(t, 1, productRecords[0].ProductID)
 	assert.Equal(t, 2, productRecords[1].ProductID)
+}
+
+func TestProductMysql_FindAllRecord_query_error(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	// Simular erro na execução da query
+	mock.ExpectQuery(repository.FindAllRecordString).WillReturnError(errors.New("query execution error"))
+
+	repo := repository.NewProductSQL(mockDB)
+
+	productRecords, err := repo.FindAllRecord()
+	assert.Error(t, err)
+	assert.Nil(t, productRecords)
+	assert.Equal(t, "query execution error", err.Error())
+}
+
+func TestProductMysql_FindAllRecord_scan_error(t *testing.T) {
+	mockDB, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
+	assert.NoError(t, err)
+	defer mockDB.Close()
+
+	rows := sqlmock.NewRows([]string{
+		"product_id",
+		"description",
+		"records_count",
+	}).
+		AddRow("invalid_id", "code 1", 1)
+
+	mock.ExpectQuery(repository.FindAllRecordString).WillReturnRows(rows)
+
+	repo := repository.NewProductSQL(mockDB)
+
+	productRecords, err := repo.FindAllRecord()
+	assert.Error(t, err)
+	assert.Nil(t, productRecords)
+	assert.NotNil(t, err)
+	assert.NotEqual(t, sql.ErrNoRows, err)
 }
 
 func TestProductMysql_FinAByIDRecords_ok(t *testing.T) {

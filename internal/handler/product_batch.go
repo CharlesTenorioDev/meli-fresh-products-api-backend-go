@@ -58,7 +58,13 @@ func (h *ProductBatchHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 
 	prodBatch, err = h.sv.FindByID(id)
 	if err != nil {
-		response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+		if errors.Is(err, internal.ErrProductBatchNotFound) {
+			response.JSON(w, http.StatusNotFound, resterr.NewNotFoundError(err.Error()))
+
+			return
+		}
+
+		response.JSON(w, http.StatusInternalServerError, nil)
 
 		return
 	}
@@ -81,29 +87,42 @@ func (h *ProductBatchHandler) GetByID(w http.ResponseWriter, r *http.Request) {
 // @Failure 422 {object} resterr.RestErr "Couldn't parse product-batch"
 // @Router /api/v1/product_batches [post]
 func (h *ProductBatchHandler) Create(w http.ResponseWriter, r *http.Request) {
-	var prodBatchJSON RequestProductBatchJSON
+	var prodBatchJSON map[string]any
 	if err := json.NewDecoder(r.Body).Decode(&prodBatchJSON); err != nil {
 		response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
-
 		return
 	}
 
+	requiredFields := []string{
+		"batch_number", "current_quantity", "current_temperature",
+		"due_date", "initial_quantity", "manufacturing_date",
+		"manufacturing_hour", "minumum_temperature", "product_id",
+		"section_id",
+	}
+
+	for _, field := range requiredFields {
+		if prodBatchJSON[field] == nil {
+			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(field+" is required"))
+			return
+		}
+	}
+
 	prodBatch := internal.ProductBatch{
-		BatchNumber:        prodBatchJSON.BatchNumber,
-		CurrentQuantity:    prodBatchJSON.CurrentQuantity,
-		CurrentTemperature: prodBatchJSON.CurrentTemperature,
-		DueDate:            prodBatchJSON.DueDate,
-		InitialQuantity:    prodBatchJSON.InitialQuantity,
-		ManufacturingDate:  prodBatchJSON.ManufacturingDate,
-		ManufacturingHour:  prodBatchJSON.ManufacturingHour,
-		MinumumTemperature: prodBatchJSON.MinumumTemperature,
-		ProductID:          prodBatchJSON.ProductID,
-		SectionID:          prodBatchJSON.SectionID,
+		BatchNumber:        int(prodBatchJSON["batch_number"].(float64)),
+		CurrentQuantity:    int(prodBatchJSON["current_quantity"].(float64)),
+		CurrentTemperature: prodBatchJSON["current_temperature"].(float64),
+		DueDate:            prodBatchJSON["due_date"].(string),
+		InitialQuantity:    int(prodBatchJSON["initial_quantity"].(float64)),
+		ManufacturingDate:  prodBatchJSON["manufacturing_date"].(string),
+		ManufacturingHour:  int(prodBatchJSON["manufacturing_hour"].(float64)),
+		MinumumTemperature: prodBatchJSON["minumum_temperature"].(float64),
+		ProductID:          int(prodBatchJSON["product_id"].(float64)),
+		SectionID:          int(prodBatchJSON["section_id"].(float64)),
 	}
 
 	err := h.sv.Save(&prodBatch)
 	if err != nil {
-		if errors.Is(err, internal.ErrProductBatchNumberAlreadyInUse) {
+		if errors.Is(err, internal.ErrProductBatchAlreadyExists) || errors.Is(err, internal.ErrProductBatchNumberAlreadyInUse) {
 			response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
 		} else {
 			response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))

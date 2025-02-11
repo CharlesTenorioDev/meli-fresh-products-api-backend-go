@@ -34,10 +34,8 @@ func (psql *ProductRecordsSQL) FindAll() (productRecords []internal.ProductRecor
 
 		err := rows.Scan(&productRecord.ID, &productRecord.LastUpdateDate, &productRecord.PurchasePrice, &productRecord.SalePrice, &productRecord.ProductID)
 		if err != nil {
-			if errors.Is(err, sql.ErrNoRows) {
-				err = internal.ErrProductNotFound
-			}
-
+			err = internal.ErrProductNotFound
+			
 			return productRecords, err
 		}
 
