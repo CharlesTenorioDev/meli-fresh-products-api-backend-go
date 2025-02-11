@@ -2,7 +2,6 @@ package repository_test
 
 import (
 	"database/sql"
-	"fmt"
 	"testing"
 	"time"
 
@@ -57,7 +56,6 @@ func TestPurchaseOrderMysql_FindByID(t *testing.T) {
 
 		rp := repository.NewPurchaseOrderMysqlRepository(db)
 		_, err = rp.FindByID(id)
-		fmt.Println(err)
 
 		require.Error(t, err)
 		require.Equal(t, internal.ErrPurchaseOrderNotFound, err)
