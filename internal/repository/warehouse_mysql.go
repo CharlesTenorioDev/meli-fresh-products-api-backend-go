@@ -35,7 +35,7 @@ func (w *WarehouseMysqlRepository) FindAll() ([]internal.Warehouse, error) {
 	// iterating over the rows
 	for rows.Next() {
 		var warehouse internal.Warehouse
-		err := rows.Scan(
+		rows.Scan(
 			&warehouse.ID,
 			&warehouse.WarehouseCode,
 			&warehouse.Address,
@@ -43,9 +43,7 @@ func (w *WarehouseMysqlRepository) FindAll() ([]internal.Warehouse, error) {
 			&warehouse.MinimumCapacity,
 			&warehouse.MinimumTemperature,
 		)
-		if err != nil {
-			return nil, err
-		}
+
 		// appending the warehouse to the slice
 		warehouses = append(warehouses, warehouse)
 	}
