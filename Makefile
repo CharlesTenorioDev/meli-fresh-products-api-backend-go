@@ -43,3 +43,18 @@ coverage_section_unit_test:
 	@rm coverage.out
 	go tool cover -html section_coverage.out -o cover.html
 	@open cover.html
+
+coverage_inbound_handler_test:
+	-go test -v ./internal/handler -run TestInbound -coverprofile=coverage.out
+	@cat coverage.out | (head -n 1 coverage.out && grep "github.com/meli-fresh-products-api-backend-t1/internal/handler/inbound_orders" coverage.out) > inbound_coverage.out
+	@rm coverage.out
+	go tool cover -html buyer_coverage.out -o cover.html
+	@open cover.html
+
+coverage_carry_handler_test:
+	-go test -v ./internal/handler -run TestHandler_Carries -coverprofile=coverage.out
+	@cat coverage.out | (head -n 1 coverage.out && grep "github.com/meli-fresh-products-api-backend-t1/internal/handler/carries" coverage.out) > carries_coverage.out
+	@rm coverage.out
+	go tool cover -html buyer_coverage.out -o cover.html
+	@open cover.html
+	

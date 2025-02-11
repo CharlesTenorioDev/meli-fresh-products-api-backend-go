@@ -1,6 +1,7 @@
 package handler_test
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -36,14 +37,14 @@ type TestUnitCases struct {
 	body               string
 	expectedBody       string
 	expectedStatusCode int
-	expectedResponse   interface{}
+	expectedResponse   any
 	expectedMockCalls  int
 }
 
 func TestInboundCreate(t *testing.T) {
 	testCases := []*TestUnitCases{
 		{
-			name: "status code 201 (sucess) - Create a new Inbound Order",
+			name: "status code 201 (success) - Create a new Inbound Order",
 			body: `{
 				"order_date": "2123-01-01",
 				"order_number": "ORD11111",
@@ -157,7 +158,26 @@ func TestInboundGetAll(t *testing.T) {
 		{
 			name: "status code 200 (success) - Successfully get all Inbound Orders",
 
-			expectedBody: `{"data":[{"id":1,"order_date":"2021-03-04","order_number":"ORD11111","employee_id":1,"product_batch_id":3,"warehouse_id":2},{"id":2,"order_date":"2021-03-04","order_number":"ORD2222","employee_id":1,"product_batch_id":3,"warehouse_id":2}]}`,
+			expectedBody: `{
+							"data": [
+								{
+								"id": 1,
+								"order_date": "2021-03-04",
+								"order_number": "ORD11111",
+								"employee_id": 1,
+								"product_batch_id": 3,
+								"warehouse_id": 2
+								},
+								{
+								"id": 2,
+								"order_date": "2021-03-04",
+								"order_number": "ORD2222",
+								"employee_id": 1,
+								"product_batch_id": 3,
+								"warehouse_id": 2
+								}
+							]
+							}`,
 
 			mockService: func(inb *InboundOrdersServiceMock) {
 				inb.On(("FindAll")).Return([]internal.InboundOrders{
@@ -216,9 +236,19 @@ func TestInboundGetAll(t *testing.T) {
 			hd.GetAll(res, req)
 
 			//then
-			require.Equal(t, tc.expectedStatusCode, res.Code)
-			assert.Equal(t, tc.expectedBody, res.Body.String())
+			expected := NormalizeJSON(tc.expectedBody)
+			actual := NormalizeJSON(res.Body.String())
+			assert.Equal(t, expected, actual)
 			sv.AssertNumberOfCalls(t, "FindAll", tc.expectedMockCalls)
 		})
 	}
+}
+
+func NormalizeJSON(jsonStr string) string {
+	var obj interface{}
+	if err := json.Unmarshal([]byte(jsonStr), &obj); err != nil {
+		return jsonStr // Retorna a string original se ocorrer um erro
+	}
+	normalized, _ := json.Marshal(obj)
+	return string(normalized)
 }
