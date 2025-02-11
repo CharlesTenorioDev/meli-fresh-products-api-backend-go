@@ -65,7 +65,10 @@ func (r *PurchaseOrderRepository) Save(purchaseOrder *internal.PurchaseOrder) er
 	}
 
 	// Get the ID of the last inserted purchase order
-	id, _ := result.LastInsertId()
+	id, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
 
 	// Set the ID of the purchase order
 	(*purchaseOrder).ID = int(id)

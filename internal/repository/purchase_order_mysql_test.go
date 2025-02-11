@@ -2,6 +2,7 @@ package repository_test
 
 import (
 	"database/sql"
+	"fmt"
 	"testing"
 	"time"
 
@@ -118,6 +119,22 @@ func TestPurchaseOrderMysql_Save(t *testing.T) {
 		mock.ExpectExec(query).
 			WithArgs(po.OrderNumber, po.OrderDate, po.TrackingCode, po.BuyerID, po.ProductRecordID).
 			WillReturnError(sql.ErrConnDone)
+
+		rp := repository.NewPurchaseOrderMysqlRepository(db)
+		err := rp.Save(&po)
+
+		require.Error(t, err)
+	})
+
+	t.Run("case 4: error - Error retrieving the last inserted ID", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"count"}).AddRow(0)
+		mock.ExpectQuery("SELECT COUNT(*) FROM purchase_orders WHERE order_number = ?").
+			WithArgs(po.OrderNumber).
+			WillReturnRows(rows)
+
+		mock.ExpectExec(query).
+			WithArgs(po.OrderNumber, po.OrderDate, po.TrackingCode, po.BuyerID, po.ProductRecordID).
+			WillReturnResult(sqlmock.NewErrorResult(fmt.Errorf("error")))
 
 		rp := repository.NewPurchaseOrderMysqlRepository(db)
 		err := rp.Save(&po)
