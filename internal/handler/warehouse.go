@@ -190,8 +190,6 @@ func (h *WarehouseDefault) Create() http.HandlerFunc {
 				response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestValidationError(domainError.Message, restCauses))
 			case errors.Is(err, internal.ErrWarehouseRepositoryDuplicated):
 				response.JSON(w, http.StatusConflict, resterr.NewConflictError(err.Error()))
-			case errors.Is(err, internal.ErrWarehouseUnprocessableEntity):
-				response.JSON(w, http.StatusUnprocessableEntity, resterr.NewUnprocessableEntityError(err.Error()))
 			default:
 				response.JSON(w, http.StatusInternalServerError, resterr.NewInternalServerError(ErrInternalServer))
 			}

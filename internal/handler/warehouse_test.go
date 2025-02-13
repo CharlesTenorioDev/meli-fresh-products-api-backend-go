@@ -61,7 +61,7 @@ var (
 
 // TestCases is a struct that contains the test cases for the warehouse handler
 type TestCases struct {
-	description       string
+	name              string
 	method            string
 	url               string
 	id                string
@@ -76,7 +76,7 @@ type TestCases struct {
 func TestWarehouseHandler_Create(t *testing.T) {
 	cases := []*TestCases{
 		{
-			description:    "case 1 - success: Create a new warehouse",
+			name:           "case 1 - success: Create a new warehouse",
 			method:         "POST",
 			url:            endpointWarehouse,
 			body:           `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":0}`,
@@ -94,10 +94,10 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description: "case 2 - error: Attempt to create a new warehouse without minimum temperature",
-			method:      "POST",
-			url:         endpointWarehouse,
-			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300}`,
+			name:   "case 2 - error: Attempt to create a new warehouse without minimum temperature",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300}`,
 			expectedBody: `{
 				"message": "warehouse inputs are missing",
 				"error": "unprocessable_entity",
@@ -115,10 +115,10 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedMockCalls: 0,
 		},
 		{
-			description: "case 3 - error: Attempt to create a new warehouse without minimum capacity",
-			method:      "POST",
-			url:         endpointWarehouse,
-			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_temperature":5}`,
+			name:   "case 3 - error: Attempt to create a new warehouse without minimum capacity",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_temperature":5}`,
 			expectedBody: `{
 				"message": "warehouse inputs are missing",
 				"error": "unprocessable_entity",
@@ -136,10 +136,10 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedMockCalls: 0,
 		},
 		{
-			description: "case 4 - error: Attempt to create a new warehouse with invalid data",
-			method:      "POST",
-			url:         endpointWarehouse,
-			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":"invalid"}`,
+			name:   "case 4 - error: Attempt to create a new warehouse with invalid data",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":"invalid"}`,
 			expectedBody: `{
 				"message": "Invalid data",
 				"error": "bad_request",
@@ -155,10 +155,10 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedMockCalls: 0,
 		},
 		{
-			description: "case 5 - error: Attempt to create a new warehouse with an existing warehouse code",
-			method:      "POST",
-			url:         endpointWarehouse,
-			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":5}`,
+			name:   "case 5 - error: Attempt to create a new warehouse with an existing warehouse code",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":5}`,
 			expectedBody: `{
 				"message": "warehouse already exists",
 				"error": "conflict",
@@ -175,10 +175,10 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description: "case 6 - error: Attempt to create a new warehouse generating an unexpected error",
-			method:      "POST",
-			url:         endpointWarehouse,
-			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":5}`,
+			name:   "case 6 - error: Attempt to create a new warehouse generating an unexpected error",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":300,"minimum_temperature":5}`,
 			expectedBody: `{
 				"message": "Internal Server Error",
 				"error": "internal_server_error",
@@ -195,10 +195,10 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description: "case 7 - error: Attempt to create a new warehouse with a negative minimum capacity",
-			method:      "POST",
-			url:         endpointWarehouse,
-			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":-300,"minimum_temperature":5}`,
+			name:   "case 7 - error: Attempt to create a new warehouse with a negative minimum capacity",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":-300,"minimum_temperature":5}`,
 			expectedBody: `{
 				"message": "warehouse inputs are missing",
 				"error": "bad_request",
@@ -217,10 +217,10 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description: "case 8 - error: Attempt to create a new warehouse with a minimum temperature out of range",
-			method:      "POST",
-			url:         endpointWarehouse,
-			body:        `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":100,"minimum_temperature":-300.00}`,
+			name:   "case 8 - error: Attempt to create a new warehouse with a minimum temperature out of range",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","address":"789 Oak St","telephone":"555-1234","minimum_capacity":100,"minimum_temperature":-300.00}`,
 			expectedBody: `{
 				"message": "warehouse inputs are missing",
 				"error": "bad_request",
@@ -238,10 +238,73 @@ func TestWarehouseHandler_Create(t *testing.T) {
 			},
 			expectedMockCalls: 1,
 		},
+		{
+			name:   "case 9 - error: Attempt to create a new warehouse without warehouse code",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"address":"789 Oak St","telephone":"555-1234","minimum_capacity":100,"minimum_temperature":5}`,
+			expectedBody: `{
+				"message": "warehouse inputs are missing",
+				"error": "unprocessable_entity",
+				"code": 422,
+				"causes": [
+					{"field": "warehouse_code", "message": "warehouse code is required"}
+				]
+			}`,
+			expectedCode:   http.StatusUnprocessableEntity,
+			expectedHeader: jsonHeader,
+			mock: func() *WarehouseServiceMock {
+				mk := NewWarehouseServiceMock()
+				return mk
+			},
+			expectedMockCalls: 0,
+		},
+		{
+			name:   "case 10 - error: Attempt to create a new warehouse without address",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","telephone":"555-1234","minimum_capacity":100,"minimum_temperature":5}`,
+			expectedBody: `{
+				"message": "warehouse inputs are missing",
+				"error": "unprocessable_entity",
+				"code": 422,
+				"causes": [
+					{"field": "address", "message": "address is required"}
+				]
+			}`,
+			expectedCode:   http.StatusUnprocessableEntity,
+			expectedHeader: jsonHeader,
+			mock: func() *WarehouseServiceMock {
+				mk := NewWarehouseServiceMock()
+				return mk
+			},
+			expectedMockCalls: 0,
+		},
+		{
+			name:   "case 11 - error: Attempt to create a new warehouse without telephone",
+			method: "POST",
+			url:    endpointWarehouse,
+			body:   `{"warehouse_code":"W3","address":"789 Oak St","minimum_capacity":100,"minimum_temperature":5}`,
+			expectedBody: `{
+				"message": "warehouse inputs are missing",
+				"error": "unprocessable_entity",
+				"code": 422,
+				"causes": [
+					{"field": "telephone", "message": "telephone is required"}
+				]
+			}`,
+			expectedCode:   http.StatusUnprocessableEntity,
+			expectedHeader: jsonHeader,
+			mock: func() *WarehouseServiceMock {
+				mk := NewWarehouseServiceMock()
+				return mk
+			},
+			expectedMockCalls: 0,
+		},
 	}
 
 	for _, tc := range cases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			// handler and its dependencies
 			sv := tc.mock()
 			hd := handler.NewWarehouseDefault(sv)
@@ -266,7 +329,7 @@ func TestWarehouseHandler_Create(t *testing.T) {
 func TestWarehouseHandler_GetAll(t *testing.T) {
 	cases := []*TestCases{
 		{
-			description:    "case 1 - success: Get all warehouses",
+			name:           "case 1 - success: Get all warehouses",
 			method:         "GET",
 			url:            endpointWarehouse,
 			expectedCode:   http.StatusOK,
@@ -286,7 +349,7 @@ func TestWarehouseHandler_GetAll(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description:    "case 2 - error: Attempt to get all warehouses generating an unexpected error",
+			name:           "case 2 - error: Attempt to get all warehouses generating an unexpected error",
 			method:         "GET",
 			url:            endpointWarehouse,
 			expectedCode:   http.StatusInternalServerError,
@@ -307,7 +370,7 @@ func TestWarehouseHandler_GetAll(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			// handler and its dependencies
 			sv := tc.mock()
 			hd := handler.NewWarehouseDefault(sv)
@@ -332,7 +395,7 @@ func TestWarehouseHandler_GetAll(t *testing.T) {
 func TestWarehouseHandler_GetByID(t *testing.T) {
 	cases := []*TestCases{
 		{
-			description:  "case 1 - success: Get a warehouse by id",
+			name:         "case 1 - success: Get a warehouse by id",
 			method:       "GET",
 			url:          endpointWarehouse,
 			id:           "1",
@@ -350,7 +413,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description:  "case 2 - error: Attempt to get a warehouse by a non existent id",
+			name:         "case 2 - error: Attempt to get a warehouse by a non existent id",
 			method:       "GET",
 			url:          endpointWarehouse,
 			id:           "100",
@@ -369,7 +432,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description:  "case 3 - error: Attempt to get a warehouse by an invalid id",
+			name:         "case 3 - error: Attempt to get a warehouse by an invalid id",
 			method:       "GET",
 			url:          endpointWarehouse,
 			id:           "invalid",
@@ -387,7 +450,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 			expectedMockCalls: 0,
 		},
 		{
-			description:  "case 4 - error: Attempt to get a warehouse generating an unexpected error",
+			name:         "case 4 - error: Attempt to get a warehouse generating an unexpected error",
 			method:       "GET",
 			url:          endpointWarehouse,
 			id:           "1",
@@ -408,7 +471,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			// handler and its dependencies
 			sv := tc.mock()
 			hd := handler.NewWarehouseDefault(sv)
@@ -436,7 +499,7 @@ func TestWarehouseHandler_GetByID(t *testing.T) {
 func TestWarehouseHandler_Update(t *testing.T) {
 	cases := []*TestCases{
 		{
-			description:    "case 1 - success: Update a warehouse",
+			name:           "case 1 - success: Update a warehouse",
 			method:         "PATCH",
 			url:            endpointWarehouse,
 			id:             "1",
@@ -454,11 +517,11 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description: "case 2 - error: Attempt to update a non existent warehouse",
-			method:      "PATCH",
-			url:         endpointWarehouse,
-			id:          "100",
-			body:        `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":-20}`,
+			name:   "case 2 - error: Attempt to update a non existent warehouse",
+			method: "PATCH",
+			url:    endpointWarehouse,
+			id:     "100",
+			body:   `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":-20}`,
 			expectedBody: `{
 				"message": "warehouse not found",
 				"error": "not_found",
@@ -475,11 +538,11 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description: "case 3 - error: Attempt to update a warehouse with invalid data",
-			method:      "PATCH",
-			url:         endpointWarehouse,
-			id:          "1",
-			body:        `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":"invalid"}`,
+			name:   "case 3 - error: Attempt to update a warehouse with invalid data",
+			method: "PATCH",
+			url:    endpointWarehouse,
+			id:     "1",
+			body:   `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":"invalid"}`,
 			expectedBody: `{
 				"message": "Invalid data",
 				"error": "bad_request",
@@ -495,11 +558,11 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedMockCalls: 0,
 		},
 		{
-			description: "case 4 - error: Attempt to update a warehouse generating an unexpected error",
-			method:      "PATCH",
-			url:         endpointWarehouse,
-			id:          "1",
-			body:        `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":-20}`,
+			name:   "case 4 - error: Attempt to update a warehouse generating an unexpected error",
+			method: "PATCH",
+			url:    endpointWarehouse,
+			id:     "1",
+			body:   `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":-20}`,
 			expectedBody: `{
 				"message": "Internal Server Error",
 				"error": "internal_server_error",
@@ -516,11 +579,11 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description: "case 5 - error: Attempt to update a warehouse with an existing warehouse code",
-			method:      "PATCH",
-			url:         endpointWarehouse,
-			id:          "1",
-			body:        `{"warehouse_code":"W2"}`,
+			name:   "case 5 - error: Attempt to update a warehouse with an existing warehouse code",
+			method: "PATCH",
+			url:    endpointWarehouse,
+			id:     "1",
+			body:   `{"warehouse_code":"W2"}`,
 			expectedBody: `{
 				"message": "warehouse already exists",
 				"error": "conflict",
@@ -537,11 +600,11 @@ func TestWarehouseHandler_Update(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description: "case 6 - error: Attempt to update a warehouse with an invalid id",
-			method:      "PATCH",
-			url:         endpointWarehouse,
-			id:          "invalid",
-			body:        `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":-20}`,
+			name:   "case 6 - error: Attempt to update a warehouse with an invalid id",
+			method: "PATCH",
+			url:    endpointWarehouse,
+			id:     "invalid",
+			body:   `{"address":"123 Main St UPDATED","telephone":"123-456-7890","minimum_capacity":1000,"minimum_temperature":-20}`,
 			expectedBody: `{
 				"message": "Invalid ID format",
 				"error": "bad_request",
@@ -559,7 +622,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			// handler and its dependencies
 			sv := tc.mock()
 			hd := handler.NewWarehouseDefault(sv)
@@ -587,7 +650,7 @@ func TestWarehouseHandler_Update(t *testing.T) {
 func TestWarehouseHandler_Delete(t *testing.T) {
 	cases := []*TestCases{
 		{
-			description:    "case 1 - success: Delete a warehouse",
+			name:           "case 1 - success: Delete a warehouse",
 			method:         "DELETE",
 			url:            endpointWarehouse,
 			id:             "1",
@@ -601,7 +664,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description:  "case 2 - error: Attempt to delete a non existent warehouse",
+			name:         "case 2 - error: Attempt to delete a non existent warehouse",
 			method:       "DELETE",
 			url:          endpointWarehouse,
 			id:           "100",
@@ -621,7 +684,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description:  "case 3 - error: Attempt to delete a warehouse generating an unexpected error",
+			name:         "case 3 - error: Attempt to delete a warehouse generating an unexpected error",
 			method:       "DELETE",
 			url:          endpointWarehouse,
 			id:           "1",
@@ -641,7 +704,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 			expectedMockCalls: 1,
 		},
 		{
-			description:  "case 4 - error: Attempt to delete a warehouse with an invalid id",
+			name:         "case 4 - error: Attempt to delete a warehouse with an invalid id",
 			method:       "DELETE",
 			url:          endpointWarehouse,
 			id:           "invalid",
@@ -662,7 +725,7 @@ func TestWarehouseHandler_Delete(t *testing.T) {
 	}
 
 	for _, tc := range cases {
-		t.Run(tc.description, func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			// handler and its dependencies
 			sv := tc.mock()
 			hd := handler.NewWarehouseDefault(sv)
