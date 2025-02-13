@@ -3,6 +3,7 @@ package handler_test
 import (
 	"bytes"
 	"errors"
+	"fmt"
 
 	"context"
 	"encoding/json"
@@ -784,6 +785,7 @@ func Test_ReportRecords_ByID(t *testing.T) {
 	tests := []struct {
 		name           string
 		mockSetup      func(*MockProductService)
+		id             string
 		expectedStatus int
 		expectedBody   interface{}
 	}{
@@ -795,6 +797,7 @@ func Test_ReportRecords_ByID(t *testing.T) {
 				}
 				p.On("GetByIDRecord", 1).Return(mockProduct, nil)
 			},
+			id:             "1",
 			expectedStatus: http.StatusOK,
 			expectedBody: map[string]interface{}{
 				"data": internal.ProductRecordsJSONCount{
@@ -803,10 +806,19 @@ func Test_ReportRecords_ByID(t *testing.T) {
 			},
 		},
 		{
+			name: "ReportRecords_By_ID_status_400",
+			mockSetup: func(p *MockProductService) {
+			},
+			id:             "invalid_id",
+			expectedStatus: http.StatusBadRequest,
+			expectedBody:   *resterr.NewBadRequestError("error parsing id with invalid syntax"),
+		},
+		{
 			name: "ReportRecords_By_ID_status_404",
 			mockSetup: func(p *MockProductService) {
 				p.On("GetByIDRecord", 1).Return(internal.ProductRecordsJSONCount{}, internal.ErrProductNotFound)
 			},
+			id:             "1",
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   nil,
 		},
@@ -817,7 +829,7 @@ func Test_ReportRecords_ByID(t *testing.T) {
 			productHandler := handler.NewProductHandlerDefault(mockService)
 			tt.mockSetup(mockService)
 
-			req := httptest.NewRequest(http.MethodGet, "/productRecords?id=1", nil)
+			req := httptest.NewRequest(http.MethodGet, fmt.Sprint("/productRecords?id=", tt.id), nil)
 			rec := httptest.NewRecorder()
 
 			productHandler.ReportRecords(rec, req)

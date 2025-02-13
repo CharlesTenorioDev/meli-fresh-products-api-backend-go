@@ -80,13 +80,6 @@ func (w *Warehouse) Validate() (causes []Causes) {
 		})
 	}
 
-	if !validator.String(w.Telephone, 1, 255) && !validator.BlankString(w.Telephone) {
-		causes = append(causes, Causes{
-			Field:   "telephone",
-			Message: "telephone is out of range",
-		})
-	}
-
 	if validator.IntIsZero(w.MinimumCapacity) {
 		causes = append(causes, Causes{
 			Field:   "minimum_capacity",
