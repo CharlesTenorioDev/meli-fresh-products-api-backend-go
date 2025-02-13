@@ -22,10 +22,6 @@ func (r *PurchaseOrderRepository) FindByID(id int) (purchaseOrder internal.Purch
 	`
 	row := r.db.QueryRow(query, id)
 
-	if err = row.Err(); err != nil {
-		return
-	}
-
 	// scanning the row
 	err = row.Scan(
 		&purchaseOrder.ID,

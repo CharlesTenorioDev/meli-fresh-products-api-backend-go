@@ -2,12 +2,13 @@ package service_test
 
 import (
 	"errors"
+	"testing"
+	"time"
+
 	"github.com/meli-fresh-products-api-backend-t1/internal"
 	"github.com/meli-fresh-products-api-backend-t1/internal/service"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
-	"time"
 )
 
 type RepositoryProductRecordsMock struct {

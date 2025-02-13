@@ -63,7 +63,7 @@ func (h *PurchaseOrderHandler) Create() http.HandlerFunc {
 
 		// decoding the request
 		if err := json.NewDecoder(r.Body).Decode(&requestInput); err != nil {
-			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError(err.Error()))
+			response.JSON(w, http.StatusBadRequest, resterr.NewBadRequestError("Invalid data"))
 			return
 		}
 
